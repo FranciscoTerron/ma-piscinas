@@ -44,3 +44,30 @@ export const login = async (email, password) => {
   localStorage.setItem('token', response.data.access_token); 
   return response;
 };
+
+export const listarUsuarios = async () => {
+  const response = await api.get("/usuarios");
+  return response.data;
+};
+
+export const actualizarDatosPersonales = async (usuarioId, datosActualizados) => {
+  const response = await api.put(`/usuarios/${usuarioId}/datos-personales`, datosActualizados);
+  return response.data;
+};
+
+export const actualizarContrasena = async (usuarioId, nuevaContrasena) => {
+  const response = await api.put(`/usuarios/${usuarioId}/contrasena`, {
+    nueva_contrasena: nuevaContrasena,
+  });
+  return response.data;
+};
+
+export const eliminarUsuario = async (usuarioId) => {
+  await api.delete(`/usuarios/${usuarioId}`);
+};
+
+// Servicio los roles
+export const listarRoles = async () => {
+  const response = await api.get("/roles");
+  return response.data;
+};

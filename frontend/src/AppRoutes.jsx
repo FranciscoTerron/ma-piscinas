@@ -4,6 +4,7 @@ import Register from '../src/components/Register';
 import Login from '../src/components/Login';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
+import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
 
 const AppRoutes = () => {
   return (
@@ -26,6 +27,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute>
             <AdminProfile />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/gestionUsuarios" 
+        element={
+          <PrivateRoute>
+            <GestionUsuarios />
           </PrivateRoute>
         } 
       />
