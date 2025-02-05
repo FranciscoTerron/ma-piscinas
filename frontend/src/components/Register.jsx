@@ -21,6 +21,8 @@ const Register = () => {
     nombre: '',
     email: '',
     password: '',
+    telefono: '',
+    direccion: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -76,6 +78,28 @@ const Register = () => {
               <Input
                 type="email"
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                borderColor="#00CED1"
+                color="#000000"
+                _hover={{ borderColor: "#4169E1" }}
+                _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel color="#00008B">Teléfono</FormLabel>
+              <Input
+                type="tel"
+                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                borderColor="#00CED1"
+                color="#000000"
+                _hover={{ borderColor: "#4169E1" }}
+                _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel color="#00008B">Dirección</FormLabel>
+              <Input
+                type="text"
+                onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
                 borderColor="#00CED1"
                 color="#000000"
                 _hover={{ borderColor: "#4169E1" }}

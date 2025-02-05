@@ -2,7 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Register from '../src/components/Register';
 import Login from '../src/components/Login';
-import Profile from '../src/components/Profile';
+import ClienteProfile from '../src/components/cliente/ClienteProfile';
+import AdminProfile from '../src/components/administrativo/AdminProfile';
 
 const AppRoutes = () => {
   return (
@@ -13,10 +14,18 @@ const AppRoutes = () => {
       
       {/* Rutas protegidas */}
       <Route 
-        path="/profile" 
+        path="/clienteProfile" 
         element={
           <PrivateRoute>
-            <Profile />
+            <ClienteProfile />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/adminProfile" 
+        element={
+          <PrivateRoute>
+            <AdminProfile />
           </PrivateRoute>
         } 
       />

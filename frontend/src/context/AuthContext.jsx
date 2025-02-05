@@ -17,6 +17,11 @@ export function AuthProvider({ children }) {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const [userRole, setUserRole] = useState(() => {
+    const storedRole = localStorage.getItem('userRole');
+    return storedRole ? storedRole : null;
+  });
+
   const [token, setToken] = useState(() => {
     const storedToken = localStorage.getItem('token');
     return storedToken ? storedToken : null;
@@ -56,11 +61,17 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem('userName');
     }
-  }, [isAuthenticated, user, token, userId, userName]);
+    if (userRole !== null) {
+      localStorage.setItem('userRole', userRole);
+    } else {
+      localStorage.removeItem('userRole');
+    }
+  }, [isAuthenticated, user, token, userId, userName, userRole]);
 
-  const login = (userData, authToken, userIdValue, userNameValue) => {
+  const login = (userData, authToken, userIdValue, userNameValue, userRole) => {
     setIsAuthenticated(true);
     setUser(userData);
+    setUserRole(userRole)
     setUserId(userIdValue);
     setUserName(userNameValue);
     setToken(authToken);
@@ -77,11 +88,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user');
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userRole');
     localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, userId, userName ,token, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, userId, userRole ,userName ,token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

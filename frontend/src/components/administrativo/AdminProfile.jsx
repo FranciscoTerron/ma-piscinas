@@ -5,10 +5,10 @@ import {
   Text,
   Heading,
 } from '@chakra-ui/react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
-const Profile = () => {
-  const { userName } = useAuth();
+const AdminProfile = () => {
+  const { userName, userRole } = useAuth();
 
   return (
     <Box maxW="container.md" mx="auto" p={8}>
@@ -34,7 +34,7 @@ const Profile = () => {
                 fontWeight="bold" 
                 color="white"
               >
-                Bienvenido, {userName}
+                Bienvenido, {userName}, Tienes rol de: {userRole}
               </Text>
             </Box>
             
@@ -58,4 +58,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default AdminProfile;

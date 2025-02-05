@@ -6,12 +6,15 @@ from datetime import datetime, date
 class UsuarioBase(BaseModel):
     nombre: str = Field(..., example="Juan Pérez")
     email: EmailStr = Field(..., example="juan.perez@example.com")
+    telefono: int = Field(..., example=123456789)
+    direccion: str = Field(..., example="Calle Falsa 123")
 
 class UsuarioCreate(UsuarioBase):
     password: str = Field(..., min_length=8, example="password123")
-
+    
 class Usuario(UsuarioBase):
     id: int = Field(..., example=1)
+    fecha_creacion: datetime = Field(..., example="2023-10-01T12:00:00Z")
 
     class Config:
         from_attributes = True
@@ -23,4 +26,3 @@ class LoginRequest(BaseModel):
 class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
-

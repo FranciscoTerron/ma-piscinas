@@ -8,7 +8,7 @@ import jwt_decode from 'jwt-decode';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    email: '',
+    nombre: '',
     password: '',
   });
   const navigate = useNavigate();
@@ -19,20 +19,27 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(credentials.email, credentials.password);
+      const response = await login(credentials.nombre, credentials.password);
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
         const decodedToken = jwt_decode(response.data.access_token);
         const userId = decodedToken.user_id || decodedToken.sub;
         const userName = decodedToken.user_name || decodedToken.name;
+        const userRole = decodedToken.user_rol_id || decodedToken.rol;
         toast({
           title: 'Inicio de sesión exitoso',
           status: 'success',
           duration: 2000,
           isClosable: true,
         });
-        authLogin({ email: credentials.email }, response.data.access_token, userId, userName);
-        navigate(`/profile`);
+        authLogin({ nombre: credentials.nombre }, response.data.access_token, userId, userName, userRole);
+        
+        if (userRole === 'cliente'){
+          navigate(`/clienteProfile`);
+        } else {
+          navigate(`/adminProfile`);
+        }
+        
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -61,12 +68,12 @@ const Login = () => {
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <VStack spacing={4}>
             <FormControl isRequired>
-              <FormLabel color="#00008B">Email</FormLabel>
+              <FormLabel color="#00008B">Nombre</FormLabel>
               <Input
-                type="email"
-                value={credentials.email}
+                type="nombre"
+                value={credentials.nombre}
                 onChange={(e) =>
-                  setCredentials({ ...credentials, email: e.target.value })
+                  setCredentials({ ...credentials, nombre: e.target.value })
                 }
                 color="#000000"
                 borderColor="#00CED1"
