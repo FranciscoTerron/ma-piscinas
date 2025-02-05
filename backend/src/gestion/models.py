@@ -30,7 +30,7 @@ class EstadoPago(Enum):
     RECHAZADO = "rechazado"
 
 
-class MetodoPago(Enum):
+class MetodoPagoEnum(Enum):
     TARJETA = "tarjeta"
     TRANSFERENCIA = "transferencia"
     EFECTIVO = "efectivo"
@@ -91,25 +91,27 @@ class CarritoDetalle(BaseModel):
 
 class Producto(BaseModel):
     __tablename__ = "productos"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String, index=True)
     descripcion: Mapped[str] = mapped_column(String, index=True)
     precio: Mapped[float] = mapped_column(Float, index=True)
     stock: Mapped[int] = mapped_column(Integer, index=True)
     imagen: Mapped[str] = mapped_column(String, index=True)
-    
+
     carritoDetalle = relationship("CarritoDetalle", back_populates="producto")
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
-    categoria = relationship("CategoriaProducto", backref="categorias")
+    categoria = relationship("CategoriaProducto", back_populates="productos")
     pedidoDetalle = relationship("PedidoDetalle", back_populates="producto")
     
 class CategoriaProducto(BaseModel):
     __tablename__ = "categorias"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String, index=True)
     descripcion: Mapped[str] = mapped_column(String, index=True)
+
+    productos = relationship("Producto", back_populates="categoria")
 
 class Envio(BaseModel):
     __tablename__ = "envios"
@@ -139,6 +141,7 @@ class Pedido(BaseModel):
     
     envio = relationship("Envio", back_populates="pedido" )
     pago = relationship("Pago", back_populates="pedido" )
+    pedidoDetalle = relationship("PedidoDetalle", back_populates="pedido")
     
 class PedidoDetalle(BaseModel): 
     __tablename__ = "pedidodetalles"
@@ -157,27 +160,23 @@ class PedidoDetalle(BaseModel):
 
 class Pago(BaseModel):
     __tablename__ = "pagos"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
     monto: Mapped[float] = mapped_column(Float)
     estado: Mapped[EstadoPago] = mapped_column(SQLAlchemyEnum(EstadoPago), default=EstadoPago.PENDIENTE)
-    
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)  
-    pedido = relationship("Pedido", back_populates="pago")  # Relación bidireccional
-        
-    metodoPago_id = Column(Integer, ForeignKey("metodosPagos.id"), nullable=False)  
-    metodoPago = relationship("MetodoPago", back_populates="pago")  # Relación bidireccional
+
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)
+    pedido = relationship("Pedido", back_populates="pago")
+
+    metodoPago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=False)
+    metodoPago = relationship("MetodoPago", back_populates="pago")
     
 
 class MetodoPago(BaseModel):
-    __tablename__ = "metodosPagos"
-    
+    __tablename__ = "metodospagos"
+
     id = Column(Integer, primary_key=True, index=True)
-    estado: Mapped[MetodoPago] = mapped_column(SQLAlchemyEnum(MetodoPago), default=MetodoPago.TARJETA)
-    
+    tipo: Mapped[MetodoPagoEnum] = mapped_column(SQLAlchemyEnum(MetodoPagoEnum), default=MetodoPagoEnum.TARJETA)
 
-    
-
-
-
+    pago = relationship("Pago", back_populates="metodoPago")

@@ -88,12 +88,23 @@ const Register = () => {
               <FormLabel color="#00008B">Teléfono</FormLabel>
               <Input
                 type="tel"
-                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                value={formData.telefono}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (/^\d*$/.test(value)) { // Permite solo números enteros positivos
+                    setFormData({ ...formData, telefono: value });
+                  }
+                }}
                 borderColor="#00CED1"
                 color="#000000"
                 _hover={{ borderColor: "#4169E1" }}
                 _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
               />
+              {formData.telefono && !/^\d+$/.test(formData.telefono) && (
+                <Text color="red.500" fontSize="sm">
+                  Solo se permiten números enteros positivos.
+                </Text>
+              )}
             </FormControl>
             <FormControl isRequired>
               <FormLabel color="#00008B">Dirección</FormLabel>
@@ -114,6 +125,7 @@ const Register = () => {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   borderColor="#00CED1"
                   color="#000000"
+                  minLength={8}
                   _hover={{ borderColor: "#4169E1" }}
                   _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
                 />
