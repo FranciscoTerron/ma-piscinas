@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol
+from src.gestion.models import Usuario, Rol, CategoriaProducto
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -88,6 +88,68 @@ def eliminar_usuario(db: Session, usuario_id: int) -> None:
     db.delete(usuario)
     db.commit()
     
-# Servicio para listar todos los roles
-def listar_roles(db: Session) -> list[schemas.Rol]:
+# ROLES     
+# ----------------------------------------------------------------------------------------------
+def listar_roles(db: Session) -> list[schemas.ObtenerRol]:
     return db.query(Rol).all()
+
+def obtener_rol_por_id(db: Session, rol_id: int) -> Rol:
+    rol = db.query(Rol).filter(Rol.id == rol_id).first()
+    if not rol:
+        raise HTTPException(status_code=404, detail="Rol no encontrado")
+    return rol
+
+def actualizar_rol_usuario(db: Session, usuario_id: int, nuevo_rol_id: int):
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    rol = db.query(Rol).filter(Rol.id == nuevo_rol_id).first()
+    if not rol:
+        raise HTTPException(status_code=404, detail="Rol no encontrado")
+
+    usuario.rol_id = nuevo_rol_id
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
+
+
+#CATEGORIAS
+#------------------------------------------------------------------------------------------------
+# Crear una nueva categoría
+def crear_categoria(db: Session, categoria: schemas.CategoriaProductoBase) -> CategoriaProducto:
+    db_categoria = CategoriaProducto(
+        nombre=categoria.nombre,
+        descripcion=categoria.descripcion
+    )
+    db.add(db_categoria)
+    db.commit()
+    db.refresh(db_categoria)
+    return db_categoria
+
+# Listar todas las categorías
+def listar_categorias(db: Session):
+    return db.query(CategoriaProducto).all()
+
+# Obtener una categoría por ID
+def obtener_categoria_por_id(db: Session, categoria_id: int) -> CategoriaProducto:
+    categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return categoria
+
+# Actualizar una categoría existente
+def actualizar_categoria(db: Session, categoria_id: int, categoria_update: schemas.CategoriaProductoBase) -> CategoriaProducto:
+    categoria = obtener_categoria_por_id(db, categoria_id)
+    categoria.nombre = categoria_update.nombre
+    categoria.descripcion = categoria_update.descripcion
+    db.commit()
+    db.refresh(categoria)
+    return categoria
+
+# Eliminar una categoría
+def eliminar_categoria(db: Session, categoria_id: int):
+    categoria = obtener_categoria_por_id(db, categoria_id)
+    db.delete(categoria)
+    db.commit()

@@ -34,12 +34,25 @@ class MetodoPagoEnum(str, Enum):
     TRANSFERENCIA = "transferencia"
     EFECTIVO = "efectivo"
 
-# Schemas Rol
+# Esquema base para evitar repetir código
 class RolBase(BaseModel):
-    nombre: str
+    nombre: str = Field(..., min_length=3, example="administrador")
+    descripcion: Optional[str] = Field(None, example="Rol con acceso total")
 
-class Rol(RolBase):
+# Esquema para crear un rol (hereda de RolBase)
+class RolCreate(RolBase):
     pass
+
+# Esquema para actualizar un rol (todos los campos opcionales)
+class RolUpdate(BaseModel):
+    rol_id: int = Field(..., example=2)  # ID del nuevo rol a asignar
+
+# Esquema para devolver un rol en respuestas
+class ObtenerRol(RolBase):
+    id: int
+
+    class Config:
+        from_attributes = True  # Para mapear con SQLAlchemy
 
 # Schemas para Usuario
 class UsuarioBase(BaseModel):

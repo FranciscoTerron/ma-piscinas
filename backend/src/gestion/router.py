@@ -42,7 +42,55 @@ def eliminar_usuario(usuario_id: int, db: Session = Depends(get_db)):
     services.eliminar_usuario(db, usuario_id)
     return None
 
-# Ruta para roles
-@router.get("/roles", response_model=List[schemas.Rol])
+# Ruta para ROLES
+# -----------------------------------------------------------------------------------------
+@router.get("/roles", response_model=List[schemas.ObtenerRol])
 def listar_roles(db: Session = Depends(get_db)):
     return services.listar_roles(db)
+
+
+@router.get("/{rol_id}", response_model=schemas.ObtenerRol)
+def obtener_rol(rol_id: int, db: Session = Depends(get_db)):
+    """
+    Obtiene un rol específico por su ID.
+    """
+    rol = services.obtener_rol_por_id(db, rol_id)
+    if not rol:
+        raise HTTPException(status_code=404, detail="Rol no encontrado")
+    return rol
+
+@router.put("/{usuario_id}/rol", response_model=schemas.Usuario)
+def actualizar_rol_usuario(usuario_id: int, nuevo_rol: schemas.RolUpdate, db: Session = Depends(get_db)):
+    """
+    Actualiza el rol de un usuario específico.
+    """
+    return services.actualizar_rol_usuario(db, usuario_id, nuevo_rol.rol_id)
+
+
+# RUTAS PARA CATEGORIA
+#-------------------------------------------------------------------------------------------
+# Crear una nueva categoría
+@router.post("/crearCategoria", response_model=schemas.CategoriaProducto, status_code=status.HTTP_201_CREATED)
+def crear_categoria(categoria: schemas.CategoriaProductoBase, db: Session = Depends(get_db)):
+    return services.crear_categoria(db, categoria)
+
+# Obtener todas las categorías
+@router.get("/", response_model=list[schemas.CategoriaProducto])
+def listar_categorias(db: Session = Depends(get_db)):
+    return services.listar_categorias(db)
+
+# Obtener una categoría por ID
+@router.get("/{categoria_id}", response_model=schemas.CategoriaProducto)
+def obtener_categoria(categoria_id: int, db: Session = Depends(get_db)):
+    return services.obtener_categoria_por_id(db, categoria_id)
+
+# Actualizar una categoría
+@router.put("/{categoria_id}", response_model=schemas.CategoriaProducto)
+def actualizar_categoria(categoria_id: int, categoria_update: schemas.CategoriaProductoBase, db: Session = Depends(get_db)):
+    return services.actualizar_categoria(db, categoria_id, categoria_update)
+
+# Eliminar una categoría
+@router.delete("/{categoria_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_categoria(categoria_id: int, db: Session = Depends(get_db)):
+    services.eliminar_categoria(db, categoria_id)
+    return {"message": "Categoría eliminada correctamente"}

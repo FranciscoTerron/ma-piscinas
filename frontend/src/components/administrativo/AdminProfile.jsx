@@ -52,8 +52,8 @@ const AdminProfile = () => {
   ];
 
   return (
-    <Container maxW="container.xl" py={8}>
-      {/* Header Section */}
+    <Container maxW="container.xl" py={8} > 
+
       <HStack justify="space-between" mb={6}>
         <VStack align="flex-start" spacing={1}>
           <Text fontSize="3xl" fontWeight="bold" color="gray.800">Panel de Control</Text>
@@ -69,7 +69,6 @@ const AdminProfile = () => {
         </HStack>
       </HStack>
 
-      {/* Role Badge */}
       <Badge 
         colorScheme="blue" 
         fontSize="sm" 
@@ -81,7 +80,6 @@ const AdminProfile = () => {
         {userRole}
       </Badge>
 
-      {/* Main Grid */}
       <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6} mb={6}>
         {cards.map((card) => (
           <Box
@@ -91,15 +89,14 @@ const AdminProfile = () => {
             bg="white"
             p={6}
             borderRadius="lg"
-            boxShadow="sm"
+            boxShadow="md"
+            border="2px solid black" // Borde negro
             _hover={{ 
               transform: 'translateY(-2px)',
-              boxShadow: 'md',
-              borderColor: 'blue.200'
+              boxShadow: 'lg',
+              borderColor: 'blue.500'
             }}
             transition="all 0.2s"
-            border="1px solid"
-            borderColor="gray.100"
           >
             <HStack justify="space-between">
               <Icon 
@@ -111,7 +108,7 @@ const AdminProfile = () => {
                 bg="blue.50"
                 borderRadius="lg"
               />
-              <Icon as={FaChevronRight} w={5} h={5} color="gray.300" />
+              <Icon as={FaChevronRight} w={5} h={5} color="gray.400" />
             </HStack>
             <Text fontSize="xl" fontWeight="bold" mt={4} color="gray.800">{card.title}</Text>
             <Text color="gray.500" fontSize="sm" mt={2}>{card.description}</Text>
@@ -122,14 +119,13 @@ const AdminProfile = () => {
         ))}
       </Grid>
 
-      {/* Recent Activity */}
+      {/* Actividad Reciente */}
       <Box
         bg="white"
         borderRadius="lg"
-        boxShadow="sm"
+        boxShadow="md"
         p={6}
-        border="1px solid"
-        borderColor="gray.100"
+        border="2px solid black" // Borde negro
       >
         <Text fontSize="xl" fontWeight="bold" mb={4} color="gray.800">Actividad Reciente</Text>
         <VStack spacing={4} align="stretch">
@@ -138,11 +134,12 @@ const AdminProfile = () => {
               key={activity.id} 
               justify="space-between"
               p={3}
-              _hover={{ bg: 'gray.50' }}
+              border="1px solid black" // Borde negro en cada actividad
               borderRadius="md"
+              _hover={{ bg: 'gray.50' }}
             >
               <HStack spacing={3}>
-                <Icon as={AiOutlineClockCircle} color="gray.400" />
+                <Icon as={AiOutlineClockCircle} color="gray.500" />
                 <Text color="gray.700">{activity.text}</Text>
               </HStack>
               <Text fontSize="sm" color="gray.500">{activity.time}</Text>
