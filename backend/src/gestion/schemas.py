@@ -1,6 +1,38 @@
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List, Optional
 from datetime import datetime, date
+from enum import Enum
+
+
+# Estado de Carrito
+class EstadoCarritoEnum(str, Enum):
+    CONFIRMADO = "confirmado"
+    PENDIENTE = "pendiente"
+
+# Estado de Envío
+class EstadoEnvioEnum(str, Enum):
+    PREPARADO = "preparado"
+    EN_CAMINO = "en_camino"
+    ENTREGADO = "entregado"
+
+# Estado de Pedido
+class EstadoPedidoEnum(str, Enum):
+    PENDIENTE = "pendiente"
+    ENVIADO = "enviado"
+    ENTREGADO = "entregado"
+    CANCELADO = "cancelado"
+
+# Estado de Pago
+class EstadoPagoEnum(str, Enum):
+    PENDIENTE = "pendiente"
+    APROBADO = "aprobado"
+    RECHAZADO = "rechazado"
+
+# Método de Pago
+class MetodoPagoEnum(str, Enum):
+    TARJETA = "tarjeta"
+    TRANSFERENCIA = "transferencia"
+    EFECTIVO = "efectivo"
 
 # Schemas para Usuario
 class UsuarioBase(BaseModel):
@@ -26,3 +58,122 @@ class LoginRequest(BaseModel):
 class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
+    
+
+# Esquema de Producto
+class ProductoBase(BaseModel):
+    nombre: str = Field(..., example="Laptop Gamer")
+    descripcion: str = Field(..., example="Laptop con procesador i7 y 16GB RAM")
+    precio: float = Field(..., example=1200.50)
+    stock: int = Field(..., example=10)
+    imagen: str = Field(..., example="imagen_producto.jpg")
+
+class ProductoCreate(ProductoBase):
+    categoria_id: int = Field(..., example=1)
+
+class Producto(ProductoBase):
+    id: int = Field(..., example=1)
+    categoria_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Categoría de Producto
+class CategoriaProductoBase(BaseModel):
+    nombre: str = Field(..., example="Electrónica")
+    descripcion: str = Field(..., example="Productos electrónicos y gadgets")
+
+class CategoriaProducto(CategoriaProductoBase):
+    id: int = Field(..., example=1)
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Carrito
+class CarritoBase(BaseModel):
+    estado: EstadoCarritoEnum = Field(default=EstadoCarritoEnum.PENDIENTE)
+
+class Carrito(CarritoBase):
+    id: int
+    usuario_id: int
+    fecha_creacion: datetime
+
+    class Config:
+        from_attributes = True
+
+# Esquema de CarritoDetalle
+class CarritoDetalleBase(BaseModel):
+    cantidad: int = Field(..., example=2)
+    subtotal: float = Field(..., example=2400.99)
+
+class CarritoDetalle(CarritoDetalleBase):
+    id: int
+    carrito_id: int
+    producto_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Pedido
+class PedidoBase(BaseModel):
+    total: float = Field(..., example=5000.75)
+    estado: EstadoPedidoEnum = Field(default=EstadoPedidoEnum.PENDIENTE)
+
+class Pedido(PedidoBase):
+    id: int
+    usuario_id: int
+    fecha_creacion: datetime
+
+    class Config:
+        from_attributes = True
+
+# Esquema de PedidoDetalle
+class PedidoDetalleBase(BaseModel):
+    cantidad: int = Field(..., example=1)
+    subtotal: float = Field(..., example=1200.50)
+    precio_unitario: float = Field(..., example=1200.50)
+
+class PedidoDetalle(PedidoDetalleBase):
+    id: int
+    pedido_id: int
+    producto_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Envío
+class EnvioBase(BaseModel):
+    direccion: str = Field(..., example="Avenida Siempre Viva 123")
+    empresa: str = Field(..., example="DHL")
+    codigoSeguimiento: str = Field(..., example="ABC123XYZ")
+    estado: EstadoEnvioEnum = Field(default=EstadoEnvioEnum.PREPARADO)
+
+class Envio(EnvioBase):
+    id: int
+    pedido_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Pago
+class PagoBase(BaseModel):
+    monto: float = Field(..., example=5000.75)
+    estado: EstadoPagoEnum = Field(default=EstadoPagoEnum.PENDIENTE)
+
+class Pago(PagoBase):
+    id: int
+    pedido_id: int
+    metodoPago_id: int
+
+    class Config:
+        from_attributes = True
+
+# Esquema de Método de Pago
+class MetodoPagoBase(BaseModel):
+    estado: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
+
+class MetodoPago(MetodoPagoBase):
+    id: int
+
+    class Config:
+        from_attributes = True

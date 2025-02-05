@@ -1,11 +1,41 @@
 from typing import List, Optional
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Enum as SQLAlchemyEnum,DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, UTC
 from src.models import BaseModel
 from passlib.context import CryptContext
+from enum import Enum
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class EstadoCarrito(Enum):
+    CONFIRMADO = "confirmado"
+    PENDIENTE = "pendiente"
+
+class EstadoEnvio(Enum):
+    PREPARADO = "preparado"
+    EN_CAMINO = "en_camino"
+    ENTREGADO = "entregado"
+
+class EstadoPedido(Enum):
+    PENDIENTE = "pendiente"
+    ENVIADO = "enviado"
+    ENTREGADO = "entregado"
+    CANCELADO = "cancelado"
+    
+
+class EstadoPago(Enum):
+    PENDIENTE = "pendiente"
+    APROBADO = "aprobado"
+    RECHAZADO = "rechazado"
+
+
+class MetodoPago(Enum):
+    TARJETA = "tarjeta"
+    TRANSFERENCIA = "transferencia"
+    EFECTIVO = "efectivo"
+
+
 
 class Usuario(BaseModel):
     __tablename__ = "usuarios"
@@ -19,6 +49,8 @@ class Usuario(BaseModel):
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
     rol_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
     rol = relationship("Rol", backref="usuarios")
+    carrito = relationship("Carrito", back_populates="usuario")
+    pedido = relationship("Pedido", back_populates="usuario" )
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)
@@ -31,3 +63,121 @@ class Rol(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, index=True)
+    
+    
+class Carrito(BaseModel):
+    __tablename__ = "carritos"
+     
+    id = Column(Integer, primary_key=True, index=True)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    estado: Mapped[EstadoCarrito] = mapped_column(SQLAlchemyEnum(EstadoCarrito), default=EstadoCarrito.PENDIENTE)
+    
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)  # Clave foránea a Usuario
+    usuario = relationship("Usuario", back_populates="carrito")  # Relación bidireccional
+    carritoDetalle = relationship("CarritoDetalle", back_populates="carrito")
+    
+class CarritoDetalle(BaseModel): 
+    __tablename__ = "carritodetalles"
+        
+    id = Column(Integer, primary_key=True, index=True)
+    cantidad: Mapped[int] = mapped_column(Integer)
+    subtotal: Mapped[float] = mapped_column(Float)
+    
+    carrito_id = Column(Integer, ForeignKey("carritos.id"), nullable=False)  # Clave foránea a Usuario
+    carrito = relationship("Carrito", back_populates="carritoDetalle")  # Relación bidireccional
+  
+    producto_id = Column(Integer, ForeignKey("productos.id"), nullable=False)  # Clave foránea a Usuario
+    producto = relationship("Producto", back_populates="carritoDetalle")  # Relación bidireccional
+
+class Producto(BaseModel):
+    __tablename__ = "productos"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String, index=True)
+    descripcion: Mapped[str] = mapped_column(String, index=True)
+    precio: Mapped[float] = mapped_column(Float, index=True)
+    stock: Mapped[int] = mapped_column(Integer, index=True)
+    imagen: Mapped[str] = mapped_column(String, index=True)
+    
+    carritoDetalle = relationship("CarritoDetalle", back_populates="producto")
+    categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
+    categoria = relationship("CategoriaProducto", backref="categorias")
+    pedidoDetalle = relationship("PedidoDetalle", back_populates="producto")
+    
+class CategoriaProducto(BaseModel):
+    __tablename__ = "categorias"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String, index=True)
+    descripcion: Mapped[str] = mapped_column(String, index=True)
+
+class Envio(BaseModel):
+    __tablename__ = "envios"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    direccion: Mapped[str] = mapped_column(String, index=True)
+    empresa: Mapped[str] = mapped_column(String, index=True)
+    codigoSeguimiento: Mapped[str] = mapped_column(String, index=True)
+    estado: Mapped[EstadoEnvio] = mapped_column(SQLAlchemyEnum(EstadoEnvio), default=EstadoEnvio.PREPARADO)
+    
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)  
+    pedido = relationship("Pedido", back_populates="envio")  # Relación bidireccional
+    
+
+    
+    
+class Pedido(BaseModel):
+    __tablename__ = "pedidos"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    total: Mapped[float] = mapped_column(Float)
+    estado: Mapped[EstadoPedido] = mapped_column(SQLAlchemyEnum(EstadoPedido), default=EstadoPedido.PENDIENTE)
+    
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)  # Clave foránea a Usuario
+    usuario = relationship("Usuario", back_populates="pedido")  # Relación bidireccional
+    
+    envio = relationship("Envio", back_populates="pedido" )
+    pago = relationship("Pago", back_populates="pedido" )
+    
+class PedidoDetalle(BaseModel): 
+    __tablename__ = "pedidodetalles"
+        
+    id = Column(Integer, primary_key=True, index=True)
+    cantidad: Mapped[int] = mapped_column(Integer)
+    subtotal: Mapped[float] = mapped_column(Float)
+    precio_unitario: Mapped[float] = mapped_column(Float)
+    
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)  # Clave foránea a Usuario
+    pedido = relationship("Pedido", back_populates="pedidoDetalle")  # Relación bidireccional
+  
+    producto_id = Column(Integer, ForeignKey("productos.id"), nullable=False)  # Clave foránea a Usuario
+    producto = relationship("Producto", back_populates="pedidoDetalle")  # Relación bidireccional
+
+
+class Pago(BaseModel):
+    __tablename__ = "pagos"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    monto: Mapped[float] = mapped_column(Float)
+    estado: Mapped[EstadoPago] = mapped_column(SQLAlchemyEnum(EstadoPago), default=EstadoPago.PENDIENTE)
+    
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)  
+    pedido = relationship("Pedido", back_populates="pago")  # Relación bidireccional
+        
+    metodoPago_id = Column(Integer, ForeignKey("metodosPagos.id"), nullable=False)  
+    metodoPago = relationship("MetodoPago", back_populates="pago")  # Relación bidireccional
+    
+
+class MetodoPago(BaseModel):
+    __tablename__ = "metodosPagos"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    estado: Mapped[MetodoPago] = mapped_column(SQLAlchemyEnum(MetodoPago), default=MetodoPago.TARJETA)
+    
+
+    
+
+
+
