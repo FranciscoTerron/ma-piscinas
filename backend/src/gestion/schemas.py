@@ -34,6 +34,13 @@ class MetodoPagoEnum(str, Enum):
     TRANSFERENCIA = "transferencia"
     EFECTIVO = "efectivo"
 
+# Schemas Rol
+class RolBase(BaseModel):
+    nombre: str
+
+class Rol(RolBase):
+    pass
+
 # Schemas para Usuario
 class UsuarioBase(BaseModel):
     nombre: str = Field(..., example="Juan Pérez")
@@ -54,11 +61,19 @@ class Usuario(UsuarioBase):
 class LoginRequest(BaseModel):
     email: str = Field(..., example="juan.perez@example.com")
     password: str = Field(..., example="password123")
+    
+class UsuarioUpdate(BaseModel):
+    nombre: str | None = None
+    email: EmailStr | None = None
+    telefono: int | None = None
+    direccion: str | None = None
+
+class UsuarioUpdatePassword(BaseModel):
+    nueva_contrasena: str = Field(..., min_length=8, example="nueva_password123")
 
 class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
-    
 
 # Esquema de Producto
 class ProductoBase(BaseModel):

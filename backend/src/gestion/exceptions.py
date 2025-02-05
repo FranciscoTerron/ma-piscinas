@@ -17,3 +17,5 @@ class EmailNoRegistrado(NotFound):
 class CredencialesIncorrectas(PermissionDenied):
     DETAIL = ErrorCode.CREDENCIALES_INCORRECTAS
 
+class RolNoEncontrado(NotFound):
+    DETAIL = ErrorCode.ROL_NO_ENCONTRADO

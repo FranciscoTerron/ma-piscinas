@@ -54,3 +54,40 @@ def autenticar_usuario(db: Session, nombre: str, password: str):
         data={"sub": str(user.id), "email": user.email, "name": user.nombre, "rol": rol.nombre}, expires_delta=access_token_expires
     )
     return access_token
+
+def listar_usuarios(db: Session) -> list[schemas.Usuario]:
+    return db.query(Usuario).all()
+
+def obtener_usuario_por_id(db: Session, usuario_id: int) -> Usuario:
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise exceptions.UsuarioNoEncontrado()
+    return usuario
+
+def actualizar_datos_personales(
+    db: Session, usuario_id: int, datos_actualizados: schemas.UsuarioBase
+) -> Usuario:
+    usuario = obtener_usuario_por_id(db, usuario_id)
+    for key, value in datos_actualizados.dict().items():
+        setattr(usuario, key, value)
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
+def actualizar_contrasena(
+    db: Session, usuario_id: int, nueva_contrasena: str
+) -> Usuario:
+    usuario = obtener_usuario_por_id(db, usuario_id)
+    usuario.set_password(nueva_contrasena)
+    db.commit()
+    db.refresh(usuario)
+    return usuario
+
+def eliminar_usuario(db: Session, usuario_id: int) -> None:
+    usuario = obtener_usuario_por_id(db, usuario_id)
+    db.delete(usuario)
+    db.commit()
+    
+# Servicio para listar todos los roles
+def listar_roles(db: Session) -> list[schemas.Rol]:
+    return db.query(Rol).all()
