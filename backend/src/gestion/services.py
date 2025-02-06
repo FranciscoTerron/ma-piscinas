@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -152,4 +152,53 @@ def actualizar_categoria(db: Session, categoria_id: int, categoria_update: schem
 def eliminar_categoria(db: Session, categoria_id: int):
     categoria = obtener_categoria_por_id(db, categoria_id)
     db.delete(categoria)
+    db.commit()
+
+
+#PRODUCTOS
+#------------------------------------------------------------------------------------------------
+# Crear un nuevo producto
+def crear_producto(db: Session, producto: schemas.ProductoCreate) -> Producto:
+    # Verificar si la categoría existe
+    categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == producto.categoria_id).first()
+    if not categoria:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
+
+    db_producto = Producto(
+        nombre=producto.nombre,
+        descripcion=producto.descripcion,
+        precio=producto.precio,
+        stock=producto.stock,
+        imagen=producto.imagen,
+        categoria_id=producto.categoria_id
+    )
+    db.add(db_producto)
+    db.commit()
+    db.refresh(db_producto)
+    return db_producto
+
+# Listar todos los productos
+def listar_productos(db: Session) -> list[schemas.Producto]:
+    return db.query(Producto).all()
+
+# Obtener un producto por ID
+def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
+    producto = db.query(Producto).filter(Producto.id == producto_id).first()
+    if not producto:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
+    return producto
+
+# Actualizar un producto
+def actualizar_producto(db: Session, producto_id: int, producto_update: schemas.ProductoBase) -> Producto:
+    producto = obtener_producto_por_id(db, producto_id)
+    for key, value in producto_update.dict().items():
+        setattr(producto, key, value)
+    db.commit()
+    db.refresh(producto)
+    return producto
+
+# Eliminar un producto
+def eliminar_producto(db: Session, producto_id: int):
+    producto = obtener_producto_por_id(db, producto_id)
+    db.delete(producto)
     db.commit()

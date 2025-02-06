@@ -88,7 +88,7 @@ class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
 
-# Esquema de Producto
+# Esquema base para Producto
 class ProductoBase(BaseModel):
     nombre: str = Field(..., example="Laptop Gamer")
     descripcion: str = Field(..., example="Laptop con procesador i7 y 16GB RAM")
@@ -96,9 +96,11 @@ class ProductoBase(BaseModel):
     stock: int = Field(..., example=10)
     imagen: str = Field(..., example="imagen_producto.jpg")
 
+# Esquema para crear un producto
 class ProductoCreate(ProductoBase):
     categoria_id: int = Field(..., example=1)
 
+# Esquema para devolver un producto
 class Producto(ProductoBase):
     id: int = Field(..., example=1)
     categoria_id: int
