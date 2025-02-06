@@ -185,6 +185,9 @@ class Envio(EnvioBase):
     class Config:
         from_attributes = True
 
+class EnvioCreate(EnvioBase):
+    envio_id: int = Field(..., example=1)
+
 # Esquema de Pago
 class PagoBase(BaseModel):
     monto: float = Field(..., example=5000.75)

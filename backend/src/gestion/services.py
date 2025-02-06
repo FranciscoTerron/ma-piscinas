@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -202,3 +202,71 @@ def eliminar_producto(db: Session, producto_id: int):
     producto = obtener_producto_por_id(db, producto_id)
     db.delete(producto)
     db.commit()
+    
+   
+#ENVIO
+#---------------------------------------------------------------------------------------------------------
+#Crear un envio
+ 
+def crear_envio(db: Session,  envio: schemas.EnvioCreate) -> Envio:
+    nuevo_envio = Envio(**envio.dict())
+    db.add(nuevo_envio)
+    db.commit()
+    db.refresh(nuevo_envio)
+    return nuevo_envio
+
+#Listar envios
+def listar_envios(db: Session) -> List[Envio]:
+    return db.query(Envio).all()
+
+#Obtener envios por id
+def obtener_envio_por_id(db: Session, envio_id: int) -> Envio:
+    envio = db.query(Envio).filter(Envio.id == envio_id).first()
+    if not envio:
+        raise HTTPException(status_code=404, detail="Envío no encontrado")
+    return envio
+
+#Actualizar envios
+def actualizar_envio(db: Session, envio_id: int, envio_update: schemas.EnvioBase) -> Envio:
+    envio = obtener_envio_por_id(db, envio_id)
+    for key, value in envio_update.dict(exclude_unset=True).items():
+        setattr(envio, key, value)
+    db.commit()
+    db.refresh(envio)
+    return envio
+
+#Eliminar envios
+def eliminar_envio(db: Session, envio_id: int) -> None:
+    envio = obtener_envio_por_id(db, envio_id)
+    db.delete(envio)
+    db.commit()
+    
+#PAGO
+#-------------------------------------------------------------------------------------
+#Crear Pago
+def crear_pago(db: Session, pago: schemas.PagoBase):
+    nuevo_pago = Pago(**pago.dict())
+    db.add(nuevo_pago)
+    db.commit()
+    db.refresh(nuevo_pago)
+    return nuevo_pago
+
+#Listar Pago
+def listar_pagos(db: Session):
+    return db.query(schemas.Pago).all()
+
+#Obtener Pago
+def obtener_pago(db: Session, pago_id: int):
+    pago = db.query(Pago).filter(Pago.id == pago_id).first()
+    if not pago:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pago no encontrado")
+    return pago
+
+#Eliminar Pago
+def eliminar_pago(db: Session, pago_id: int):
+    pago = obtener_pago(db, pago_id)
+    if not pago:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pago no encontrado")
+    db.delete(pago)
+    db.commit()
+    return None

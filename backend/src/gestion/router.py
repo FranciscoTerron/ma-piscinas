@@ -122,3 +122,57 @@ def actualizar_producto(
 def eliminar_producto(producto_id: int, db: Session = Depends(get_db)):
     services.eliminar_producto(db, producto_id)
     return None
+
+
+# RUTAS PARA ENVIO
+#-----------------------------------------------------------------------------------------------------
+#Crear Envio
+@router.post("/envios", response_model=schemas.Envio, status_code=status.HTTP_201_CREATED)
+def crear_envio(envio: schemas.EnvioCreate, db: Session = Depends(get_db)):
+    return services.crear_envio(db, envio)
+
+#Listar Envio
+@router.get("/envios", response_model=List[schemas.Envio])
+def listar_envios(db: Session = Depends(get_db)):
+    return services.listar_envios(db)
+
+#Obtener Envio
+@router.get("/envios/{envio_id}", response_model=schemas.Envio)
+def obtener_envio(envio_id: int, db: Session = Depends(get_db)):
+    return services.obtener_envio_por_id(db, envio_id)
+
+#Actualizar Envio
+@router.put("/envios/{envio_id}", response_model=schemas.Envio)
+def actualizar_envio(envio_id: int, envio_update: schemas.EnvioBase, db: Session = Depends(get_db)):
+    return services.actualizar_envio(db, envio_id, envio_update)
+
+#Eliminar Envio
+@router.delete("/envios/{envio_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_envio(envio_id: int, db: Session = Depends(get_db)):
+    services.eliminar_envio(db, envio_id)
+    return None
+
+#PAGO
+#-----------------------------------------------------------------------------
+# Rutas para Pagos
+# Crear pago
+@router.post("/pagos", response_model=schemas.Pago, status_code=status.HTTP_201_CREATED)
+def crear_pago(pago: schemas.PagoBase, db: Session = Depends(get_db)):
+    return services.crear_pago(db, pago)
+
+# Listar pagos
+@router.get("/pagos", response_model=List[schemas.Pago])
+def listar_pagos(db: Session = Depends(get_db)):
+    return services.listar_pagos(db)
+
+# Obtener pago
+@router.get("/pagos/{pago_id}", response_model=schemas.Pago)
+def obtener_pago(pago_id: int, db: Session = Depends(get_db)):
+    return services.obtener_pago(db, pago_id)
+
+# Eliminar pago
+@router.delete("/pagos/{pago_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_pago(pago_id: int, db: Session = Depends(get_db)):
+    services.eliminar_pago(db, pago_id)
+    return None
+
