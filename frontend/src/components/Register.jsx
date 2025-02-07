@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
+  Text,
   Button,
   FormControl,
   FormLabel,
@@ -20,9 +21,9 @@ const Register = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
-    password: '',
     telefono: '',
     direccion: '',
+    password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();

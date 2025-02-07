@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -22,9 +22,29 @@ import {
   AiFillProduct,
   AiOutlineClockCircle 
 } from "react-icons/ai";
-
+import { listarUsuarios } from "../../services/api";
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
+  const [usuarios, setUsuarios] = useState([]);
+
+  useEffect(() => {
+    cargarUsuarios();
+  }, []);
+
+  const cargarUsuarios = async () => {
+    try {
+      const data = await listarUsuarios();
+      setUsuarios(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de usuarios.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   const cards = [
     { 
@@ -33,7 +53,7 @@ const AdminProfile = () => {
       description: 'Administrar usuarios, roles y permisos',
       route: '/gestionUsuarios', 
       icon: FaUsersCog,
-      stats: '24 usuarios activos'
+      stats: `${usuarios.length} usuarios activos`
     },
     { 
       id: 'product', 

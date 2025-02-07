@@ -35,9 +35,9 @@ const Login = () => {
         authLogin({ nombre: credentials.nombre }, response.data.access_token, userId, userName, userRole);
         
         if (userRole === 'cliente'){
-          navigate(`/clienteProfile`);
+          navigate(`/perfil`);
         } else {
-          navigate(`/adminProfile`);
+          navigate(`/panelAdministrativo`);
         }
         
       }

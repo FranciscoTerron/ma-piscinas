@@ -17,7 +17,6 @@ def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
     db_usuario = db.query(Usuario).filter(Usuario.email == usuario.email).first()
     if db_usuario:
         raise exceptions.EmailYaRegistrado()
-    
     rol_cliente = db.query(Rol).filter(Rol.nombre == "cliente").first()
     if not rol_cliente:
         raise HTTPException(
@@ -55,7 +54,7 @@ def autenticar_usuario(db: Session, nombre: str, password: str):
     )
     return access_token
 
-def listar_usuarios(db: Session) -> list[schemas.Usuario]:
+def listar_usuarios(db: Session) -> list[schemas.UsuarioRespuesta]:
     return db.query(Usuario).all()
 
 def obtener_usuario_por_id(db: Session, usuario_id: int) -> Usuario:
@@ -100,6 +99,9 @@ def obtener_rol_por_id(db: Session, rol_id: int) -> Rol:
     return rol
 
 def actualizar_rol_usuario(db: Session, usuario_id: int, nuevo_rol_id: int):
+    """
+    Actualiza el rol de un usuario en la base de datos.
+    """
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -107,7 +109,7 @@ def actualizar_rol_usuario(db: Session, usuario_id: int, nuevo_rol_id: int):
     rol = db.query(Rol).filter(Rol.id == nuevo_rol_id).first()
     if not rol:
         raise HTTPException(status_code=404, detail="Rol no encontrado")
-
+    
     usuario.rol_id = nuevo_rol_id
     db.commit()
     db.refresh(usuario)

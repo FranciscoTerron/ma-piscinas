@@ -47,7 +47,7 @@ class Usuario(BaseModel):
     telefono: Mapped[int] = mapped_column(Integer)
     direccion: Mapped[str] = mapped_column(String)
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
-    rol_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
+    rol_id = Column(Integer, ForeignKey("roles.id"))
     rol = relationship("Rol", backref="usuarios")
     carrito = relationship("Carrito", back_populates="usuario")
     pedido = relationship("Pedido", back_populates="usuario" )
@@ -64,6 +64,7 @@ class Rol(BaseModel):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, index=True)
     
+    usuario = relationship("Usuario", back_populates="rol")
     
 class Carrito(BaseModel):
     __tablename__ = "carritos"
