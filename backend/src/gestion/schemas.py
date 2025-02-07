@@ -4,65 +4,96 @@ from datetime import datetime, date
 from enum import Enum
 
 
-# Estado de Carrito
+# ============================================================
+# Estado Carrito
+# ============================================================
 class EstadoCarritoEnum(str, Enum):
     CONFIRMADO = "confirmado"
     PENDIENTE = "pendiente"
 
-# Estado de Envío
+# ============================================================
+# Estado De Envio
+# ============================================================
 class EstadoEnvioEnum(str, Enum):
     PREPARADO = "preparado"
     EN_CAMINO = "en_camino"
     ENTREGADO = "entregado"
 
-# Estado de Pedido
+# ============================================================
+# Estado pedido
+# ============================================================
 class EstadoPedidoEnum(str, Enum):
     PENDIENTE = "pendiente"
     ENVIADO = "enviado"
     ENTREGADO = "entregado"
     CANCELADO = "cancelado"
 
-# Estado de Pago
+# ============================================================
+# Estado para pago
+# ============================================================
 class EstadoPagoEnum(str, Enum):
     PENDIENTE = "pendiente"
     APROBADO = "aprobado"
     RECHAZADO = "rechazado"
 
-# Método de Pago
+# ============================================================
+# Metodo de pago
+# ============================================================
 class MetodoPagoEnum(str, Enum):
     TARJETA = "tarjeta"
     TRANSFERENCIA = "transferencia"
     EFECTIVO = "efectivo"
 
-# Esquema base para evitar repetir código
+# ============================================================
+# Esquema base para evitar repetir codigo
+# ============================================================
+
+# ROL 
+#--------------------------------------------------------------------------
+
 class RolBase(BaseModel):
     nombre: str = Field(..., min_length=3, example="administrador")
     descripcion: Optional[str] = Field(None, example="Rol con acceso total")
 
+# ============================================================
 # Esquema para crear un rol (hereda de RolBase)
+# ============================================================
 class RolCreate(RolBase):
     pass
 
+# ============================================================
 # Esquema para actualizar un rol (todos los campos opcionales)
+# ============================================================
 class RolUpdate(BaseModel):
     rol_id: int = Field(..., example=2)  # ID del nuevo rol a asignar
 
-# Esquema para devolver un rol en respuestas
+# ============================================================
+# Esquema para devolver rol
+# ============================================================
 class ObtenerRol(RolBase):
     id: int
 
     class Config:
         from_attributes = True  # Para mapear con SQLAlchemy
 
-# Schemas para Usuario
+#USUARIO
+
+#---------------------------------------------------------------------------------
+# ============================================================
+# Esquema usuario
+# ============================================================
 class UsuarioBase(BaseModel):
     nombre: str = Field(..., example="Juan Pérez")
     email: EmailStr = Field(..., example="juan.perez@example.com")
     telefono: int = Field(..., example=123456789)
     direccion: str = Field(..., example="Calle Falsa 123")
 
+# ============================================================
+# Esquema para crear un usuario 
+# ============================================================
 class UsuarioCreate(UsuarioBase):
     password: str = Field(..., min_length=8, example="password123")
+
     
 class Usuario(UsuarioBase):
     id: int = Field(..., example=1)
@@ -75,12 +106,18 @@ class LoginRequest(BaseModel):
     email: str = Field(..., example="juan.perez@example.com")
     password: str = Field(..., example="password123")
     
+# ============================================================
+# Esquema para actualizar un usuario 
+# ============================================================
 class UsuarioUpdate(BaseModel):
     nombre: str | None = None
     email: EmailStr | None = None
     telefono: int | None = None
     direccion: str | None = None
-
+    
+# ============================================================
+# Esquema para actualizar contraseña
+# ============================================================
 class UsuarioUpdatePassword(BaseModel):
     nueva_contrasena: str = Field(..., min_length=8, example="nueva_password123")
 
@@ -88,7 +125,12 @@ class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
 
+#PRODUCTO
+#----------------------------------------------------------------------------------------------------
+
+# ============================================================
 # Esquema base para Producto
+# ============================================================
 class ProductoBase(BaseModel):
     nombre: str = Field(..., example="Laptop Gamer")
     descripcion: str = Field(..., example="Laptop con procesador i7 y 16GB RAM")
@@ -96,11 +138,15 @@ class ProductoBase(BaseModel):
     stock: int = Field(..., example=10)
     imagen: str = Field(..., example="imagen_producto.jpg")
 
+# ============================================================
 # Esquema para crear un producto
+# ============================================================
 class ProductoCreate(ProductoBase):
     categoria_id: int = Field(..., example=1)
 
-# Esquema para devolver un producto
+# ============================================================
+# Esquema para producto base
+# ============================================================
 class Producto(ProductoBase):
     id: int = Field(..., example=1)
     categoria_id: int
@@ -108,20 +154,31 @@ class Producto(ProductoBase):
     class Config:
         from_attributes = True
 
-# Esquema de Categoría de Producto
+#Categoria
+#-------------------------------------------------------------------------------------
+# ============================================================
+# Esquema para Categoria Base
+# ============================================================
 class CategoriaProductoBase(BaseModel):
     nombre: str = Field(..., example="Electrónica")
     descripcion: str = Field(..., example="Productos electrónicos y gadgets")
 
+# ============================================================
+# Esquema para crear Categoria
+# ============================================================
 class CategoriaProducto(CategoriaProductoBase):
     id: int = Field(..., example=1)
 
     class Config:
         from_attributes = True
 
-# Esquema de Carrito
+#Carrito
+#--------------------------------------------------------------------------------
+
+# Esquema de Carrito Base
 class CarritoBase(BaseModel):
     estado: EstadoCarritoEnum = Field(default=EstadoCarritoEnum.PENDIENTE)
+
 
 class Carrito(CarritoBase):
     id: int
@@ -130,6 +187,9 @@ class Carrito(CarritoBase):
 
     class Config:
         from_attributes = True
+
+#CarritoDetalle
+#------------------------------------------------------------------------------------------
 
 # Esquema de CarritoDetalle
 class CarritoDetalleBase(BaseModel):
@@ -144,10 +204,17 @@ class CarritoDetalle(CarritoDetalleBase):
     class Config:
         from_attributes = True
 
-# Esquema de Pedido
+# Pedido
+#------------------------------------------------------------------------------------------
+# ============================================================
+# Esquema para Pedido BASE
+# ============================================================
 class PedidoBase(BaseModel):
     total: float = Field(..., example=5000.75)
     estado: EstadoPedidoEnum = Field(default=EstadoPedidoEnum.PENDIENTE)
+
+class PedidoEstadoUpdate(PedidoBase):
+    estado: EstadoPedidoEnum
 
 class Pedido(PedidoBase):
     id: int
@@ -156,13 +223,46 @@ class Pedido(PedidoBase):
 
     class Config:
         from_attributes = True
-
-# Esquema de PedidoDetalle
+        
+# ============================================================
+# Esquema para crear un pedido
+# ============================================================
+class PedidoCreate(PedidoBase):
+    usuario_id: int = Field(..., example=1)
+    
+# ============================================================
+# Esquema para actualizar pedido
+# ============================================================    
+class PedidoUpdate(BaseModel):
+    total: Optional[float] = Field(None, example=5000.75)
+    estado: Optional[EstadoPedidoEnum] = Field(None, example="enviado")
+    
+    
+# Detalle pedido
+#-------------------------------------------------------------------------------------    
+    
+    
+# ============================================================
+# Esquema para Detalle Pedido BASE
+# ============================================================        
 class PedidoDetalleBase(BaseModel):
     cantidad: int = Field(..., example=1)
     subtotal: float = Field(..., example=1200.50)
     precio_unitario: float = Field(..., example=1200.50)
 
+    
+# ============================================================
+# Esquema para crear un detalle de pedido, que incluye las FK necesarias
+# ============================================================    
+
+class PedidoDetalleCreate(PedidoDetalleBase):
+    pedido_id: int = Field(..., example=1)
+    producto_id: int = Field(..., example=2)
+
+    
+# ============================================================
+# Esquema para respuestas (incluye los IDs)
+# ============================================================    
 class PedidoDetalle(PedidoDetalleBase):
     id: int
     pedido_id: int
@@ -171,7 +271,11 @@ class PedidoDetalle(PedidoDetalleBase):
     class Config:
         from_attributes = True
 
-# Esquema de Envío
+# ENVIO
+#---------------------------------------------------------------------------------
+# ============================================================
+# Esquema para envio BASE 
+# ============================================================
 class EnvioBase(BaseModel):
     direccion: str = Field(..., example="Avenida Siempre Viva 123")
     empresa: str = Field(..., example="DHL")
@@ -185,10 +289,18 @@ class Envio(EnvioBase):
     class Config:
         from_attributes = True
 
+# ============================================================
+# Esquema para crear un envio
+# ============================================================
 class EnvioCreate(EnvioBase):
     envio_id: int = Field(..., example=1)
 
-# Esquema de Pago
+#PAGO
+#--------------------------------------------------------------------------------------------
+# ============================================================
+# Esquema pago BASE
+# ============================================================
+
 class PagoBase(BaseModel):
     monto: float = Field(..., example=5000.75)
     estado: EstadoPagoEnum = Field(default=EstadoPagoEnum.PENDIENTE)
@@ -201,7 +313,13 @@ class Pago(PagoBase):
     class Config:
         from_attributes = True
 
-# Esquema de Método de Pago
+#METODO PAGO
+#-----------------------------------------------------------------------------------------
+
+# ============================================================
+# Esquema para Metodo Pago BASE
+# ============================================================
+
 class MetodoPagoBase(BaseModel):
     estado: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
 

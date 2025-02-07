@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -270,3 +270,202 @@ def eliminar_pago(db: Session, pago_id: int):
     db.delete(pago)
     db.commit()
     return None
+
+
+#PEDIDO
+#--------------------------------------------------------------------------------------
+# Crear Pedido
+
+def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
+    """
+    Crea y guarda un nuevo pedido en la base de datos.
+    """
+    # Se asume que los campos `fecha_creacion` y `estado` se configuran automáticamente
+    nuevo_pedido = Pedido(
+        total=pedido.total,
+        usuario_id=pedido.usuario_id
+    )
+    db.add(nuevo_pedido)
+    db.commit()
+    db.refresh(nuevo_pedido)
+    return nuevo_pedido
+
+#Listar pedidos
+
+def listar_pedidos(db: Session):
+    """
+    Retorna una lista con todos los pedidos existentes.
+    """
+    return db.query(Pedido).all()
+
+#Obtener pedido por ID
+
+def obtener_pedido_por_id(db: Session, pedido_id: int) -> Pedido:
+    """
+    Busca un pedido por su ID. Si no se encuentra, lanza una excepción HTTP 404.
+    """
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+    if not pedido:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    return pedido
+
+#Actualizar pedido
+
+def actualizar_pedido(db: Session, pedido_id: int, pedido_update: schemas.PedidoUpdate) -> Pedido:
+    """
+    Actualiza los datos de un pedido existente.
+    """
+    pedido = obtener_pedido_por_id(db, pedido_id)
+    # Se actualizan únicamente los campos enviados en la solicitud
+    update_data = pedido_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(pedido, key, value)
+    db.commit()
+    db.refresh(pedido)
+    return pedido
+
+#Eliminar pedido
+
+def eliminar_pedido(db: Session, pedido_id: int) -> None:
+    """
+    Elimina un pedido de la base de datos.
+    """
+    pedido = obtener_pedido_por_id(db, pedido_id)
+    db.delete(pedido)
+    db.commit()
+    
+#Obtener pedidos de un usuario
+
+def obtener_pedidos_por_usuario(db: Session, usuario_id: int):
+    """
+    Retorna todos los pedidos asociados a un usuario.
+    """
+    return db.query(Pedido).filter(Pedido.usuario_id == usuario_id).all()
+
+#Actualizar el estado de un pedido
+
+def actualizar_estado_pedido(db: Session, pedido_id: int, nuevo_estado: schemas.EstadoPedidoEnum) -> Pedido:
+    """
+    Actualiza únicamente el estado de un pedido.
+    """
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+    if not pedido:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    
+    pedido.estado = nuevo_estado
+    db.commit()
+    db.refresh(pedido)
+    return pedido
+
+# Cancelar pedido
+
+def cancelar_pedido(db: Session, pedido_id: int) -> Pedido:
+    """
+    Cambia el estado de un pedido a 'cancelado'.
+    """
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+    if not pedido:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+    
+    # Se pueden agregar reglas adicionales, por ejemplo:
+    # if pedido.estado != schemas.EstadoPedidoEnum.PENDIENTE:
+    #     raise HTTPException(status_code=400, detail="Solo se pueden cancelar pedidos pendientes")
+    
+    pedido.estado = schemas.EstadoPedidoEnum.CANCELADO
+    db.commit()
+    db.refresh(pedido)
+    return pedido
+    
+
+#DETALLE PEDIDO
+#--------------------------------------------------------------------------------------
+# Crear detalle de pedido
+def crear_pedido_detalle(db: Session, detalle: schemas.PedidoDetalleCreate) -> PedidoDetalle:
+    """
+    Crea y guarda un nuevo detalle de pedido en la base de datos.
+    """
+    nuevo_detalle = PedidoDetalle(
+        cantidad=detalle.cantidad,
+        subtotal=detalle.subtotal,
+        precio_unitario=detalle.precio_unitario,
+        pedido_id=detalle.pedido_id,
+        producto_id=detalle.producto_id
+    )
+    db.add(nuevo_detalle)
+    db.commit()
+    db.refresh(nuevo_detalle)
+    return nuevo_detalle
+
+# Listar detalles 
+
+def listar_pedido_detalles(db: Session):
+    """
+    Retorna una lista con todos los detalles de pedido existentes.
+    """
+    return db.query(PedidoDetalle).all()
+
+# Obtener detalle pedido por ID
+
+def obtener_pedido_detalle_por_id(db: Session, detalle_id: int) -> PedidoDetalle:
+    """
+    Retorna el detalle de pedido correspondiente al ID proporcionado.
+    Si no se encuentra, lanza una excepción HTTP 404.
+    """
+    detalle = db.query(PedidoDetalle).filter(PedidoDetalle.id == detalle_id).first()
+    if not detalle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Detalle de pedido no encontrado")
+    return detalle
+
+# Actualizar detalle del pedido
+
+def actualizar_pedido_detalle(db: Session, detalle_id: int, detalle_update: schemas.PedidoDetalleBase) -> PedidoDetalle:
+    """
+    Actualiza los datos de un detalle de pedido existente.
+    Solo actualiza los campos enviados en la solicitud.
+    """
+    detalle = obtener_pedido_detalle_por_id(db, detalle_id)
+    update_data = detalle_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(detalle, key, value)
+    db.commit()
+    db.refresh(detalle)
+    return detalle
+
+# Eliminar detalle del pedido
+
+def eliminar_pedido_detalle(db: Session, detalle_id: int) -> None:
+    """
+    Elimina el detalle de pedido de la base de datos.
+    """
+    detalle = obtener_pedido_detalle_por_id(db, detalle_id)
+    db.delete(detalle)
+    db.commit()
+    
+# Obtener detalles de un pedido
+
+def obtener_detalles_por_pedido(db: Session, pedido_id: int):
+    """
+    Retorna todos los detalles asociados a un pedido específico.
+    """
+    detalles = db.query(PedidoDetalle).filter(PedidoDetalle.pedido_id == pedido_id).all()
+    if not detalles:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No se encontraron detalles para este pedido")
+    return detalles
+
+# Agregar detalles a un pedido
+
+def agregar_detalle_a_pedido(db: Session, pedido_id: int, producto_id: int, detalle: schemas.PedidoDetalleBase) -> PedidoDetalle:
+    """
+    Crea un nuevo detalle asociado a un pedido.
+    """
+    nuevo_detalle = PedidoDetalle(
+        cantidad=detalle.cantidad,
+        subtotal=detalle.subtotal,
+        precio_unitario=detalle.precio_unitario,
+        pedido_id=pedido_id,
+        producto_id=producto_id
+    )
+    db.add(nuevo_detalle)
+    db.commit()
+    db.refresh(nuevo_detalle)
+    return nuevo_detalle
