@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, MetodoPago
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -273,6 +273,37 @@ def eliminar_pago(db: Session, pago_id: int):
     db.commit()
     return None
 
+#METODO DE PAGO
+#--------------------------------------------------------------------------------------
+# Crear Método de Pago
+def crear_metodo_pago(db: Session, metodo_pago: schemas.MetodoPagoBase):
+    metodo_pago_dict = metodo_pago.dict()
+    metodo_pago_dict["tipo"] = metodo_pago_dict["tipo"].upper()
+    nuevo_metodo_pago = MetodoPago(**metodo_pago_dict)
+    db.add(nuevo_metodo_pago)
+    db.commit()
+    db.refresh(nuevo_metodo_pago)
+    return nuevo_metodo_pago
+
+# Listar Métodos de Pago
+def listar_metodos_pago(db: Session):
+    return db.query(MetodoPago).all()
+
+# Obtener Método de Pago por ID
+def obtener_metodo_pago(db: Session, metodo_pago_id: int):
+    metodo_pago = db.query(MetodoPago).filter(MetodoPago.id == metodo_pago_id).first()
+    if not metodo_pago:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Método de pago no encontrado")
+    return metodo_pago
+
+# Eliminar Método de Pago
+def eliminar_metodo_pago(db: Session, metodo_pago_id: int):
+    metodo_pago = obtener_metodo_pago(db, metodo_pago_id)
+    if not metodo_pago:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Método de pago no encontrado")
+    db.delete(metodo_pago)
+    db.commit()
+    return None
 
 #PEDIDO
 #--------------------------------------------------------------------------------------

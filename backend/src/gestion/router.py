@@ -265,6 +265,39 @@ def eliminar_pago(pago_id: int, db: Session = Depends(get_db)):
     services.eliminar_pago(db, pago_id)
     return None
 
+#METODO DE PAGO
+#-----------------------------------------------------------------------------
+# Rutas para Metodo de pago
+
+# ============================================================
+# Ruta para crear un método de pago
+# ============================================================
+@router.post("/metodos-pago", response_model=schemas.MetodoPago, status_code=status.HTTP_201_CREATED)
+def crear_metodo_pago(metodo_pago: schemas.MetodoPagoBase, db: Session = Depends(get_db)):
+    return services.crear_metodo_pago(db, metodo_pago)
+
+# ============================================================
+# Ruta para listar todos los métodos de pago
+# ============================================================
+@router.get("/metodos-pago", response_model=List[schemas.MetodoPago])
+def listar_metodos_pago(db: Session = Depends(get_db)):
+    return services.listar_metodos_pago(db)
+
+# ============================================================
+# Ruta para obtener un método de pago por ID
+# ============================================================
+@router.get("/metodos-pago/{metodo_pago_id}", response_model=schemas.MetodoPago)
+def obtener_metodo_pago(metodo_pago_id: int, db: Session = Depends(get_db)):
+    return services.obtener_metodo_pago(db, metodo_pago_id)
+
+# ============================================================
+# Ruta para eliminar un método de pago
+# ============================================================
+@router.delete("/metodos-pago/{metodo_pago_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_metodo_pago(metodo_pago_id: int, db: Session = Depends(get_db)):
+    services.eliminar_metodo_pago(db, metodo_pago_id)
+    return None
+
 #PEDIDO
 #-----------------------------------------------------------------------------
 # Rutas para Pedidos

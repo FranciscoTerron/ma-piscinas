@@ -9,31 +9,31 @@ from enum import Enum
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class EstadoCarrito(Enum):
-    CONFIRMADO = "confirmado"
-    PENDIENTE = "pendiente"
+    CONFIRMADO = "CONFIRMADO"
+    PENDIENTE = "PENDIENTE"
 
 class EstadoEnvio(Enum):
-    PREPARADO = "preparado"
-    EN_CAMINO = "en_camino"
-    ENTREGADO = "entregado"
+    PREPARADO = "PREPARADO"
+    EN_CAMINO = "EN_CAMINO"
+    ENTREGADO = "ENTREGADO"
 
 class EstadoPedido(Enum):
-    PENDIENTE = "pendiente"
-    ENVIADO = "enviado"
-    ENTREGADO = "entregado"
-    CANCELADO = "cancelado"
+    PENDIENTE = "PENDIENTE"
+    ENVIADO = "ENVIADO"
+    ENTREGADO = "ENTREGADO"
+    CANCELADO = "CANCELADO"
     
 
 class EstadoPago(Enum):
-    PENDIENTE = "pendiente"
-    APROBADO = "aprobado"
-    RECHAZADO = "rechazado"
+    PENDIENTE = "PENDIENTE"
+    APROBADO = "APROBADO"
+    RECHAZADO = "RECHAZADO"
 
 
 class MetodoPagoEnum(Enum):
-    TARJETA = "tarjeta"
-    TRANSFERENCIA = "transferencia"
-    EFECTIVO = "efectivo"
+    TARJETA = "TARJETA"
+    TRANSFERENCIA = "TRANSFERENCIA"
+    EFECTIVO = "EFECTIVO"
 
 
 
