@@ -29,7 +29,7 @@ api.interceptors.response.use(
   }
 );
 
-// Servicios para Usuarios
+// Servicios para Usuarios-------------------------------------------
 export const register = async (userData) => {
   const response = await api.post("/register", userData);
   return response.data;
@@ -62,12 +62,43 @@ export const actualizarContrasena = async (usuarioId, nuevaContrasena) => {
   return response.data;
 };
 
+export const actualizarRol = async (usuarioId, nuevoRolId) => {
+  const response = await api.put(`/usuarios/${usuarioId}/rol`, { rol_id: nuevoRolId });
+  return response.data;
+};
+
 export const eliminarUsuario = async (usuarioId) => {
   await api.delete(`/usuarios/${usuarioId}`);
 };
 
-// Servicio los roles
+// Servicio para roles--------------------------------------
 export const listarRoles = async () => {
   const response = await api.get("/roles");
   return response.data;
 };
+
+// Servicios para productos------------------------------------------------
+export const crearProducto = async (productoData) => {
+  const response = await api.post("/productos", productoData);
+  return response.data;
+};
+
+export const listarProductos = async () => {
+  const response = await api.get("/productos");
+  return response.data;
+};
+
+export const obtenerProducto = async (productoId) => {
+  const response = await api.get(`/productos/${productoId}`);
+  return response.data;
+};
+
+export const actualizarProducto = async (productoId, productoData) => {
+  const response = await api.put(`/productos/${productoId}`, productoData);
+  return response.data;
+};
+
+export const eliminarProducto = async (productoId) => {
+  await api.delete(`/productos/${productoId}`);
+};
+

@@ -84,6 +84,9 @@ class UsuarioUpdate(BaseModel):
 class UsuarioUpdatePassword(BaseModel):
     nueva_contrasena: str = Field(..., min_length=8, example="nueva_password123")
 
+class UsuarioRespuesta(Usuario):
+    rol_id: int
+
 class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")

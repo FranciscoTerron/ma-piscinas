@@ -5,7 +5,7 @@ import Login from '../src/components/Login';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
-
+//import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -15,7 +15,7 @@ const AppRoutes = () => {
       
       {/* Rutas protegidas */}
       <Route 
-        path="/clienteProfile" 
+        path="/perfil" 
         element={
           <PrivateRoute>
             <ClienteProfile />
@@ -23,7 +23,7 @@ const AppRoutes = () => {
         } 
       />
       <Route 
-        path="/adminProfile" 
+        path="/panelAdministrativo" 
         element={
           <PrivateRoute>
             <AdminProfile />

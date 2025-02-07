@@ -21,14 +21,16 @@ import {
   Text,
   HStack,
   VStack,
+  Select,
 } from "@chakra-ui/react";
 import { FaTrash, FaUserCog } from 'react-icons/fa';
-import { listarUsuarios, eliminarUsuario } from "../../../services/api";
+import { listarUsuarios, eliminarUsuario, listarRoles, actualizarRol } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import GoBackButton from '../../GoBackButton';
 
 const GestionUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -36,7 +38,23 @@ const GestionUsuarios = () => {
 
   useEffect(() => {
     cargarUsuarios();
+    cargarRoles();
   }, []);
+
+  const cargarRoles = async () => {
+    try {
+      const data = await listarRoles();
+      setRoles(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de roles.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
   const cargarUsuarios = async () => {
     try {
@@ -82,6 +100,44 @@ const GestionUsuarios = () => {
     onOpen();
   };
 
+  const handleCambiarRol = async (usuarioId, nuevoRolId) => {
+    if (userRole !== "administrador") {
+      toast({
+        title: "Error",
+        description: "Solo los administradores pueden cambiar roles.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      await actualizarRol(usuarioId, nuevoRolId);
+      toast({
+        title: "Rol actualizado",
+        description: "El rol del usuario ha sido actualizado correctamente.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      cargarUsuarios();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el rol del usuario.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const obtenerNombreRol = (rolId) => {
+    const rol = roles.find((r) => r.id === rolId);
+    return rol ? rol.nombre : "Desconocido";
+  };
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
@@ -120,6 +176,7 @@ const GestionUsuarios = () => {
                 <Th textAlign="center" color="gray.600">Email</Th>
                 <Th textAlign="center" color="gray.600">Teléfono</Th>
                 <Th textAlign="center" color="gray.600">Dirección</Th>
+                <Th textAlign="center" color="gray.600">Rol</Th>
                 <Th textAlign="center" color="gray.600">Acciones</Th>
               </Tr>
             </Thead>
@@ -137,6 +194,29 @@ const GestionUsuarios = () => {
                   <Td textAlign="center" color="gray.600">{usuario.email}</Td>
                   <Td textAlign="center" color="gray.600">{usuario.telefono}</Td>
                   <Td textAlign="center" color="gray.600">{usuario.direccion}</Td>
+                  <Td textAlign="center" color="gray.600">
+                    {userRole === "administrador" ? (
+                      <Select
+                        value={usuario.rol_id}
+                        onChange={(e) => handleCambiarRol(usuario.id, e.target.value)}
+                        sx={{
+                          '& option': {
+                            backgroundColor: 'white !important',
+                            color: 'gray.600'
+                          }
+                        }}
+                      >
+                        {roles.map((rol) => (
+                          <option key={rol.id} value={rol.id}>
+                            {rol.nombre}
+                          </option>
+                        ))}
+                        
+                      </Select>
+                    ) : (
+                      obtenerNombreRol(usuario.rol_id)
+                    )}
+                  </Td>
                   <Td textAlign="center">
                     <IconButton
                       aria-label="Eliminar usuario"

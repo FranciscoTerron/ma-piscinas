@@ -17,7 +17,7 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
     token = services.autenticar_usuario(db, request.email, request.password)
     return {"access_token": token, "token_type": "bearer"}
 
-@router.get("/usuarios", response_model=List[schemas.Usuario])
+@router.get("/usuarios", response_model=List[schemas.UsuarioRespuesta])
 def listar_usuarios(db: Session = Depends(get_db)):
     return services.listar_usuarios(db)
 

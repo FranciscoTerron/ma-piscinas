@@ -5,7 +5,7 @@ import { HiMenu } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, userRole } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -77,7 +77,7 @@ const Header = () => {
             <MenuList bg="white" borderColor="#00008B">
               <MenuItem 
                 as={RouterLink} 
-                to="/profile"
+                to={userRole === 'cliente' ? "/clienteProfile" : "/adminProfile"}
                 _hover={{ bg: "#87CEEB" }}
                 color="#00008B"
                 bg={"white"}
