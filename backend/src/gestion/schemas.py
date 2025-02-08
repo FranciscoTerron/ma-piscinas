@@ -8,41 +8,41 @@ from enum import Enum
 # Estado Carrito
 # ============================================================
 class EstadoCarritoEnum(str, Enum):
-    CONFIRMADO = "confirmado"
-    PENDIENTE = "pendiente"
+    CONFIRMADO = "CONFIRMADO"
+    PENDIENTE = "CONFIRMADO"
 
 # ============================================================
 # Estado De Envio
 # ============================================================
 class EstadoEnvioEnum(str, Enum):
-    PREPARADO = "preparado"
-    EN_CAMINO = "en_camino"
-    ENTREGADO = "entregado"
+    PREPARADO = "PREPARADO"
+    EN_CAMINO = "EN_CAMINO"
+    ENTREGADO = "ENTREGADO"
 
 # ============================================================
 # Estado pedido
 # ============================================================
 class EstadoPedidoEnum(str, Enum):
-    PENDIENTE = "pendiente"
-    ENVIADO = "enviado"
-    ENTREGADO = "entregado"
-    CANCELADO = "cancelado"
+    PENDIENTE = "PENDIENTE"
+    ENVIADO = "ENVIADO"
+    ENTREGADO = "ENTREGADO"
+    CANCELADO = "CANCELADO"
 
 # ============================================================
 # Estado para pago
 # ============================================================
 class EstadoPagoEnum(str, Enum):
-    PENDIENTE = "pendiente"
-    APROBADO = "aprobado"
-    RECHAZADO = "rechazado"
+    PENDIENTE = "PENDIENTE"
+    APROBADO = "APROBADO"
+    RECHAZADO = "RECHAZADO"
 
 # ============================================================
 # Metodo de pago
 # ============================================================
 class MetodoPagoEnum(str, Enum):
-    TARJETA = "tarjeta"
-    TRANSFERENCIA = "transferencia"
-    EFECTIVO = "efectivo"
+    TARJETA = "TARJETA"
+    TRANSFERENCIA = "TRANSFERENCIA"
+    EFECTIVO = "EFECTIVO"
 
 # ============================================================
 # Esquema base para evitar repetir codigo
@@ -324,8 +324,8 @@ class Pago(PagoBase):
 # ============================================================
 
 class MetodoPagoBase(BaseModel):
-    estado: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
-
+    tipo: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
+    
 class MetodoPago(MetodoPagoBase):
     id: int
 
