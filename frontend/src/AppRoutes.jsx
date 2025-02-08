@@ -5,6 +5,7 @@ import Login from '../src/components/Login';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
+import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 //import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 const AppRoutes = () => {
   return (
@@ -35,6 +36,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute>
             <GestionUsuarios />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/gestionProductos" 
+        element={
+          <PrivateRoute>
+            <GestionProductos />
           </PrivateRoute>
         } 
       />

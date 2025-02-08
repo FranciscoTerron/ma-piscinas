@@ -139,7 +139,7 @@ class ProductoBase(BaseModel):
     descripcion: str = Field(..., example="Laptop con procesador i7 y 16GB RAM")
     precio: float = Field(..., example=1200.50)
     stock: int = Field(..., example=10)
-    imagen: str = Field(..., example="imagen_producto.jpg")
+    imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
 
 # ============================================================
 # Esquema para crear un producto

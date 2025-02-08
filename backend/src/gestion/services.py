@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -471,3 +471,137 @@ def agregar_detalle_a_pedido(db: Session, pedido_id: int, producto_id: int, deta
     db.commit()
     db.refresh(nuevo_detalle)
     return nuevo_detalle
+
+#CARRITO
+#-----------------------------------------------------------------------------------
+
+#Obtener Carrito por ID
+def obtener_carrito(db: Session, carrito_id: int):
+    """Obtiene un carrito por su ID."""
+    return db.query(Carrito).filter(Carrito.id == carrito_id).first()
+
+#Crear carrito 
+def create_carrito(db: Session, carrito_data: schemas.CarritoBase, usuario_id: int):
+    """Crea un nuevo carrito para un usuario dado."""
+    new_carrito = Carrito(
+        usuario_id=usuario_id,
+        estado=carrito_data.estado,  # Por defecto debería ser EstadoCarritoEnum.PENDIENTE
+        fecha_creacion=datetime.now()
+    )
+    db.add(new_carrito)
+    db.commit()
+    db.refresh(new_carrito)
+    return new_carrito
+
+#Listar Carritos
+def listar_carritos(db: Session, skip: int = 0, limit: int = 100):
+    """Lista todos los carritos con paginación."""
+    return db.query(Carrito).offset(skip).limit(limit).all()
+
+#Obtener carritos de un usuario en particular
+def obtener_carrito_por_usuario(db: Session, usuario_id: int):
+    """
+    Obtiene el carrito activo (por ejemplo, con estado PENDIENTE) del usuario.
+    Se asume que cada usuario tiene un único carrito activo.
+    """
+    return db.query(Carrito).filter(
+        Carrito.usuario_id == usuario_id,
+        Carrito.estado == schemas.EstadoCarritoEnum.PENDIENTE
+    ).first()
+
+
+# Detalle Carrito
+#-----------------------------------------------------------------------------------------
+# Obtener detalle por ID
+def obtener_detalle(db: Session, detalle_id: int):
+    """Obtiene un detalle de carrito por su ID."""
+    return db.query(CarritoDetalle).filter(CarritoDetalle.id == detalle_id).first()
+
+# Crear detalle 
+def crear_detalle(db: Session, detalle_data: CarritoDetalle, carrito_id: int, producto_id: int):
+    """Crea un nuevo detalle de carrito para un carrito y producto dados."""
+    new_detalle = CarritoDetalle(
+        carrito_id=carrito_id,
+        producto_id=producto_id,
+        cantidad=detalle_data.cantidad,
+        subtotal=detalle_data.subtotal
+    )
+    db.add(new_detalle)
+    db.commit()
+    db.refresh(new_detalle)
+    return new_detalle
+
+# Listar detalles
+def listar_detalles(db: Session, carrito_id: int, skip: int = 0, limit: int = 100):
+    """Lista los detalles de un carrito específico con paginación."""
+    return db.query(CarritoDetalle)\
+             .filter(CarritoDetalle.carrito_id == carrito_id)\
+             .offset(skip)\
+             .limit(limit)\
+             .all()
+             
+# Agregar producto al carrito 
+def agregar_producto_al_carrito(db: Session, carrito_id: int, producto_id: int, detalle_data: schemas.CarritoDetalleBase):
+    """
+    Agrega un producto al carrito.
+    Si el producto ya existe en el carrito, se suma la cantidad y se actualiza el subtotal.
+    """
+    # Buscar si ya existe un detalle para este producto
+    detalle_existente = db.query(CarritoDetalle).filter(
+        CarritoDetalle.carrito_id == carrito_id,
+        CarritoDetalle.producto_id == producto_id
+    ).first()
+    
+    if detalle_existente:
+        detalle_existente.cantidad += detalle_data.cantidad
+        detalle_existente.subtotal += detalle_data.subtotal
+        db.commit()
+        db.refresh(detalle_existente)
+        return detalle_existente
+    else:
+        nuevo_detalle = CarritoDetalle(
+            carrito_id=carrito_id,
+            producto_id=producto_id,
+            cantidad=detalle_data.cantidad,
+            subtotal=detalle_data.subtotal
+        )
+        db.add(nuevo_detalle)
+        db.commit()
+        db.refresh(nuevo_detalle)
+        return nuevo_detalle
+
+#Actualizar la cantida del producto del carrito
+
+def actualizar_cantidad_producto(db: Session, carrito_id: int, producto_id: int, nueva_cantidad: int):
+    """
+    Actualiza la cantidad de un producto en el carrito.
+    Aquí se podría recalcular el subtotal según la lógica de negocio (por ejemplo, multiplicando por el precio unitario).
+    """
+    detalle = db.query(CarritoDetalle).filter(
+        CarritoDetalle.carrito_id == carrito_id,
+        CarritoDetalle.producto_id == producto_id
+    ).first()
+    
+    if not detalle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado en el carrito")
+    
+    detalle.cantidad = nueva_cantidad
+    # Aquí podrías recalcular el subtotal si tienes acceso al precio del producto. (REVISAR)
+    db.commit()
+    db.refresh(detalle)
+    return detalle
+
+#Eliminar producto del carrito
+
+def eliminar_producto_del_carrito(db: Session, carrito_id: int, producto_id: int):
+    """Elimina un producto del carrito."""
+    detalle = db.query(CarritoDetalle).filter(
+        CarritoDetalle.carrito_id == carrito_id,
+        CarritoDetalle.producto_id == producto_id
+    ).first()
+    if not detalle:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado en el carrito")
+    
+    db.delete(detalle)
+    db.commit()
+    return {"detail": "Producto eliminado del carrito"}

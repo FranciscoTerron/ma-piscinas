@@ -102,3 +102,10 @@ export const eliminarProducto = async (productoId) => {
   await api.delete(`/productos/${productoId}`);
 };
 
+// Servicios para categoria
+//---------------------------------------------------------------------
+export const listarCategorias = async () => {
+  const response = await api.get("/categorias");
+  return response.data;
+};
+
