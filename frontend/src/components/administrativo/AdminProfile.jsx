@@ -9,6 +9,7 @@ import {
   Icon,
   Button,
   Container,
+  useToast,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -22,12 +23,15 @@ import {
   AiFillProduct,
   AiOutlineClockCircle 
 } from "react-icons/ai";
-import { listarUsuarios } from "../../services/api";
+import { listarUsuarios, listarProductos } from "../../services/api";
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const toast = useToast();
 
   useEffect(() => {
+    cargarProductos();
     cargarUsuarios();
   }, []);
 
@@ -39,6 +43,21 @@ const AdminProfile = () => {
       toast({
         title: "Error",
         description: "No se pudo cargar la lista de usuarios.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarProductos = async () => {
+    try {
+      const data = await listarProductos();
+      setProductos(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de productos.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -61,7 +80,7 @@ const AdminProfile = () => {
       description: 'Inventario, precios y categorías',
       route: '/gestionProductos', 
       icon: AiFillProduct,
-      stats: '156 productos'
+      stats: `${productos.length} productos`
     }
   ];
 

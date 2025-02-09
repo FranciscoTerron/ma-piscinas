@@ -193,7 +193,7 @@ def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
 # Actualizar un producto
 def actualizar_producto(db: Session, producto_id: int, producto_update: schemas.ProductoBase) -> Producto:
     producto = obtener_producto_por_id(db, producto_id)
-    for key, value in producto_update.dict().items():
+    for key, value in producto_update.dict(exclude_unset=True).items():
         setattr(producto, key, value)
     db.commit()
     db.refresh(producto)
