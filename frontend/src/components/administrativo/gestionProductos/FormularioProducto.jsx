@@ -44,16 +44,21 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         descripcion: producto.descripcion,
         precio: producto.precio,
         stock: producto.stock,
-        imagen: producto.imagen,
+        imagen: "", // No almacenar la URL aquí
         categoriaId: producto.categoria_id,
       });
-      setImagenPreview(producto.imagen);
+  
+      if (producto.imagen && typeof producto.imagen === "string" && producto.imagen.startsWith("http")) {
+        setImagenPreview(producto.imagen); // Solo para vista previa
+      } else {
+        setImagenPreview(null);
+      }
     } else {
       setFormData(initialProductoState);
       setImagenPreview(null);
     }
   }, [producto]);
-
+   
   useEffect(() => {
     cargarCategorias();
   }, []);
@@ -87,36 +92,56 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
       if (!file.type.match('image.*')) {
         toast({
           title: "Error",
-          description: "Por favor seleccione un archivo de imagen válido (jpg, png, etc).",
+          description: "Seleccione un archivo de imagen válido (jpg, png, etc).",
           status: "error",
           duration: 5000,
           isClosable: true,
         });
         return;
       }
-
+  
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagenPreview(reader.result);
         setFormData(prev => ({
           ...prev,
-          imagen: file
+          imagen: file,
         }));
       };
       reader.readAsDataURL(file);
     }
-  };
-
+  };  
+  
   const handleSubmit = async () => {
-    const formDataToSend = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
-      precio: parseFloat(formData.precio),
-      stock: parseInt(formData.stock),
-      categoria_id: parseInt(formData.categoriaId),
-      imagen: formData.imagen.name,
-    };
-
+    const formDataToSend = new FormData();
+    formDataToSend.append("nombre", formData.nombre);
+    formDataToSend.append("descripcion", formData.descripcion);
+    formDataToSend.append("precio", parseFloat(formData.precio)); 
+    formDataToSend.append("stock", parseInt(formData.stock));  
+    formDataToSend.append("categoria_id", parseInt(formData.categoriaId));
+    
+    if (producto) {
+      // Si se está actualizando, la imagen es opcional.
+      // Solo se agrega si el usuario seleccionó un nuevo archivo.
+      if (formData.imagen && formData.imagen instanceof File) {
+        formDataToSend.append("imagen", formData.imagen);
+      }
+    } else {
+      // Si es creación, la imagen es obligatoria.
+      if (formData.imagen && formData.imagen instanceof File) {
+        formDataToSend.append("imagen", formData.imagen);
+      } else {
+        toast({
+          title: "Error",
+          description: "Debe seleccionar un archivo de imagen válido.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+    }
+    
     try {
       if (producto) {
         await actualizarProducto(producto.id, formDataToSend);
@@ -128,7 +153,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       } else {
-        await crearProducto(formDataToSend);
+        await crearProducto(formDataToSend); 
         toast({
           title: "Éxito",
           description: "Producto agregado correctamente.",
@@ -137,12 +162,13 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       }
-
+    
       onSubmitSuccess();
       onClose();
       setFormData(initialProductoState);
       setImagenPreview(null);
     } catch (error) {
+      console.error("Error al enviar el producto:", error);
       toast({
         title: "Error",
         description: "No se pudo realizar la operación.",

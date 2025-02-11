@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago
@@ -6,7 +6,8 @@ from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
 from datetime import datetime, UTC, timedelta
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
+import cloudinary.uploader
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -160,19 +161,38 @@ def eliminar_categoria(db: Session, categoria_id: int):
 #PRODUCTOS
 #------------------------------------------------------------------------------------------------
 # Crear un nuevo producto
-def crear_producto(db: Session, producto: schemas.ProductoCreate) -> Producto:
-    # Verificar si la categoría existe
-    categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == producto.categoria_id).first()
+def crear_producto(
+    db: Session,
+    nombre: str,
+    descripcion: str,
+    precio: float,
+    stock: int,
+    categoria_id: int,
+    imagen: UploadFile
+) -> Producto:
+    # Verificar que la categoría exista
+    categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
 
+    # Subir la imagen a Cloudinary
+    try:
+        upload_result = cloudinary.uploader.upload(imagen.file, folder="productos")
+        image_url = upload_result.get("secure_url")
+        if not image_url:
+            raise Exception("No se obtuvo URL de la imagen")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
+    
+    # Crear el producto utilizando la URL de la imagen
     db_producto = Producto(
-        nombre=producto.nombre,
-        descripcion=producto.descripcion,
-        precio=producto.precio,
-        stock=producto.stock,
-        imagen=producto.imagen,
-        categoria_id=producto.categoria_id
+        nombre=nombre,
+        descripcion=descripcion,
+        precio=precio,
+        stock=stock,
+        imagen=image_url,  # Aquí se almacena la URL que devuelve Cloudinary
+        categoria_id=categoria_id
     )
     db.add(db_producto)
     db.commit()
@@ -191,10 +211,40 @@ def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
     return producto
 
 # Actualizar un producto
-def actualizar_producto(db: Session, producto_id: int, producto_update: schemas.ProductoBase) -> Producto:
+def actualizar_producto(
+    db: Session,
+    producto_id: int,
+    nombre: str,
+    descripcion: str,
+    precio: float,
+    stock: int,
+    categoria_id: int,
+    imagen: Optional[UploadFile] = None
+) -> Producto:
+    # Obtener el producto existente
     producto = obtener_producto_por_id(db, producto_id)
-    for key, value in producto_update.dict(exclude_unset=True).items():
-        setattr(producto, key, value)
+    
+    # Actualizar los campos de texto
+    producto.nombre = nombre
+    producto.descripcion = descripcion
+    producto.precio = precio
+    producto.stock = stock
+    producto.categoria_id = categoria_id
+
+    # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="productos")
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}"
+            )
+        producto.imagen = image_url
+
     db.commit()
     db.refresh(producto)
     return producto

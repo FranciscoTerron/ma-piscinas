@@ -1,13 +1,14 @@
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import cloudinary
+
+# Importamos la conexión a la base de datos y los modelos
 from src.database import engine
 from src.models import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-
-# importamos los routers desde nuestros modulos
+# Importamos los routers desde nuestros módulos
 from src.gestion.router import router as gestion_router
 
 load_dotenv()
@@ -15,16 +16,21 @@ load_dotenv()
 ENV = os.getenv("ENV")
 ROOT_PATH = os.getenv(f"ROOT_PATH_{ENV.upper()}")
 
+# Configuración de Cloudinary utilizando variables de entorno
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+)
 
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
     BaseModel.metadata.create_all(bind=engine)
     yield
 
-
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)
 
-# asociamos los routers a nuestra app
+# Asociamos los routers a la app
 app.include_router(gestion_router)
 
 origins = [
