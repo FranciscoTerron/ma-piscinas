@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from src.database import get_db
 from src.gestion import schemas, services
 from src.auth.dependencies import get_current_user
-from typing import List
+from typing import List, Optional
 
 router = APIRouter()
 
@@ -154,8 +154,16 @@ def eliminar_categoria(categoria_id: int, db: Session = Depends(get_db)):
 # Ruta para crear producto
 # ============================================================
 @router.post("/productos", response_model=schemas.Producto, status_code=status.HTTP_201_CREATED)
-def crear_producto(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
-    return services.crear_producto(db, producto)
+def crear_producto(
+    nombre: str = Form(...),
+    descripcion: str = Form(...),
+    precio: float = Form(...),
+    stock: int = Form(...),
+    categoria_id: int = Form(...),
+    imagen: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    return services.crear_producto(db, nombre, descripcion, precio, stock, categoria_id, imagen)
 
 # ============================================================
 # Ruta para listar productos
@@ -179,10 +187,15 @@ def obtener_producto(producto_id: int, db: Session = Depends(get_db)):
 @router.put("/productos/{producto_id}", response_model=schemas.Producto)
 def actualizar_producto(
     producto_id: int,
-    producto_update: schemas.ProductoBase,
+    nombre: str = Form(...),
+    descripcion: str = Form(...),
+    precio: float = Form(...),
+    stock: int = Form(...),
+    categoria_id: int = Form(...),
+    imagen: Optional[UploadFile] = File(None), 
     db: Session = Depends(get_db),
 ):
-    return services.actualizar_producto(db, producto_id, producto_update)
+    return services.actualizar_producto(db, producto_id, nombre, descripcion, precio, stock, categoria_id, imagen)
 
 # ============================================================
 # Ruta para eliminar productos

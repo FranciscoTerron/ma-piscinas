@@ -4,9 +4,6 @@ const API_URL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Interceptores para manejar tokens de autenticación
@@ -79,9 +76,7 @@ export const listarRoles = async () => {
 
 // Servicios para productos------------------------------------------------
 export const crearProducto = async (productoData) => {
-  console.log(productoData);
   const response = await api.post("/productos", productoData);
-  console.log(response.data);
   return response.data;
 };
 
