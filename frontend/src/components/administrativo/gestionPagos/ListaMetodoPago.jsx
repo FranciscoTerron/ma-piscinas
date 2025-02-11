@@ -1,59 +1,54 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Box, Table, Thead, Tbody, Tr, Th, Td, IconButton, Modal,
-  ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody,
-  ModalCloseButton, Button, Tooltip, Flex, Text, Heading, Input, Select,
-  useDisclosure, useToast
+  Box,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  IconButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Button,
+  Badge,
+  useToast,
+  Tooltip,
+  Flex,
+  Text,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { FaTrash, FaEdit, FaPlus, FaExclamationTriangle } from "react-icons/fa";
-import { obtenerMetodosPago, agregarMetodoPago, eliminarMetodoPago } from "../../../services/api";
+import { FaTrash, FaEdit, FaExclamationTriangle } from "react-icons/fa";
+import { obtenerMetodosPago, eliminarMetodoPago } from "../../../services/api";
 
-const ListaMetodosPago = () => {
+const ListaMetodosPago = ({ onEditar }) => {
   const [metodos, setMetodos] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [metodoAEliminar, setMetodoAEliminar] = useState(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [nuevoMetodo, setNuevoMetodo] = useState({ tipo: "", nombre: "" });
-
+  const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
   useEffect(() => {
-    cargarMetodos();
+    fetchMetodosPago();
   }, []);
 
-  const cargarMetodos = async () => {
+  const fetchMetodosPago = async () => {
     try {
       const data = await obtenerMetodosPago();
       setMetodos(data);
     } catch (error) {
-      console.error("Error al obtener métodos de pago:", error);
-    }
-  };
-
-  const handleAgregarMetodo = async () => {
-    try {
-      setIsLoading(true);
-      await agregarMetodoPago(nuevoMetodo);
-      toast({
-        title: "Método agregado",
-        description: "El método de pago se agregó correctamente.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      setIsFormOpen(false);
-      cargarMetodos();
-    } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo agregar el método de pago.",
+        description: "No se pudieron cargar los métodos de pago.",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -63,18 +58,17 @@ const ListaMetodosPago = () => {
   };
 
   const handleEliminarMetodo = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       await eliminarMetodoPago(metodoAEliminar.id);
+      setMetodos((prev) => prev.filter((m) => m.id !== metodoAEliminar.id));
       toast({
         title: "Método eliminado",
-        description: "El método de pago se eliminó correctamente.",
+        description: "El método de pago ha sido eliminado exitosamente.",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-      onClose();
-      cargarMetodos();
     } catch (error) {
       toast({
         title: "Error",
@@ -85,37 +79,42 @@ const ListaMetodosPago = () => {
       });
     } finally {
       setIsLoading(false);
+      onClose();
     }
   };
 
   return (
-    <Box bg="white" borderRadius="xl" boxShadow="sm" border="1px solid" borderColor="gray.200" p={4}>
-      <Flex justify="space-between" align="center" mb={4}>
-        <Heading size="md" color="gray.700">Métodos de Pago</Heading>
-        <Button leftIcon={<FaPlus />} colorScheme="green" onClick={() => setIsFormOpen(true)}>
-          Agregar Método
-        </Button>
-      </Flex>
-
-      <Table variant="simple">
-        <Thead bg="gray.50">
-          <Tr>
-            <Th textAlign="center">ID</Th>
-            <Th textAlign="left">Tipo</Th>
-            <Th textAlign="left">Nombre</Th>
-            <Th textAlign="center">Acciones</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {metodos.length > 0 ? (
-            metodos.map((metodo) => (
-              <Tr key={metodo.id} _hover={{ bg: "gray.50" }}>
-                <Td textAlign="center">#{metodo.id}</Td>
-                <Td>{metodo.tipo}</Td>
-                <Td>{metodo.nombre}</Td>
-                <Td textAlign="center">
+    <>
+      <Box bg="white" borderRadius="xl" boxShadow="sm" border="1px solid" borderColor="gray.200" overflow="hidden">
+        <Table variant="simple">
+          <Thead bg="gray.50">
+            <Tr>
+              <Th textAlign="center" color="gray.600">ID</Th>
+              <Th textAlign="left" color="gray.600">Tipo</Th>
+              <Th textAlign="left" color="gray.600">Nombre</Th>
+              <Th textAlign="center" color="gray.600">Acciones</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {metodos.map((metodo) => (
+              <Tr key={metodo.id} _hover={{ bg: "gray.50" }} transition="all 0.2s">
+                <Td textAlign="center" fontSize="sm" color="gray.500">#{metodo.id}</Td>
+                <Td color="gray.700" fontWeight="medium">{metodo.tipo}</Td>
+                <Td color="gray.600">{metodo.nombre}</Td>
+                <Td>
                   <Flex justify="center" gap={2}>
-                    <Tooltip label="Eliminar método">
+                    <Tooltip label="Editar método de pago" hasArrow>
+                      <IconButton
+                        aria-label="Editar método"
+                        icon={<FaEdit />}
+                        size="sm"
+                        colorScheme="blue"
+                        variant="ghost"
+                        _hover={{ bg: "blue.50" }}
+                        onClick={() => onEditar(metodo)}
+                      />
+                    </Tooltip>
+                    <Tooltip label="Eliminar método de pago" hasArrow>
                       <IconButton
                         aria-label="Eliminar método"
                         icon={<FaTrash />}
@@ -129,14 +128,10 @@ const ListaMetodosPago = () => {
                   </Flex>
                 </Td>
               </Tr>
-            ))
-          ) : (
-            <Tr>
-              <Td colSpan="4" textAlign="center">No hay métodos de pago registrados.</Td>
-            </Tr>
-          )}
-        </Tbody>
-      </Table>
+            ))}
+          </Tbody>
+        </Table>
+      </Box>
 
       {/* Modal de confirmación de eliminación */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -149,52 +144,19 @@ const ListaMetodosPago = () => {
             </Flex>
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            <Text>¿Estás seguro de que deseas eliminar el método de pago <strong>{metodoAEliminar?.nombre}</strong>?</Text>
-            <Text mt={2} color="red.500">Esta acción no se puede deshacer.</Text>
+          <ModalBody pb={6}>
+            <Text>
+              ¿Estás seguro de que deseas eliminar el método de pago <strong>{metodoAEliminar?.nombre}</strong>?
+            </Text>
+            <Text mt={2} color="red.500" fontSize="sm">Esta acción no se puede deshacer.</Text>
           </ModalBody>
-          <ModalFooter>
-            <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button colorScheme="red" onClick={handleEliminarMetodo} isLoading={isLoading} leftIcon={<FaTrash />}>
-              Eliminar
-            </Button>
+          <ModalFooter bg="gray.50">
+            <Button variant="outline" mr={3} onClick={onClose} isDisabled={isLoading}>Cancelar</Button>
+            <Button colorScheme="red" onClick={handleEliminarMetodo} isLoading={isLoading} leftIcon={<FaTrash />}>Eliminar</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      {/* Modal para agregar un nuevo método de pago */}
-      <Modal isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Agregar Método de Pago</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Text>Tipo</Text>
-            <Select
-              placeholder="Seleccionar tipo"
-              value={nuevoMetodo.tipo}
-              onChange={(e) => setNuevoMetodo({ ...nuevoMetodo, tipo: e.target.value })}
-            >
-              <option value="EFECTIVO">Efectivo</option>
-              <option value="CRÉDITO">Crédito</option>
-              <option value="DÉBITO">Débito</option>
-            </Select>
-            <Text mt={4}>Nombre</Text>
-            <Input
-              placeholder="Nombre del método"
-              value={nuevoMetodo.nombre}
-              onChange={(e) => setNuevoMetodo({ ...nuevoMetodo, nombre: e.target.value })}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="outline" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
-            <Button colorScheme="green" onClick={handleAgregarMetodo} isLoading={isLoading}>
-              Agregar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </Box>
+    </>
   );
 };
 

@@ -7,9 +7,9 @@ import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
 import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 import GestionPagos from './components/administrativo/gestionPagos/GestionPagos';
-import ListaMetodosPago from './components/administrativo/gestionPagos/ListaMetodoPago';
+import MetodosDePago from './components/administrativo/gestionPagos/MetodosDePago';
 import RegistroPagos from './components/administrativo/gestionPagos/RegistroPagos';
-//import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -70,7 +70,7 @@ const AppRoutes = () => {
         path="/metodosPago" 
         element={
           <PrivateRoute>
-            <ListaMetodosPago />
+            <MetodosDePago />
           </PrivateRoute>
         } 
       />

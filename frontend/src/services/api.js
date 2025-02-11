@@ -141,7 +141,6 @@ export const eliminarMetodoPago = async (metodoId) => {
 // Crear Método de Pago
 export const agregarMetodoPago = async (metodoData) => {
   const response = await api.post("/metodos-pago", metodoData);
-  console.log("ACA",response.data)
   return response.data;
 };
 
@@ -152,7 +151,7 @@ export const actualizarMetodoPago = async (metodoId, metodoData) => {
 }
 
 // Obtener Metodos de pago
-export const obtenerMetodosPago = async (metodoId) => {
-  const response = await api.get(`/metodos-pago/${metodoId}`);
+export const obtenerMetodosPago = async () => {
+  const response = await api.get(`/metodos-pago/`);
   return response.data;
 };
