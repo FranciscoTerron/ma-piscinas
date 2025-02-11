@@ -222,9 +222,10 @@ const GestionUsuarios = () => {
                       aria-label="Eliminar usuario"
                       icon={<FaTrash />}
                       size="sm"
+                      color={"red.900"}
                       colorScheme="red"
                       variant="ghost"
-                      _hover={{ bg: 'red.50' }}
+                      _hover={{ color: 'red.500' }}
                       onClick={() => confirmarEliminacion(usuario)}
                       isDisabled={userRole !== "administrador"}
                     />
@@ -256,20 +257,20 @@ const GestionUsuarios = () => {
               ? Esta acción no se puede deshacer.
             </AlertDialogBody>
             <AlertDialogFooter gap={3}>
+            <Button
+                bg= 'red.500'
+                onClick={handleEliminarUsuario}
+                _hover={{ bg: 'red.800' }}
+              >
+                Eliminar
+              </Button>
               <Button
                 onClick={onClose}
                 variant="outline"
-                color="gray.600"
-                _hover={{ bg: 'gray.50' }}
+                bg= 'gray.500'
+                _hover={{ bg: 'gray.800' }}
               >
                 Cancelar
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={handleEliminarUsuario}
-                _hover={{ bg: 'red.600' }}
-              >
-                Eliminar
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

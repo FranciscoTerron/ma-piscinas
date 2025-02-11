@@ -15,7 +15,7 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import { agregarMetodoPago, actualizarMetodoPago } from "../../../services/api";
+import { agregarMetodoPago, actualizarMetodoPago } from "../../../../services/api";
 
 const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
   const [nombre, setNombre] = useState("");
@@ -48,7 +48,7 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
     setIsSubmitting(true);
     try {
       if (metodo) {
-        await actualizarMetodoPago(metodo.id, { nombre, tipo });
+        await actualizarMetodoPago(metodo.id, { nombre, tipo: tipo.toUpperCase() });
         toast({
           title: "Método de pago actualizado",
           description: "Se ha actualizado correctamente.",
@@ -88,7 +88,7 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
         <ModalHeader borderBottom="1px" borderColor="gray.900" color="black">
           {metodo ? "Editar Método de Pago" : "Agregar Método de Pago"}
         </ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton color={"black"}/>
         <ModalBody py={6} color="black">
           <VStack spacing={4}>
             <FormControl isRequired>
@@ -112,11 +112,17 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
                 border="1px"
                 borderColor="gray.200"
                 _hover={{ borderColor: "gray.300" }}
+                sx={{
+                  '& option': {
+                    backgroundColor: 'white !important',
+                    color: 'gray.600'
+                  }
+                }}
               >
                 <option value="">Seleccione un tipo</option>
                 <option value="EFECTIVO">Efectivo</option>
-                <option value="CRÉDITO">Crédito</option>
-                <option value="DÉBITO">Débito</option>
+                <option value="TARJETA">Tarjeta</option>
+                <option value="TRANSFERENCIA">Transferencia</option>
               </Select>
             </FormControl>
           </VStack>

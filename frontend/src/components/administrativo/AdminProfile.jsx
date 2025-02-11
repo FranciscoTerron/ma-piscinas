@@ -15,6 +15,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   FaUsersCog, 
+  FaMoneyCheckAlt,
   FaBell, 
   FaCog,
   FaChevronRight 
@@ -94,9 +95,9 @@ const AdminProfile = () => {
     },
     { 
       id: 'product', 
-      title: 'Gestión de Productos',
+      title: 'Administración de Productos',
       description: 'Inventario, precios y categorías',
-      route: '/gestionProductos', 
+      route: '/administracionDeProductos', 
       icon: AiFillProduct,
       stats: `${productos.length} productos`
     },
@@ -105,7 +106,7 @@ const AdminProfile = () => {
       title: 'Gestión de Pagos',
       description: 'Pagos, registros, métodos de pago',
       route: '/gestionPagos', 
-      icon: AiFillProduct,
+      icon: FaMoneyCheckAlt ,
       stats: `${pagos.length} pagos`
     }
   ];

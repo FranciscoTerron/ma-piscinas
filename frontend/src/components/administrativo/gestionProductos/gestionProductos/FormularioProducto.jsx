@@ -20,7 +20,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { crearProducto, actualizarProducto, listarCategorias } from '../../../services/api';
+import { crearProducto, actualizarProducto, listarCategorias } from '../../../../services/api';
 
 const initialProductoState = {
   nombre: "",
@@ -80,6 +80,18 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+  
+    if ((name === "precio" || name === "stock") && value < 0) {
+      toast({
+        title: "Valor inválido",
+        description: "No se permiten valores negativos.",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+  
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -113,24 +125,75 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   };  
   
   const handleSubmit = async () => {
+    if (!formData.nombre.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre del producto es obligatorio.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    if (!formData.descripcion.trim()) {
+      toast({
+        title: "Error",
+        description: "La descripción no puede estar vacía.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    if (formData.precio === "" || isNaN(formData.precio) || parseFloat(formData.precio) <= 0) {
+      toast({
+        title: "Error",
+        description: "Ingrese un precio válido mayor a 0.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    if (formData.stock === "" || isNaN(formData.stock) || parseInt(formData.stock) < 0) {
+      toast({
+        title: "Error",
+        description: "Ingrese un stock válido (mínimo 0).",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    if (!formData.categoriaId) {
+      toast({
+        title: "Error",
+        description: "Seleccione una categoría.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    // Si todo está validado, proceder con el envío del formulario
     const formDataToSend = new FormData();
     formDataToSend.append("nombre", formData.nombre);
     formDataToSend.append("descripcion", formData.descripcion);
-    formDataToSend.append("precio", parseFloat(formData.precio)); 
-    formDataToSend.append("stock", parseInt(formData.stock));  
+    formDataToSend.append("precio", parseFloat(formData.precio));
+    formDataToSend.append("stock", parseInt(formData.stock));
     formDataToSend.append("categoria_id", parseInt(formData.categoriaId));
-    
+  
     if (producto) {
-      // Si se está actualizando, la imagen es opcional.
-      // Solo se agrega si el usuario seleccionó un nuevo archivo.
       if (formData.imagen && formData.imagen instanceof File) {
         formDataToSend.append("imagen", formData.imagen);
       }
     } else {
-      // Si es creación, la imagen es obligatoria.
-      if (formData.imagen && formData.imagen instanceof File) {
-        formDataToSend.append("imagen", formData.imagen);
-      } else {
+      if (!formData.imagen || !(formData.imagen instanceof File)) {
         toast({
           title: "Error",
           description: "Debe seleccionar un archivo de imagen válido.",
@@ -140,8 +203,9 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         });
         return;
       }
+      formDataToSend.append("imagen", formData.imagen);
     }
-    
+  
     try {
       if (producto) {
         await actualizarProducto(producto.id, formDataToSend);
@@ -153,7 +217,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       } else {
-        await crearProducto(formDataToSend); 
+        await crearProducto(formDataToSend);
         toast({
           title: "Éxito",
           description: "Producto agregado correctamente.",
@@ -162,7 +226,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       }
-    
+  
       onSubmitSuccess();
       onClose();
       setFormData(initialProductoState);
@@ -186,7 +250,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         <ModalHeader borderBottom="1px" borderColor="gray.900" color={"black"}>
           {producto ? "Editar Producto" : "Agregar Nuevo Producto"}
         </ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton color={"black"}/>
         <ModalBody bg="white" py={6} color={"black"}>
           <VStack spacing={4}>
             <FormControl>
@@ -300,6 +364,12 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
                 border="1px"
                 borderColor="gray.200"
                 _hover={{ borderColor: "gray.300" }}
+                sx={{
+                  '& option': {
+                    backgroundColor: 'white !important',
+                    color: 'gray.600'
+                  }
+                }}
               >
                 {categorias.map((categoria) => (
                   <option key={categoria.id} value={categoria.id}>

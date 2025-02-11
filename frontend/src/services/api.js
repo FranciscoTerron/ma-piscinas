@@ -106,6 +106,29 @@ export const listarCategorias = async () => {
   return response.data;
 };
 
+// Crear categoría
+export const crearCategoria = async (categoriaData) => {
+  const response = await api.post("/categorias", categoriaData);
+  return response.data;
+};
+
+// Obtener una categoría por ID
+export const obtenerCategoria = async (categoriaId) => {
+  const response = await api.get(`/categorias/${categoriaId}`);
+  return response.data;
+};
+
+// Actualizar categoría
+export const actualizarCategoria = async (categoriaId, categoriaData) => {
+  const response = await api.put(`/categorias/${categoriaId}`, categoriaData);
+  return response.data;
+};
+
+// Eliminar categoría
+export const eliminarCategoria = async (categoriaId) => {
+  await api.delete(`/categorias/${categoriaId}`);
+};
+
 // Servicios para PAGO Y METODO DE PAGO
 // ---------------------------------------------------------------------
 // Listar Pagos

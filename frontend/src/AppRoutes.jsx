@@ -5,10 +5,12 @@ import Login from '../src/components/Login';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
-import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 import GestionPagos from './components/administrativo/gestionPagos/GestionPagos';
-import MetodosDePago from './components/administrativo/gestionPagos/MetodosDePago';
+import MetodosDePago from './components/administrativo/gestionPagos/gestionMetodosDePago/MetodosDePago';
 import RegistroPagos from './components/administrativo/gestionPagos/RegistroPagos';
+import AdministracionProductos from './components/administrativo/gestionProductos/AdministracionProductos';
+import GestionProductos from '../src/components/administrativo/gestionProductos/gestionProductos/GestionProductos';
+import GestionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/GestionCategorias'
 
 const AppRoutes = () => {
   return (
@@ -73,6 +75,22 @@ const AppRoutes = () => {
             <MetodosDePago />
           </PrivateRoute>
         } 
+      />
+      <Route 
+        path="/administracionDeProductos" 
+        element={
+          <PrivateRoute>
+            <AdministracionProductos />
+          </PrivateRoute>
+        } 
+      />
+      <Route
+        path="/gestionCategorias"
+        element={
+          <PrivateRoute>
+            <GestionCategorias />
+          </PrivateRoute>
+        }
       />
       {/* Redirección por defecto */}
       <Route path="/" element={<Navigate to="/login" replace />} />

@@ -77,7 +77,7 @@ const Header = () => {
             <MenuList bg="white" borderColor="#00008B">
               <MenuItem 
                 as={RouterLink} 
-                to={userRole === 'cliente' ? "/clienteProfile" : "/adminProfile"}
+                to={userRole === 'cliente' ? "/clienteProfile" : "/panelAdministrativo"}
                 _hover={{ bg: "#87CEEB" }}
                 color="#00008B"
                 bg={"white"}

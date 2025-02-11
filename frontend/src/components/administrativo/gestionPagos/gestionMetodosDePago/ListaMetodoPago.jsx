@@ -8,23 +8,21 @@ import {
   Th,
   Td,
   IconButton,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
   Button,
-  Badge,
   useToast,
   Tooltip,
   Flex,
   Text,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaTrash, FaEdit, FaExclamationTriangle } from "react-icons/fa";
-import { obtenerMetodosPago, eliminarMetodoPago } from "../../../services/api";
+import { FaTrash, FaEdit } from "react-icons/fa";
+import { obtenerMetodosPago, eliminarMetodoPago } from "../../../../services/api";
 
 const ListaMetodosPago = ({ onEditar }) => {
   const [metodos, setMetodos] = useState([]);
@@ -108,9 +106,10 @@ const ListaMetodosPago = ({ onEditar }) => {
                         aria-label="Editar método"
                         icon={<FaEdit />}
                         size="sm"
+                        color={"blue.900"}
                         colorScheme="blue"
                         variant="ghost"
-                        _hover={{ bg: "blue.50" }}
+                        _hover={{ color: "blue.500" }}
                         onClick={() => onEditar(metodo)}
                       />
                     </Tooltip>
@@ -119,9 +118,10 @@ const ListaMetodosPago = ({ onEditar }) => {
                         aria-label="Eliminar método"
                         icon={<FaTrash />}
                         size="sm"
+                        color={"red.900"}
                         colorScheme="red"
                         variant="ghost"
-                        _hover={{ bg: "red.50" }}
+                        _hover={{ color: 'red.500' }}
                         onClick={() => confirmarEliminacion(metodo)}
                       />
                     </Tooltip>
@@ -133,29 +133,50 @@ const ListaMetodosPago = ({ onEditar }) => {
         </Table>
       </Box>
 
-      {/* Modal de confirmación de eliminación */}
-      <Modal isOpen={isOpen} onClose={onClose} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            <Flex align="center" gap={2}>
-              <FaExclamationTriangle color="#E53E3E" />
-              <Text>Eliminar Método de Pago</Text>
-            </Flex>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Text>
-              ¿Estás seguro de que deseas eliminar el método de pago <strong>{metodoAEliminar?.nombre}</strong>?
-            </Text>
-            <Text mt={2} color="red.500" fontSize="sm">Esta acción no se puede deshacer.</Text>
-          </ModalBody>
-          <ModalFooter bg="gray.50">
-            <Button variant="outline" mr={3} onClick={onClose} isDisabled={isLoading}>Cancelar</Button>
-            <Button colorScheme="red" onClick={handleEliminarMetodo} isLoading={isLoading} leftIcon={<FaTrash />}>Eliminar</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Alert Dialog para eliminar método de pago */}
+      <AlertDialog isOpen={isOpen} onClose={onClose} isCentered>
+        <AlertDialogOverlay>
+          <AlertDialogContent bg="white">
+            <AlertDialogHeader 
+              fontSize="lg" 
+              fontWeight="bold" 
+              color="gray.800"
+              pb={4}
+            >
+              Eliminar Método de Pago
+            </AlertDialogHeader>
+            <AlertDialogBody color="gray.600">
+              ¿Estás seguro de que deseas eliminar el método de pago{" "}
+              <Text as="span" fontWeight="bold" color="gray.800">
+                {metodoAEliminar?.nombre}
+              </Text>
+              ? Esta acción no se puede deshacer.
+            </AlertDialogBody>
+            <AlertDialogFooter gap={3}>
+            <Button
+                bg="red.500"
+                onClick={handleEliminarMetodo}
+                isLoading={isLoading}
+                _hover={{ bg: 'red.800' }}
+                leftIcon={<FaTrash />}
+                color="white"
+              >
+                Eliminar
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                bg="gray.500"
+                _hover={{ bg: "gray.800" }}
+                isDisabled={isLoading}
+                color="white"
+              >
+                Cancelar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </>
   );
 };

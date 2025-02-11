@@ -357,6 +357,24 @@ def eliminar_metodo_pago(db: Session, metodo_pago_id: int):
     db.commit()
     return None
 
+# Actualizar Métpdp de pago
+def actualizar_metodo_pago(db: Session, metodo_pago_id: int, metodo_pago_update: schemas.MetodoPagoUpdate) -> MetodoPago:
+    metodo_pago = obtener_metodo_pago_por_id(db, metodo_pago_id)
+    # Se actualizan únicamente los campos enviados en la solicitud
+    update_data = metodo_pago_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(metodo_pago, key, value)
+    db.commit()
+    db.refresh(metodo_pago)
+    return metodo_pago
+
+#Obtener metodo de pago por id
+def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
+    metodo_pago = db.query(MetodoPago).filter(MetodoPago.id == metodo_pago_id).first()
+    if not metodo_pago:
+        raise HTTPException(status_code=404, detail="metodo pago no encontrado")
+    return metodo_pago
+
 #PEDIDO
 #--------------------------------------------------------------------------------------
 # Crear Pedido

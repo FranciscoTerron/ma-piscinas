@@ -310,6 +310,14 @@ def eliminar_metodo_pago(metodo_pago_id: int, db: Session = Depends(get_db)):
     services.eliminar_metodo_pago(db, metodo_pago_id)
     return None
 
+# ============================================================
+# Ruta para actualizar un método de pago
+# ============================================================
+@router.put("/metodos-pago/{metodo_pago_id}", response_model=schemas.MetodoPago)
+def actualizar_pedido(metodo_pago_id: int, metodo_pago_update: schemas.MetodoPagoUpdate, db: Session = Depends(get_db)):
+    return services.actualizar_metodo_pago(db, metodo_pago_id, metodo_pago_update)
+
+
 #PEDIDO
 #-----------------------------------------------------------------------------
 # Rutas para Pedidos

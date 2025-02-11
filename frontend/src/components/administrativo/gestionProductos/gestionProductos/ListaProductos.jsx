@@ -8,13 +8,12 @@ import {
   Th,
   Td,
   IconButton,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
   Button,
   Image,
   Badge,
@@ -25,8 +24,8 @@ import {
   Skeleton,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaTrash, FaEdit, FaExclamationTriangle } from "react-icons/fa";
-import { eliminarProducto } from "../../../services/api";
+import { FaTrash, FaEdit } from "react-icons/fa";
+import { eliminarProducto } from "../../../../services/api";
 
 const ListaProductos = ({ productos, onEditar, onEliminar }) => {
   const [productoAEliminar, setProductoAEliminar] = useState(null);
@@ -150,9 +149,10 @@ const ListaProductos = ({ productos, onEditar, onEliminar }) => {
                         aria-label="Editar producto"
                         icon={<FaEdit />}
                         size="sm"
+                        color={"blue.900"}
                         colorScheme="blue"
                         variant="ghost"
-                        _hover={{ bg: "blue.50" }}
+                        _hover={{ color: "blue.500" }}
                         onClick={() => onEditar(producto)}
                       />
                     </Tooltip>
@@ -161,9 +161,10 @@ const ListaProductos = ({ productos, onEditar, onEliminar }) => {
                         aria-label="Eliminar producto"
                         icon={<FaTrash />}
                         size="sm"
+                        color={"red.900"}
                         colorScheme="red"
                         variant="ghost"
-                        _hover={{ bg: "red.50" }}
+                        _hover={{ color: 'red.500' }}
                         onClick={() => confirmarEliminacion(producto)}
                       />
                     </Tooltip>
@@ -175,50 +176,50 @@ const ListaProductos = ({ productos, onEditar, onEliminar }) => {
         </Table>
       </Box>
 
-      {/* Modal de confirmación de eliminación */}
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose}
-        isCentered
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
-            <Flex align="center" gap={2}>
-              <FaExclamationTriangle color="#E53E3E" />
-              <Text>Eliminar Producto</Text>
-            </Flex>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Text>
+      {/* Alert Dialog para confirmar eliminación de producto */}
+      <AlertDialog isOpen={isOpen} onClose={onClose} isCentered>
+        <AlertDialogOverlay>
+          <AlertDialogContent bg="white">
+            <AlertDialogHeader 
+              fontSize="lg" 
+              fontWeight="bold" 
+              color="gray.800"
+              pb={4}
+            >
+              Eliminar Producto
+            </AlertDialogHeader>
+            <AlertDialogBody color="gray.600">
               ¿Estás seguro de que deseas eliminar el producto{" "}
-              <strong>{productoAEliminar?.nombre}</strong>?
-            </Text>
-            <Text mt={2} color="red.500" fontSize="sm">
-              Esta acción no se puede deshacer.
-            </Text>
-          </ModalBody>
-          <ModalFooter bg="gray.50">
-            <Button 
-              variant="outline" 
-              mr={3} 
-              onClick={onClose}
-              isDisabled={isLoading}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              colorScheme="red" 
-              onClick={handleEliminarProducto}
-              isLoading={isLoading}
-              leftIcon={<FaTrash />}
-            >
-              Eliminar
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+              <Text as="span" fontWeight="bold" color="gray.800">
+                {productoAEliminar?.nombre}
+              </Text>
+              ? Esta acción no se puede deshacer.
+            </AlertDialogBody>
+            <AlertDialogFooter gap={3}>
+              <Button
+                bg="red.500"
+                onClick={handleEliminarProducto}
+                _hover={{ bg: "red.800" }}
+                isLoading={isLoading}
+                leftIcon={<FaTrash />}
+                color="white"
+              >
+                Eliminar
+              </Button>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                bg="gray.500"
+                _hover={{ bg: "gray.800" }}
+                color="white"
+                isDisabled={isLoading}
+              >
+                Cancelar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>   
     </>
   );
 };

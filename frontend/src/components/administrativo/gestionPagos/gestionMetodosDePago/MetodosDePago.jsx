@@ -9,8 +9,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaCreditCard } from "react-icons/fa";
-import { listarMetodosPago } from "../../../services/api";
-import GoBackButton from "../../GoBackButton";
+import { listarMetodosPago } from "../../../../services/api";
+import GoBackButton from "../../../GoBackButton";
 import FormularioMetodoPago from "./FormularioMetodoPago";
 import ListaMetodosPago from "./ListaMetodoPago";
 

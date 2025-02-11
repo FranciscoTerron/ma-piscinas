@@ -9,8 +9,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
-import { listarProductos, listarCategorias } from "../../../services/api";
-import GoBackButton from "../../GoBackButton";
+import { listarProductos, listarCategorias } from "../../../../services/api";
+import GoBackButton from "../../../GoBackButton";
 import FormularioProducto from "./FormularioProducto";
 import ListaProductos from "./ListaProductos";
 
