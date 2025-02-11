@@ -255,7 +255,7 @@ def crear_pago(db: Session, pago: schemas.PagoBase):
 
 #Listar Pago
 def listar_pagos(db: Session):
-    return db.query(schemas.Pago).all()
+    return db.query(Pago).all()
 
 #Obtener Pago
 def obtener_pago(db: Session, pago_id: int):
@@ -277,13 +277,15 @@ def eliminar_pago(db: Session, pago_id: int):
 #--------------------------------------------------------------------------------------
 # Crear Método de Pago
 def crear_metodo_pago(db: Session, metodo_pago: schemas.MetodoPagoBase):
-    metodo_pago_dict = metodo_pago.dict()
-    metodo_pago_dict["tipo"] = metodo_pago_dict["tipo"].upper()
-    nuevo_metodo_pago = MetodoPago(**metodo_pago_dict)
+    nuevo_metodo_pago = MetodoPago(
+        tipo=metodo_pago.tipo,  
+        nombre=metodo_pago.nombre  
+    )
     db.add(nuevo_metodo_pago)
     db.commit()
     db.refresh(nuevo_metodo_pago)
     return nuevo_metodo_pago
+
 
 # Listar Métodos de Pago
 def listar_metodos_pago(db: Session):

@@ -6,6 +6,9 @@ import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
 import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
+import GestionPagos from './components/administrativo/gestionPagos/GestionPagos';
+import ListaMetodosPago from './components/administrativo/gestionPagos/ListaMetodoPago';
+import RegistroPagos from './components/administrativo/gestionPagos/RegistroPagos';
 //import GestionProductos from './components/administrativo/gestionProductos/GestionProductos';
 const AppRoutes = () => {
   return (
@@ -44,6 +47,30 @@ const AppRoutes = () => {
         element={
           <PrivateRoute>
             <GestionProductos />
+          </PrivateRoute>
+        } 
+      />
+        <Route 
+        path="/gestionPagos" 
+        element={
+          <PrivateRoute>
+            <GestionPagos />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/registroPagos" 
+        element={
+          <PrivateRoute>
+            <RegistroPagos />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/metodosPago" 
+        element={
+          <PrivateRoute>
+            <ListaMetodosPago />
           </PrivateRoute>
         } 
       />

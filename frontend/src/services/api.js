@@ -111,3 +111,53 @@ export const listarCategorias = async () => {
   return response.data;
 };
 
+// Servicios para PAGO Y METODO DE PAGO
+// ---------------------------------------------------------------------
+// Listar Pagos
+export const listarPagos = async () => {
+  const response = await api.get("/pagos");
+  return response.data;
+};
+
+// Eliminar pago
+export const eliminarPago = async (pagoId) => {
+  await api.delete(`/pagos/${pagoId}`);
+};
+
+// Obtener Pagos
+export const obtenerPagos = async (pagoId) => {
+  const response = await api.get(`/pagos/${pagoId}`);
+  return response.data;
+};
+
+
+
+// Listar Métodos de Pago
+export const listarMetodosPago = async () => {
+  const response = await api.get("/metodos-pago");
+  return response.data;
+};
+
+// Eliminar Método de Pago
+export const eliminarMetodoPago = async (metodoId) => {
+  await api.delete(`/metodos-pago/${metodoId}`);
+};
+
+// Crear Método de Pago
+export const agregarMetodoPago = async (metodoData) => {
+  const response = await api.post("/metodos-pago", metodoData);
+  console.log("ACA",response.data)
+  return response.data;
+};
+
+// Actualizar Método de Pago
+export const actualizarMetodoPago = async (metodoId, metodoData) => {
+  const response = await api.put(`/metodos-pago/${metodoId}`, metodoData);
+  return response.data;
+}
+
+// Obtener Metodos de pago
+export const obtenerMetodosPago = async (metodoId) => {
+  const response = await api.get(`/metodos-pago/${metodoId}`);
+  return response.data;
+};

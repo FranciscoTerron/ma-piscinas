@@ -23,16 +23,19 @@ import {
   AiFillProduct,
   AiOutlineClockCircle 
 } from "react-icons/ai";
-import { listarUsuarios, listarProductos } from "../../services/api";
+import { listarUsuarios, listarProductos, listarPagos } from "../../services/api";
+
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [pagos, setPagos] = useState([]); // Estado para pagos
   const toast = useToast();
 
   useEffect(() => {
     cargarProductos();
     cargarUsuarios();
+    cargarPagos(); // Cargar los pagos al montar el componente
   }, []);
 
   const cargarUsuarios = async () => {
@@ -65,6 +68,21 @@ const AdminProfile = () => {
     }
   };
 
+  const cargarPagos = async () => {
+    try {
+      const data = await listarPagos();
+      setPagos(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de pagos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const cards = [
     { 
       id: 'user', 
@@ -81,6 +99,14 @@ const AdminProfile = () => {
       route: '/gestionProductos', 
       icon: AiFillProduct,
       stats: `${productos.length} productos`
+    },
+    { 
+      id: 'pagos', 
+      title: 'Gestión de Pagos',
+      description: 'Pagos, registros, métodos de pago',
+      route: '/gestionPagos', 
+      icon: AiFillProduct,
+      stats: `${pagos.length} pagos`
     }
   ];
 
@@ -91,8 +117,7 @@ const AdminProfile = () => {
   ];
 
   return (
-    <Container maxW="container.xl" py={8} > 
-
+    <Container maxW="container.xl" py={8}> 
       <HStack justify="space-between" mb={6}>
         <VStack align="flex-start" spacing={1}>
           <Text fontSize="3xl" fontWeight="bold" color="gray.800">Panel de Control</Text>
@@ -158,7 +183,7 @@ const AdminProfile = () => {
         ))}
       </Grid>
 
-      {/* Actividad Reciente */}
+      {/* Sección de Actividad Reciente */}
       <Box
         bg="white"
         borderRadius="lg"

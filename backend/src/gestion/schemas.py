@@ -303,19 +303,20 @@ class EnvioCreate(EnvioBase):
 # ============================================================
 # Esquema pago BASE
 # ============================================================
-
+# Esquema base para crear un pago
 class PagoBase(BaseModel):
     monto: float = Field(..., example=5000.75)
     estado: EstadoPagoEnum = Field(default=EstadoPagoEnum.PENDIENTE)
 
+# Esquema para devolver un pago (incluye campos adicionales como `id`)
 class Pago(PagoBase):
     id: int
     pedido_id: int
     metodoPago_id: int
+    fecha_creacion: datetime
 
     class Config:
-        from_attributes = True
-
+        from_attributes = True  # Permite la conversión desde un objeto SQLAlchemy
 #METODO PAGO
 #-----------------------------------------------------------------------------------------
 
@@ -325,7 +326,7 @@ class Pago(PagoBase):
 
 class MetodoPagoBase(BaseModel):
     tipo: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
-    
+    nombre: str = Field(..., example="Visa")
 class MetodoPago(MetodoPagoBase):
     id: int
 

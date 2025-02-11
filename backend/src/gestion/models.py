@@ -163,7 +163,7 @@ class Pago(BaseModel):
     __tablename__ = "pagos"
 
     id = Column(Integer, primary_key=True, index=True)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     monto: Mapped[float] = mapped_column(Float)
     estado: Mapped[EstadoPago] = mapped_column(SQLAlchemyEnum(EstadoPago), default=EstadoPago.PENDIENTE)
 
@@ -179,5 +179,6 @@ class MetodoPago(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     tipo: Mapped[MetodoPagoEnum] = mapped_column(SQLAlchemyEnum(MetodoPagoEnum), default=MetodoPagoEnum.TARJETA)
+    nombre: Mapped[str] = mapped_column(String, index=True)
 
     pago = relationship("Pago", back_populates="metodoPago")
