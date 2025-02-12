@@ -48,7 +48,8 @@ export const listarUsuarios = async () => {
 };
 
 export const actualizarDatosPersonales = async (usuarioId, datosActualizados) => {
-  const response = await api.put(`/usuarios/${usuarioId}/datos-personales`, datosActualizados);
+  console.log("Usuario", datosActualizados);
+  const response = await api.put(`/usuarios/datos-personales`, datosActualizados);
   return response.data;
 };
 

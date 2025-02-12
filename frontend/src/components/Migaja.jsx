@@ -1,8 +1,9 @@
 import React from "react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
 import { Link, useLocation } from "react-router-dom";
-
+import { useAuth } from "../context/AuthContext";
 const Migaja = () => {
+  const { userRole } = useAuth();
   const location = useLocation();
   const pathnames = location.pathname.split("/").filter((x) => x);
 
@@ -27,7 +28,7 @@ const Migaja = () => {
       boxShadow="md"
     >
       <BreadcrumbItem>
-        <BreadcrumbLink as={Link} to="/" color="teal.500" fontWeight="bold">
+        <BreadcrumbLink as={Link} to= {userRole === 'cliente' ? "/clienteProfile" : "/panelAdministrativo"} color="teal.500" fontWeight="bold">
           Inicio
         </BreadcrumbLink>
       </BreadcrumbItem>

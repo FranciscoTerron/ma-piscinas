@@ -2,13 +2,14 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Register from '../src/components/Register';
 import Login from '../src/components/Login';
+import PerfilUsuario from '../src/components/perfilPersonal/PerfilUsuario';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
-import GestionPagos from './components/administrativo/gestionPagos/GestionPagos';
-import MetodosDePago from './components/administrativo/gestionPagos/gestionMetodosDePago/MetodosDePago';
-import RegistroPagos from './components/administrativo/gestionPagos/RegistroPagos';
-import AdministracionProductos from './components/administrativo/gestionProductos/AdministracionProductos';
+import GestionPagos from '../src/components/administrativo/gestionPagos/GestionPagos';
+import MetodosDePago from '../src/components/administrativo/gestionPagos/gestionMetodosDePago/MetodosDePago';
+import RegistroPagos from '../src/components/administrativo/gestionPagos/RegistroPagos';
+import AdministracionProductos from '../src/components/administrativo/gestionProductos/AdministracionProductos';
 import GestionProductos from '../src/components/administrativo/gestionProductos/gestionProductos/GestionProductos';
 import GestionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/GestionCategorias'
 
@@ -20,6 +21,14 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       
       {/* Rutas protegidas */}
+      <Route 
+        path="/perfilUsuario" 
+        element={
+          <PrivateRoute>
+            <PerfilUsuario />
+          </PrivateRoute>
+        } 
+      />
       <Route 
         path="/perfil" 
         element={
