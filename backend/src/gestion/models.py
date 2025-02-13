@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Enum as SQLAlchemyEnum,DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Enum as SQLAlchemyEnum,DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, UTC
 from src.models import BaseModel
@@ -182,3 +182,12 @@ class MetodoPago(BaseModel):
     nombre: Mapped[str] = mapped_column(String, index=True)
 
     pago = relationship("Pago", back_populates="metodoPago")
+    
+    
+class Actividad(BaseModel):
+    __tablename__ = "actividades"
+
+    id = Column(Integer, primary_key=True, index=True)
+    descripcion = Column(String, nullable=False)
+    usuario = Column(String, nullable=False)  # Nombre o ID del usuario que hizo la acción
+    tiempo = Column(DateTime, default=func.now())  # Fecha y hora del evento

@@ -1,20 +1,30 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink } from "@chakra-ui/react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
 const Migaja = () => {
   const { userRole } = useAuth();
   const location = useLocation();
-  const pathnames = location.pathname.split("/").filter((x) => x);
+  const [history, setHistory] = useState([]);
 
-  if (pathnames.length === 0 || location.pathname === "/login") return null;
+  useEffect(() => {
+    setHistory((prev) => {
+      const index = prev.indexOf(location.pathname);
+      if (index !== -1) {
+        return prev.slice(0, index + 1); // Borra rutas a la derecha si se vuelve atrás
+      }
+      return [...prev, location.pathname];
+    });
+  }, [location.pathname]);
 
-  // Función para formatear el nombre de la ruta
+  if (history.length === 0 || location.pathname === "/login") return null;
+
   const formatBreadcrumb = (text) => {
     return text
-      .replace(/-/g, " ") // Reemplaza guiones por espacios
-      .replace(/([a-z])([A-Z])/g, "$1 $2") // Separa palabras en camelCase
-      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitaliza la primera letra de cada palabra
+      .replace(/-/g, " ")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
   return (
@@ -28,21 +38,18 @@ const Migaja = () => {
       boxShadow="md"
     >
       <BreadcrumbItem>
-        <BreadcrumbLink as={Link} to= {userRole === 'cliente' ? "/clienteProfile" : "/panelAdministrativo"} color="teal.500" fontWeight="bold">
+        <BreadcrumbLink as={Link} to={userRole === 'cliente' ? "/clienteProfile" : "/panelAdministrativo"} color="teal.500" fontWeight="bold">
           Inicio
         </BreadcrumbLink>
       </BreadcrumbItem>
-
-      {pathnames.map((value, index) => {
-        const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-        return (
-          <BreadcrumbItem key={to}>
-            <BreadcrumbLink as={Link} to={to} color="blackAlpha.700" fontWeight="bold">
-              {formatBreadcrumb(value)}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        );
-      })}
+      
+      {history.map((path, index) => (
+        <BreadcrumbItem key={path}>
+          <BreadcrumbLink as={Link} to={path} color="blackAlpha.700" fontWeight="bold">
+            {formatBreadcrumb(path.split("/").pop())}
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      ))}
     </Breadcrumb>
   );
 };

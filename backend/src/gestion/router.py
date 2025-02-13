@@ -627,3 +627,37 @@ def obtener_detalle(carrito_id: int, detalle_id: int, db: Session = Depends(get_
     if not detalle or detalle.carrito_id != carrito_id:
         raise HTTPException(status_code=404, detail="Detalle del carrito no encontrado")
     return detalle  
+
+#ACTIVIDADES
+#----------------------------------------------------------------------------
+# ============================================================
+# Registrar una nueva actividad
+# ============================================================
+@router.post("/", response_model=schemas.ActividadOut, status_code=status.HTTP_201_CREATED)
+def registrar_actividad(
+    actividad: schemas.ActividadCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Registra una nueva actividad en el sistema.
+    """
+    nueva_actividad = schemas.Actividad(**actividad.dict())
+    db.add(nueva_actividad)
+    db.commit()
+    db.refresh(nueva_actividad)
+    return nueva_actividad
+
+# ============================================================
+# Obtener actividades recientes
+# ============================================================
+@router.get("/", response_model=List[schemas.ActividadOut])
+def listar_actividad(
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene las actividades recientes ordenadas por fecha.
+    """
+    actividades = db.query(schemas.Actividad).order_by(schemas.Actividad.tiempo.desc()).offset(skip).limit(limit).all()
+    return actividades

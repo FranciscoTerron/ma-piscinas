@@ -12,7 +12,12 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
+  Flex,
+  Avatar,
+  Divider,
+  Icon,
 } from "@chakra-ui/react";
+import { FaUserEdit, FaLock } from "react-icons/fa";
 import { listarUsuarios } from "../../services/api";
 import FormularioPersonal from "./FormularioPersonal";
 import FormularioContrasenia from "./FormularioContrasenia";
@@ -32,12 +37,12 @@ const PerfilUsuario = () => {
   } = useDisclosure();
   const { userId } = useAuth();
   const usuarioId = userId;
+
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
         const usuarios = await listarUsuarios();
         const userData = usuarios.find((user) => Number(user.id) === Number(usuarioId));
-
         setUsuario(userData);
       } catch (error) {
         console.error("Error al obtener usuario", error);
@@ -46,28 +51,32 @@ const PerfilUsuario = () => {
     fetchUsuario();
   }, [usuarioId]);
 
-  if (!usuario) return <Text>Cargando perfil...</Text>;
+  if (!usuario) return <Text textAlign="center" mt={10} fontSize="lg" fontWeight="bold">Cargando perfil...</Text>;
 
   return (
-    <Box maxW="container.md" mx="auto" p={8}>
-      <VStack spacing={6} align="stretch">
-        <Box color={"black"} bg="white" p={8} borderRadius={10} boxShadow="xl" border="2px solid" borderColor="#00CED1">
-          <Heading size="lg">Perfil de Usuario</Heading>
-          <Text>Nombre: {usuario.nombre}</Text>
-          <Text>Email: {usuario.email}</Text>
-          <Text>Teléfono: {usuario.telefono || "No registrado"}</Text>
-          <Text>Dirección: {usuario.direccion || "No registrada"}</Text>
-          <Button colorScheme="blue" mt={4} mr={3} onClick={onOpenPersonal}>Editar Datos</Button>
-          <Button colorScheme="green" mt={4} onClick={onOpenContrasena}>Cambiar Contraseña</Button>
+    <Box maxW="lg" mx="auto" p={6} borderRadius="lg" boxShadow="xl" bg="white" border="2px solid" borderColor="#00CED1">
+      <VStack spacing={6} align="center">
+        <Avatar name={usuario.nombre} size="xl" bg="#00CED1" />
+        <Heading size="lg" color="teal.600">Perfil de Usuario</Heading>
+        <Divider borderColor="teal.300" />
+        <Box textAlign="center" fontSize="md" color="gray.700">
+          <Text fontWeight="bold">Nombre: <Text as="span" fontWeight="normal">{usuario.nombre}</Text></Text>
+          <Text fontWeight="bold">Email: <Text as="span" fontWeight="normal">{usuario.email}</Text></Text>
+          <Text fontWeight="bold">Teléfono: <Text as="span" fontWeight="normal">{usuario.telefono || "No registrado"}</Text></Text>
+          <Text fontWeight="bold">Dirección: <Text as="span" fontWeight="normal">{usuario.direccion || "No registrada"}</Text></Text>
         </Box>
+        <Flex gap={4}>
+          <Button leftIcon={<Icon as={FaUserEdit} />} colorScheme="teal" onClick={onOpenPersonal}>Editar Datos</Button>
+          <Button leftIcon={<Icon as={FaLock} />} colorScheme="orange" onClick={onOpenContrasena}>Cambiar Contraseña</Button>
+        </Flex>
       </VStack>
 
       {/* Modal para editar datos personales */}
-      <Modal isOpen={isOpenPersonal} onClose={onClosePersonal} >
+      <Modal isOpen={isOpenPersonal} onClose={onClosePersonal} isCentered>
         <ModalOverlay />
-        <ModalContent color={"black"} bg="white">
+        <ModalContent color="black" bg="white">
           <ModalHeader>Editar Datos Personales</ModalHeader>
-          <ModalCloseButton color={"black"}/>
+          <ModalCloseButton color="black"/>
           <ModalBody>
             <FormularioPersonal usuarioId={usuarioId} user={usuario} onSuccess={onClosePersonal} />
           </ModalBody>
@@ -75,11 +84,11 @@ const PerfilUsuario = () => {
       </Modal>
 
       {/* Modal para cambiar contraseña */}
-      <Modal isOpen={isOpenContrasena} onClose={onCloseContrasena}>
+      <Modal isOpen={isOpenContrasena} onClose={onCloseContrasena} isCentered>
         <ModalOverlay />
-        <ModalContent color={"black"} bg="white">
+        <ModalContent color="black" bg="white">
           <ModalHeader>Cambiar Contraseña</ModalHeader>
-          <ModalCloseButton color={"black"}/>
+          <ModalCloseButton color="black"/>
           <ModalBody>
             <FormularioContrasenia usuarioId={usuarioId} onSuccess={onCloseContrasena} />
           </ModalBody>

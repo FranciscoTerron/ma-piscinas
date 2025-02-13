@@ -336,3 +336,21 @@ class MetodoPago(MetodoPagoBase):
 
 class MetodoPagoUpdate(MetodoPagoBase):
     pass
+
+#ACTIVIDADES
+# ============================================================
+# Esquema para Metodo Pago BASE
+# ============================================================
+class ActividadBase(BaseModel):
+    descripcion: str
+    usuario: str
+
+class ActividadCreate(ActividadBase):
+    pass
+
+class ActividadOut(ActividadBase):
+    id: int
+    tiempo: datetime
+
+    class Config:
+        from_attributes = True
