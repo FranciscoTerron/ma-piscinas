@@ -1,3 +1,4 @@
+// AdminProfile.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -22,21 +23,21 @@ import {
 } from "react-icons/fa";
 import { 
   AiFillProduct,
-  AiOutlineClockCircle 
 } from "react-icons/ai";
 import { listarUsuarios, listarProductos, listarPagos } from "../../services/api";
+import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
 
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [pagos, setPagos] = useState([]); // Estado para pagos
+  const [pagos, setPagos] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
     cargarProductos();
     cargarUsuarios();
-    cargarPagos(); // Cargar los pagos al montar el componente
+    cargarPagos();
   }, []);
 
   const cargarUsuarios = async () => {
@@ -111,17 +112,13 @@ const AdminProfile = () => {
     }
   ];
 
-  const recentActivity = [
-    { id: 1, text: "Nuevo usuario registrado", time: "Hace 2 horas" },
-    { id: 2, text: "Actualización de inventario", time: "Hace 3 horas" },
-    { id: 3, text: "Cambio de precios", time: "Hace 5 horas" }
-  ];
-
   return (
-    <Container maxW="container.xl" py={8}> 
+    <Container maxW="container.xl" py={8}>
       <HStack justify="space-between" mb={6}>
         <VStack align="flex-start" spacing={1}>
-          <Text fontSize="3xl" fontWeight="bold" color="gray.800">Panel de Control</Text>
+          <Text fontSize="3xl" fontWeight="bold" color="gray.800">
+            Panel de Control
+          </Text>
           <Text color="gray.600">Bienvenido, {userName}</Text>
         </VStack>
         <HStack spacing={4}>
@@ -155,7 +152,7 @@ const AdminProfile = () => {
             p={6}
             borderRadius="lg"
             boxShadow="md"
-            border="2px solid black" // Borde negro
+            border="2px solid black"
             _hover={{ 
               transform: 'translateY(-2px)',
               boxShadow: 'lg',
@@ -184,34 +181,8 @@ const AdminProfile = () => {
         ))}
       </Grid>
 
-      {/* Sección de Actividad Reciente */}
-      <Box
-        bg="white"
-        borderRadius="lg"
-        boxShadow="md"
-        p={6}
-        border="2px solid black" // Borde negro
-      >
-        <Text fontSize="xl" fontWeight="bold" mb={4} color="gray.800">Actividad Reciente</Text>
-        <VStack spacing={4} align="stretch">
-          {recentActivity.map((activity) => (
-            <HStack 
-              key={activity.id} 
-              justify="space-between"
-              p={3}
-              border="1px solid black" // Borde negro en cada actividad
-              borderRadius="md"
-              _hover={{ bg: 'gray.50' }}
-            >
-              <HStack spacing={3}>
-                <Icon as={AiOutlineClockCircle} color="gray.500" />
-                <Text color="gray.700">{activity.text}</Text>
-              </HStack>
-              <Text fontSize="sm" color="gray.500">{activity.time}</Text>
-            </HStack>
-          ))}
-        </VStack>
-      </Box>
+      {/* Componente de Actividad Reciente */}
+      <ActividadesRecientes />
     </Container>
   );
 };

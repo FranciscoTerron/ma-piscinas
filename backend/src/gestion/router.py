@@ -4,7 +4,7 @@ from src.database import get_db
 from src.gestion import schemas, services
 from src.auth.dependencies import get_current_user
 from typing import List, Optional
-
+from datetime import datetime
 router = APIRouter()
 
 
@@ -633,7 +633,7 @@ def obtener_detalle(carrito_id: int, detalle_id: int, db: Session = Depends(get_
 # ============================================================
 # Registrar una nueva actividad
 # ============================================================
-@router.post("/", response_model=schemas.ActividadOut, status_code=status.HTTP_201_CREATED)
+@router.post("/actividades", response_model=schemas.ActividadOut, status_code=status.HTTP_201_CREATED)
 def registrar_actividad(
     actividad: schemas.ActividadCreate,
     db: Session = Depends(get_db)
@@ -650,14 +650,23 @@ def registrar_actividad(
 # ============================================================
 # Obtener actividades recientes
 # ============================================================
-@router.get("/", response_model=List[schemas.ActividadOut])
-def listar_actividad(
-    skip: int = 0,
-    limit: int = 10,
-    db: Session = Depends(get_db)
-):
-    """
-    Obtiene las actividades recientes ordenadas por fecha.
-    """
-    actividades = db.query(schemas.Actividad).order_by(schemas.Actividad.tiempo.desc()).offset(skip).limit(limit).all()
-    return actividades
+@router.get("/actividades", response_model=list[schemas.ActividadBase])
+def listar_actividades(db: Session = Depends(get_db)):
+    actividades = db.query(schemas.Actividad).order_by(schemas.Actividad.tiempo.desc()).all()
+    
+    # Convertir usuario en diccionario y manejar None en tiempo
+    actividades_serializadas = [
+        {
+            "id": act.id,
+            "descripcion": act.descripcion,
+            "tiempo": act.tiempo if act.tiempo else datetime.utcnow(),  # Si es None, poner timestamp actual
+            "usuario": {
+                "id": act.usuario.id,
+                "nombre": act.usuario.nombre,
+                "email": act.usuario.email
+            } if act.usuario else None  # Convertir objeto Usuario a diccionario
+        }
+        for act in actividades
+    ]
+
+    return actividades_serializadas

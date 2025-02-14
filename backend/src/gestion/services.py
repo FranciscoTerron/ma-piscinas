@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -706,3 +706,16 @@ def eliminar_producto_del_carrito(db: Session, carrito_id: int, producto_id: int
     db.delete(detalle)
     db.commit()
     return {"detail": "Producto eliminado del carrito"}
+
+#ACTIVIDADES
+#------------------------------------------------------------------------------------------------------------
+# Crear Actividades
+def crear_actividad(db: Session, actividad_data: schemas.ActividadCreate):
+    nueva_actividad = Actividad(**actividad_data.dict())
+    db.add(nueva_actividad)
+    db.commit()
+    db.refresh(nueva_actividad)
+    return nueva_actividad
+
+def listar_actividades(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(Actividad).order_by(Actividad.tiempo.desc()).offset(skip).limit(limit).all()

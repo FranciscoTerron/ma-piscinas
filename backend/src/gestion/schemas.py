@@ -340,10 +340,12 @@ class MetodoPagoUpdate(MetodoPagoBase):
 #ACTIVIDADES
 # ============================================================
 # Esquema para Metodo Pago BASE
-# ============================================================
+# ============================================================# Esquema de respuesta corregido
 class ActividadBase(BaseModel):
+    id: int
     descripcion: str
-    usuario: str
+    tiempo: datetime | None  # Permitir None
+    usuario: dict | None     # Convertir usuario a diccionario
 
 class ActividadCreate(ActividadBase):
     pass

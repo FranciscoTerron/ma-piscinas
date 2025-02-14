@@ -6,17 +6,37 @@ import { useAuth } from "../context/AuthContext";
 const Migaja = () => {
   const { userRole } = useAuth();
   const location = useLocation();
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => {
+    return JSON.parse(localStorage.getItem("breadcrumbHistory")) || [];
+  });
+
+  // Rutas que deben reiniciar el historial
+  const resetRoutes = ["/perfilUsuario"];
+
+  // Ruta de inicio según el rol del usuario
+  const homePath = userRole === "cliente" ? "/clienteProfile" : "/panelAdministrativo";
 
   useEffect(() => {
     setHistory((prev) => {
-      const index = prev.indexOf(location.pathname);
-      if (index !== -1) {
-        return prev.slice(0, index + 1); // Borra rutas a la derecha si se vuelve atrás
+      let newHistory;
+      
+      if (resetRoutes.includes(location.pathname)) {
+        newHistory = [location.pathname]; // Reinicia el historial si es una ruta de reinicio
+      } else if (location.pathname === homePath) {
+        newHistory = []; // Si vuelve a "Inicio", borra el historial
+      } else {
+        const index = prev.indexOf(location.pathname);
+        if (index !== -1) {
+          newHistory = prev.slice(0, index + 1); // Elimina rutas a la derecha si se vuelve atrás
+        } else {
+          newHistory = [...prev, location.pathname]; // Agrega nueva ruta al historial
+        }
       }
-      return [...prev, location.pathname];
+
+      localStorage.setItem("breadcrumbHistory", JSON.stringify(newHistory));
+      return newHistory;
     });
-  }, [location.pathname]);
+  }, [location.pathname, homePath]);
 
   if (history.length === 0 || location.pathname === "/login") return null;
 
@@ -38,12 +58,12 @@ const Migaja = () => {
       boxShadow="md"
     >
       <BreadcrumbItem>
-        <BreadcrumbLink as={Link} to={userRole === 'cliente' ? "/clienteProfile" : "/panelAdministrativo"} color="teal.500" fontWeight="bold">
+        <BreadcrumbLink as={Link} to={homePath} color="teal.500" fontWeight="bold">
           Inicio
         </BreadcrumbLink>
       </BreadcrumbItem>
-      
-      {history.map((path, index) => (
+
+      {history.map((path) => (
         <BreadcrumbItem key={path}>
           <BreadcrumbLink as={Link} to={path} color="blackAlpha.700" fontWeight="bold">
             {formatBreadcrumb(path.split("/").pop())}

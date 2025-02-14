@@ -51,6 +51,8 @@ class Usuario(BaseModel):
     rol = relationship("Rol", backref="usuarios")
     carrito = relationship("Carrito", back_populates="usuario")
     pedido = relationship("Pedido", back_populates="usuario" )
+    # Relación inversa
+    actividades = relationship("Actividad", back_populates="usuario")
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)
@@ -188,6 +190,9 @@ class Actividad(BaseModel):
     __tablename__ = "actividades"
 
     id = Column(Integer, primary_key=True, index=True)
-    descripcion = Column(String, nullable=False)
-    usuario = Column(String, nullable=False)  # Nombre o ID del usuario que hizo la acción
-    tiempo = Column(DateTime, default=func.now())  # Fecha y hora del evento
+    descripcion = Column(String, index=True, nullable=False)
+    tiempo = Column(DateTime, default=datetime.utcnow)
+     
+    # Relación con Usuario
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    usuario = relationship("Usuario", back_populates="actividades")

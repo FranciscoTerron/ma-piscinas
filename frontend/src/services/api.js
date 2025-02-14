@@ -179,3 +179,8 @@ export const obtenerMetodosPago = async () => {
   const response = await api.get(`/metodos-pago/`);
   return response.data;
 };
+
+export const listarActividadesRecientes = async () => {
+  const response = await axios.get("http://localhost:8000/actividades");
+  return response.data; // Devuelve solo los datos
+};
