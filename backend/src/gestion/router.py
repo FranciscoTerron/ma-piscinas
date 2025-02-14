@@ -146,6 +146,41 @@ def eliminar_categoria(categoria_id: int, db: Session = Depends(get_db)):
     services.eliminar_categoria(db, categoria_id)
     return {"message": "Categoría eliminada correctamente"}
 
+# ============================================================
+# Ruta para crear una subcategoría
+# ============================================================
+@router.post("/subcategorias/{categoria_id}", response_model=schemas.SubCategoria, status_code=status.HTTP_201_CREATED)
+def crear_subcategoria(categoria_id: int, subcategoria: schemas.SubCategoriaBase, db: Session = Depends(get_db)):
+    return services.crear_subcategoria(db, subcategoria, categoria_id)
+
+# ============================================================
+# Ruta para listar subcategorías
+# ============================================================
+@router.get("/subcategorias", response_model=list[schemas.SubCategoria])
+def listar_subcategorias(db: Session = Depends(get_db)):
+    return services.listar_subcategorias(db)
+
+# ============================================================
+# Ruta para obtener una subcategoría por ID
+# ============================================================
+@router.get("/subcategorias/{subcategoria_id}", response_model=schemas.SubCategoria)
+def obtener_subcategoria(subcategoria_id: int, db: Session = Depends(get_db)):
+    return services.obtener_subcategoria_por_id(db, subcategoria_id)
+
+# ============================================================
+# Ruta para actualizar una subcategoría
+# ============================================================
+@router.put("/subcategorias/{subcategoria_id}", response_model=schemas.SubCategoria)
+def actualizar_subcategoria(subcategoria_id: int, subcategoria_update: schemas.SubCategoriaBase, db: Session = Depends(get_db)):
+    return services.actualizar_subcategoria(db, subcategoria_id, subcategoria_update)
+
+# ============================================================
+# Ruta para eliminar una subcategoría
+# ============================================================
+@router.delete("/subcategorias/{subcategoria_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_subcategoria(subcategoria_id: int, db: Session = Depends(get_db)):
+    services.eliminar_subcategoria(db, subcategoria_id)
+    return {"message": "Subcategoría eliminada correctamente"}
 
 # RUTAS PARA PRODUCTO
 #-------------------------------------------------------------------------------------------

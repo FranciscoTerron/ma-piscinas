@@ -9,31 +9,31 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
-import { listarProductos, listarCategorias } from "../../../../services/api";
-import GoBackButton from "../../../GoBackButton";
-import FormularioProducto from "./FormularioProducto";
-import ListaProductos from "./ListaProductos";
+import { listarSubcategorias, listarCategorias } from "../../../../../services/api"; // Importa listarCategorias
+import GoBackButton from "../../../../GoBackButton";
+import FormularioCategoria from "./FormularioSubCate";
+import ListaCategorias from "./ListaSubCate";
 
-const GestionProductos = () => {
-  const [productos, setProductos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+const GestionSubCate = () => {
+  const [subcategorias, setSubcategorias] = useState([]);
+  const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
+  const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState(null);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    cargarProductos();
-    cargarCategorias();
+    cargarSubcategorias();
+    cargarCategorias(); // Cargar la lista de categorías al montar el componente
   }, []);
 
-  const cargarProductos = async () => {
+  const cargarSubcategorias = async () => {
     try {
-      const data = await listarProductos();
-      setProductos(data);
+      const data = await listarSubcategorias();
+      setSubcategorias(data);
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudo cargar la lista de productos.",
+        description: "No se pudo cargar la lista de subcategorías.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -56,8 +56,8 @@ const GestionProductos = () => {
     }
   };
 
-  const handleEditarProducto = (producto) => {
-    setProductoSeleccionado(producto);
+  const handleEditarSubcategoria = (subcategoria) => {
+    setSubcategoriaSeleccionada(subcategoria);
     onOpen();
   };
 
@@ -71,36 +71,35 @@ const GestionProductos = () => {
               <HStack>
                 <FaEdit size="24px" color="#4A5568" />
                 <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-                  Gestión de Productos
+                  Gestión de Subcategorías
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {productos.length} productos disponibles
+                {subcategorias.length} subcategorías registradas
               </Text>
             </VStack>
           </HStack>
-          <Button colorScheme="blue" onClick={() => handleEditarProducto(null)}>
-            Agregar Producto
+          <Button colorScheme="blue" onClick={() => handleEditarSubcategoria(null)}>
+            Agregar Subcategoría
           </Button>
         </HStack>
 
-        <ListaProductos
-          productos={productos}
+        <ListaCategorias
+          subcategorias={subcategorias}
           categorias={categorias} 
-          onEditar={handleEditarProducto}
-          onEliminar={cargarProductos}
+          onEditar={handleEditarSubcategoria}
+          onEliminar={cargarSubcategorias}
         />
 
-        <FormularioProducto
+        <FormularioCategoria
           isOpen={isOpen}
           onClose={onClose}
-          categorias={categorias}
-          producto={productoSeleccionado}
-          onSubmitSuccess={cargarProductos}
+          subcategoria={subcategoriaSeleccionada} 
+          onSubmitSuccess={cargarSubcategorias}
         />
       </VStack>
     </Container>
   );
 };
 
-export default GestionProductos;
+export default GestionSubCate;

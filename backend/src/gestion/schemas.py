@@ -175,6 +175,23 @@ class CategoriaProducto(CategoriaProductoBase):
     class Config:
         from_attributes = True
 
+#SubCategoria
+#-------------------------------------------------------------------------------------
+# ============================================================
+# Esquema para #SubCategoria Base
+# ============================================================
+class SubCategoriaBase(BaseModel):
+    nombre: str = Field(..., example="Electrónica")
+
+# ============================================================
+# Esquema para crear SubCategoria
+# ============================================================
+class SubCategoria(SubCategoriaBase):
+    id: int = Field(..., example=1)
+    categoria_id: int
+    class Config:
+        from_attributes = True
+
 #Carrito
 #--------------------------------------------------------------------------------
 

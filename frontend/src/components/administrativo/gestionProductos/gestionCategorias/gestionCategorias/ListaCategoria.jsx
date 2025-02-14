@@ -22,7 +22,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FaTrash, FaEdit } from "react-icons/fa";
-import { eliminarCategoria } from "../../../../services/api";
+import { eliminarCategoria } from "../../../../../services/api";
 
 const ListaCategorias = ({ categorias, onEditar, onEliminar }) => {
   const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);

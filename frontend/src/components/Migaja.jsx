@@ -14,7 +14,7 @@ const Migaja = () => {
   const resetRoutes = ["/perfilUsuario"];
 
   // Ruta de inicio según el rol del usuario
-  const homePath = userRole === "cliente" ? "/clienteProfile" : "/panelAdministrativo";
+  const homePath = userRole === "cliente" ? "/perfil" : "/panelAdministrativo";
 
   useEffect(() => {
     setHistory((prev) => {

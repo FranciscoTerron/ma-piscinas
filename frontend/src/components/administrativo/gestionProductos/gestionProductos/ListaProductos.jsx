@@ -27,7 +27,13 @@ import {
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { eliminarProducto } from "../../../../services/api";
 
-const ListaProductos = ({ productos, onEditar, onEliminar }) => {
+const ListaProductos = ({ productos, categorias, onEditar, onEliminar }) => {
+
+  const obtenerNombreCategoria = (categoriaId) => {
+    const categoria = categorias.find((cat) => cat.id === categoriaId);
+    return categoria ? categoria.nombre : "Sin categoría";
+  };
+
   const [productoAEliminar, setProductoAEliminar] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -100,6 +106,7 @@ const ListaProductos = ({ productos, onEditar, onEliminar }) => {
             <Tr>
               <Th textAlign="center" color="gray.600">ID</Th>
               <Th textAlign="left" color="gray.600">Producto</Th>
+              <Th textAlign="left" color="gray.600">Categoría</Th>
               <Th textAlign="left" color="gray.600">Descripción</Th>
               <Th textAlign="right" color="gray.600">Precio</Th>
               <Th textAlign="center" color="gray.600">Stock</Th>
@@ -131,6 +138,7 @@ const ListaProductos = ({ productos, onEditar, onEliminar }) => {
                     </Text>
                   </Flex>
                 </Td>
+                <Td color="gray.600"> {obtenerNombreCategoria(producto.categoria_id)}</Td>
                 <Td color="gray.600">
                   <Tooltip label={producto.descripcion} hasArrow>
                     <Text noOfLines={2}>{producto.descripcion}</Text>

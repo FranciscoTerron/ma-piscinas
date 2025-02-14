@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -131,9 +131,13 @@ def crear_categoria(db: Session, categoria: schemas.CategoriaProductoBase) -> Ca
     db.refresh(db_categoria)
     return db_categoria
 
+
 # Listar todas las categorías
-def listar_categorias(db: Session):
-    return db.query(CategoriaProducto).all()
+def listar_categorias(db: Session) -> List[CategoriaProducto]:
+    categorias = db.query(CategoriaProducto).all()
+    if not categorias:
+        return []  # Devuelve una lista vacía si no hay categorías
+    return categorias
 
 # Obtener una categoría por ID
 def obtener_categoria_por_id(db: Session, categoria_id: int) -> CategoriaProducto:
@@ -156,7 +160,51 @@ def eliminar_categoria(db: Session, categoria_id: int):
     categoria = obtener_categoria_por_id(db, categoria_id)
     db.delete(categoria)
     db.commit()
+    
+#SUBCATEGORIAS
+#------------------------------------------------------------------------------------------------
+# Crear una nueva subcategoría
+def crear_subcategoria(db: Session, subcategoria: schemas.SubCategoriaBase, categoria_id: int) -> SubCategoria:
+    categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    
+    db_subcategoria = SubCategoria(
+        nombre=subcategoria.nombre,
+        categoria_id=categoria_id
+    )
+    db.add(db_subcategoria)
+    db.commit()
+    db.refresh(db_subcategoria)
+    return db_subcategoria
 
+# Listar todas las subcategorías
+def listar_subcategorias(db: Session) -> List[SubCategoria]:
+    subcategorias = db.query(SubCategoria).all()
+    if not subcategorias:
+        return []  # Devuelve una lista vacía si no hay subcategorías
+    return subcategorias
+
+# Obtener una subcategoría por ID
+def obtener_subcategoria_por_id(db: Session, subcategoria_id: int) -> SubCategoria:
+    subcategoria = db.query(SubCategoria).filter(SubCategoria.id == subcategoria_id).first()
+    if not subcategoria:
+        raise HTTPException(status_code=404, detail="Subcategoría no encontrada")
+    return subcategoria
+
+# Actualizar una subcategoría existente
+def actualizar_subcategoria(db: Session, subcategoria_id: int, subcategoria_update: schemas.SubCategoriaBase) -> SubCategoria:
+    subcategoria = obtener_subcategoria_por_id(db, subcategoria_id)
+    subcategoria.nombre = subcategoria_update.nombre
+    db.commit()
+    db.refresh(subcategoria)
+    return subcategoria
+
+# Eliminar una subcategoría
+def eliminar_subcategoria(db: Session, subcategoria_id: int):
+    subcategoria = obtener_subcategoria_por_id(db, subcategoria_id)
+    db.delete(subcategoria)
+    db.commit()
 
 #PRODUCTOS
 #------------------------------------------------------------------------------------------------

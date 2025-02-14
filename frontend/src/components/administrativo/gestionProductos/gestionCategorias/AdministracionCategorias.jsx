@@ -3,19 +3,17 @@ import { Box, Grid, VStack, HStack, Text, Icon, Button, Container, useToast,} fr
 import { Link as RouterLink } from 'react-router-dom';
 import {  FaContao ,  FaBell,  FaCog,  FaChevronRight } from "react-icons/fa";
 import { AiFillProduct,} from "react-icons/ai";
-import { listarProductos, listarCategorias, listarSubcategorias } from "../../../services/api";
-import GoBackButton from "../../GoBackButton";
+import { listarSubcategorias, listarCategorias } from "../../../../services/api";
+import GoBackButton from "../../../GoBackButton";
 
-const AdministracionProductos = () => {
+const AdministracionCategorias = () => {
   const [categorias, setCategorias] = useState([]);
-  const [subcategorias, setSubcategorias] = useState([]);
-  const [productos, setProductos] = useState([]);
+  const [subcategorias, setSubCategorias] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
-    cargarProductos();
+    cargarSubCategorias();
     cargarCategorias();
-    cargarSubcategorias();
   }, []);
 
   const cargarCategorias = async () => {
@@ -33,29 +31,14 @@ const AdministracionProductos = () => {
     }
   };
 
-  const cargarSubcategorias = async () => {
+  const cargarSubCategorias = async () => {
     try {
       const data = await listarSubcategorias();
-      setSubcategorias(data);
+      setSubCategorias(data);
     } catch (error) {
       toast({
         title: "Error",
         description: "No se pudo cargar la lista de subcategorias.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const cargarProductos = async () => {
-    try {
-      const data = await listarProductos();
-      setProductos(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cargar la lista de productos.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -68,17 +51,17 @@ const AdministracionProductos = () => {
       id: 'user', 
       title: 'Gestión de Categorias',
       description: 'Administrar categorias para productos',
-      route: '/administracionDeCategorias', 
+      route: '/gestionCategorias', 
       icon: FaContao,
-      stats: `${categorias.length} categorias | ${subcategorias.length} subcategorias`
+      stats: `${categorias.length} categorias`
     },
     { 
       id: 'product', 
-      title: 'Gestión de Productos',
-      description: 'Inventario, precios y categorías',
-      route: '/gestionProductos', 
+      title: 'Gestión de Subcategorias',
+      description: 'Administrar subcategorías para productos',
+      route: '/gestionSubcategorias', 
       icon: AiFillProduct,
-      stats: `${productos.length} productos`
+      stats: `${subcategorias.length} subcategorias`
     },
   ];
 
@@ -90,10 +73,10 @@ const AdministracionProductos = () => {
             <GoBackButton />
             <VStack align="flex-start" spacing={0}>
               <Text fontSize="2xl" fontWeight="bold" color="gray.700">
-                Administración de Productos
+                Administración de Categorias
               </Text>
               <Text color="gray.500" fontSize="sm">
-                Inventario, precios y categorías
+                categorías y subcategorias
               </Text>
             </VStack>
           </HStack>
@@ -150,4 +133,4 @@ const AdministracionProductos = () => {
   );
 };
 
-export default AdministracionProductos;
+export default AdministracionCategorias;

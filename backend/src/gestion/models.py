@@ -115,6 +115,15 @@ class CategoriaProducto(BaseModel):
     descripcion: Mapped[str] = mapped_column(String, index=True)
 
     productos = relationship("Producto", back_populates="categoria")
+    subcategorias = relationship("SubCategoria", back_populates="categoria")
+
+class SubCategoria(BaseModel):
+    __tablename__ = "subcategorias"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String, index=True)
+    categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
+    categoria = relationship("CategoriaProducto", back_populates="subcategorias")
 
 class Envio(BaseModel):
     __tablename__ = "envios"

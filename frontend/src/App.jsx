@@ -2,6 +2,7 @@ import React from 'react';
 import { ChakraProvider, Box, Flex, Breadcrumb } from '@chakra-ui/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import Header from './components/Header';
+import Navegador from './components/Navegador';
 import Footer from './components/Footer'
 import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './AppRoutes'; 
@@ -18,6 +19,7 @@ const App = () => {
             bg="white" 
           >
             <Header />
+            <Navegador />
             <Migaja/>
             <Box 
               flex="1" 

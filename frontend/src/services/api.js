@@ -130,6 +130,38 @@ export const eliminarCategoria = async (categoriaId) => {
   await api.delete(`/categorias/${categoriaId}`);
 };
 
+// Servicios para subcategorías
+//---------------------------------------------------------------------
+
+// Listar todas las subcategorías
+export const listarSubcategorias = async () => {
+  const response = await api.get("/subcategorias");
+  return response.data;
+};
+
+// Crear una subcategoría asociada a una categoría
+export const crearSubcategoria = async (subcategoriaData) => {
+  const response = await api.post(`/subcategorias/${subcategoriaData.categoriaId}`, subcategoriaData);
+  return response.data;
+};
+
+// Obtener una subcategoría por ID
+export const obtenerSubcategoria = async (subcategoriaId) => {
+  const response = await api.get(`/subcategorias/${subcategoriaId}`);
+  return response.data;
+};
+
+// Actualizar una subcategoría
+export const actualizarSubcategoria = async (subcategoriaId, subcategoriaData) => {
+  const response = await api.put(`/subcategorias/${subcategoriaId}`, subcategoriaData);
+  return response.data;
+};
+
+// Eliminar una subcategoría
+export const eliminarSubcategoria = async (subcategoriaId) => {
+  await api.delete(`/subcategorias/${subcategoriaId}`);
+};
+
 // Servicios para PAGO Y METODO DE PAGO
 // ---------------------------------------------------------------------
 // Listar Pagos

@@ -13,7 +13,7 @@ import {
   Button,
   useToast,
 } from "@chakra-ui/react";
-import { crearCategoria, actualizarCategoria } from "../../../../services/api";
+import { crearCategoria, actualizarCategoria } from "../../../../../services/api";
 
 const initialCategoriaState = {
   nombre: "",

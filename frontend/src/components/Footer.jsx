@@ -14,24 +14,24 @@ const Footer = () => {
   return (
     <Box as="footer" bg="#00CED1" color="#00008B" py={8} px={10}>
       {/* Primera Sección: Footer Principal */}
-      <Flex direction={{ base: "column", md: "row" }} justify="space-between" align="flex-start">
+      <Flex direction={{ base: "column", md: "row" }} justify="space-between" align="flex-start" spacing={8}>
         {/* Métodos de Pago */}
         <VStack align="flex-start" spacing={3}>
           <Text fontWeight="bold">MEDIOS DE PAGO</Text>
-          <HStack>
-            <Image src={visaUrl} alt="Visa" boxSize="40px" />
-            <Image src={mastercardUrl} alt="Mastercard" boxSize="40px" />
-            <Image src={pagoFacilUrl} alt="Pago Facil" boxSize="40px" />
-            <Image src={naranjaUrl} alt="Naranja" boxSize="40px" />
+          <HStack spacing={4}>
+            <Image src={visaUrl} alt="Visa" boxSize="50px" />
+            <Image src={mastercardUrl} alt="Mastercard" boxSize="50px" />
+            <Image src={pagoFacilUrl} alt="Pago Facil" boxSize="50px" />
+            <Image src={naranjaUrl} alt="Naranja" boxSize="50px" />
           </HStack>
         </VStack>
 
         {/* Formas de Envío */}
         <VStack align="flex-start" spacing={3}>
           <Text fontWeight="bold">FORMAS DE ENVÍO</Text>
-          <HStack>
+          <HStack spacing={4}>
             <Image src={andreaniUrl} alt="Andreani" boxSize="50px" />
-            <Image src={cruzDelSurUrl} alt="Cruz del Sur" boxSize="60px" />
+            <Image src={cruzDelSurUrl} alt="Cruz del Sur" boxSize="50px" />
           </HStack>
         </VStack>
 
@@ -72,7 +72,6 @@ const Footer = () => {
           </HStack>
         </VStack>
 
-
         {/* Suscripción */}
         <VStack align="flex-start" spacing={3}>
           <Text fontWeight="bold">TE GUSTÓ LO QUE VES?</Text>
@@ -85,63 +84,78 @@ const Footer = () => {
           </HStack>
         </VStack>
       </Flex>
-
       <Divider my={6} borderColor="#00008B" />
-
       {/* Segunda Sección: Creadores y Copyright */}
-      <Flex direction="column" align="center" textAlign="center" gap={4}>
-        <Flex direction="column" align="center">
-          <Text fontWeight="bold" fontSize="22px">Desarrollado por:</Text>
-          <HStack spacing={6} mt={2}>
-            <Link
-              href="https://www.linkedin.com/in/francisco-terron-81b571211/"
-              isExternal
-              color="#00008B"
-              fontWeight="bold"
-              _hover={{ textDecoration: "underline" }}
-            >
-              Francisco Terrón
-            </Link>
-            <Link
-              href="https://www.linkedin.com/in/mauro-san-pedro/"
-              isExternal
-              color="#00008B"
-              fontWeight="bold"
-              _hover={{ textDecoration: "underline" }}
-            >
-              Mauro San Pedro
-            </Link>
-          </HStack>
-        </Flex>
-        <Text fontSize="sm">
-          Copyright MA - 2025. Todos los derechos reservados. Defensa de los y los consumidores.
-        </Text>
-        <Flex direction={{ base: "column", md: "row" }} align="center">
-          <Text fontSize="sm">
-            Para reclamos{" "}
-            <Link
-              href="https://autogestion.produccion.gob.ar/consumidores"
-              color="#00008B"
-              fontWeight="bold"
-              _hover={{ textDecoration: "underline" }}
-            >
-              Ingresá acá
-            </Link>
+      <Box mt={4} px={4}>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          align="center"
+          justify="space-between"
+          textAlign="center"
+          flexWrap="wrap"
+          gap={2}
+        >
+          {/* Desarrollado por */}
+          <Flex align="center" gap={2}>
+            <Text fontSize="12px">Desarrollado por:</Text>
+            <HStack spacing={2}>
+              <Link
+                href="https://www.linkedin.com/in/francisco-terron-81b571211/"
+                isExternal
+                color="blue.600"
+                fontWeight="bold"
+                fontSize="12px"
+                _hover={{ textDecoration: "underline" }}
+              >
+                Francisco Terrón
+              </Link>
+              <Text fontSize="12px">y</Text>
+              <Link
+                href="https://www.linkedin.com/in/mauro-san-pedro/"
+                isExternal
+                color="blue.600"
+                fontWeight="bold"
+                fontSize="12px"
+                _hover={{ textDecoration: "underline" }}
+              >
+                Mauro San Pedro
+              </Link>
+            </HStack>
+          </Flex>
+
+          {/* Copyright */}
+          <Text fontSize="12px">
+            Copyright MA - 2025. Todos los derechos reservados. Defensa de las y los consumidores.
           </Text>
-          <Button
-            as={Link}
-            href="/contacto"
-            ml={{ base: 0, md: 4 }}
-            mt={{ base: 2, md: 0 }}
-            size="sm"
-            bg="#00008B"
-            color="white"
-            _hover={{ bg: "#4169E1" }}
-          >
-            Botón de arrepentimiento
-          </Button>
+
+          {/* Reclamos y botón */}
+          <Flex align="center" gap={2}>
+            <Text fontSize="12px">
+              Para reclamos{" "}
+              <Link
+                href="https://autogestion.produccion.gob.ar/consumidores"
+                target="_blank"
+                color="blue.600"
+                fontWeight="bold"
+                fontSize="12px"
+                _hover={{ textDecoration: "underline" }}
+              >
+                Ingresá acá
+              </Link>
+            </Text>
+            <Text fontSize="12px">/</Text>
+            <Link
+              href="/contacto"
+              fontSize="12px"
+              fontWeight="bold"
+              color="blue.600"
+              _hover={{ textDecoration: "underline" }}
+            >
+              Botón de arrepentimiento
+            </Link>
+          </Flex>
         </Flex>
-      </Flex>
+      </Box>
     </Box>
   );
 };
