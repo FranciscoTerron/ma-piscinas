@@ -7,6 +7,7 @@ import Footer from './components/Footer'
 import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './AppRoutes'; 
 import Migaja from './components/Migaja';
+import BotonWhatsApp from './components/cliente/BotonWhatsapp';
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
               <AppRoutes />
             </Box>
             <Footer />
+            <BotonWhatsApp />
           </Flex>
         </Router>
       </AuthProvider>

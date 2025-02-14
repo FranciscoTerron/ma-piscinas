@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import PrivateRoute from '../src/components/PrivateRoute';  
+import Error403 from '../src/components/Error403';
 import Register from '../src/components/Register';
 import Login from '../src/components/Login';
 import PerfilUsuario from '../src/components/perfilPersonal/PerfilUsuario';
@@ -12,7 +14,7 @@ import RegistroPagos from '../src/components/administrativo/gestionPagos/Registr
 import AdministracionProductos from '../src/components/administrativo/gestionProductos/AdministracionProductos';
 import GestionProductos from '../src/components/administrativo/gestionProductos/gestionProductos/GestionProductos';
 import AdministracionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/AdministracionCategorias';
-import GestionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/gestionCategorias/GestionCategorias'
+import GestionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/gestionCategorias/GestionCategorias';
 import GestionSubCate from '../src/components/administrativo/gestionProductos/gestionCategorias/gestionSubCategorias/GestionSubCate';
 import ComoComprar from '../src/components/cliente/ComoComprar';
 import QuienesSomos from '../src/components/cliente/QuienesSomos';
@@ -25,52 +27,25 @@ const AppRoutes = () => {
       {/* Rutas públicas */}
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
-      
+      <Route path="/error403" element={<Error403 />} />
+      <Route path="/comoComprar" element={<ComoComprar />} />
+      <Route path="/quienesSomos" element={<QuienesSomos />} />
+      <Route path="/politicasDeDevolucion" element={<PoliticasDevolucion />} />
+      <Route path="/contacto" element={<Contacto />} />
+
       {/* Rutas protegidas */}
       <Route 
         path="/perfilUsuario" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["cliente", "administrador"]}>
             <PerfilUsuario />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/comoComprar" 
-        element={
-          <PrivateRoute>
-            <ComoComprar />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/quienesSomos" 
-        element={
-          <PrivateRoute>
-            <QuienesSomos />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/politicasDeDevolucion" 
-        element={
-          <PrivateRoute>
-            <PoliticasDevolucion />
-          </PrivateRoute>
-        } 
-      />
-      <Route 
-        path="/contacto" 
-        element={
-          <PrivateRoute>
-            <Contacto />
           </PrivateRoute>
         } 
       />
       <Route 
         path="/perfil" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["cliente", "administrador"]}>
             <ClienteProfile />
           </PrivateRoute>
         } 
@@ -78,7 +53,7 @@ const AppRoutes = () => {
       <Route 
         path="/panelAdministrativo" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <AdminProfile />
           </PrivateRoute>
         } 
@@ -86,7 +61,7 @@ const AppRoutes = () => {
       <Route 
         path="/gestionUsuarios" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <GestionUsuarios />
           </PrivateRoute>
         } 
@@ -94,15 +69,15 @@ const AppRoutes = () => {
       <Route 
         path="/gestionProductos" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <GestionProductos />
           </PrivateRoute>
         } 
       />
-        <Route 
+      <Route 
         path="/gestionPagos" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <GestionPagos />
           </PrivateRoute>
         } 
@@ -110,7 +85,7 @@ const AppRoutes = () => {
       <Route 
         path="/registroPagos" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <RegistroPagos />
           </PrivateRoute>
         } 
@@ -118,7 +93,7 @@ const AppRoutes = () => {
       <Route 
         path="/metodosPago" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <MetodosDePago />
           </PrivateRoute>
         } 
@@ -126,7 +101,7 @@ const AppRoutes = () => {
       <Route 
         path="/administracionDeProductos" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <AdministracionProductos />
           </PrivateRoute>
         } 
@@ -134,7 +109,7 @@ const AppRoutes = () => {
       <Route 
         path="/administracionDeCategorias" 
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <AdministracionCategorias />
           </PrivateRoute>
         } 
@@ -142,7 +117,7 @@ const AppRoutes = () => {
       <Route
         path="/gestionCategorias"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <GestionCategorias />
           </PrivateRoute>
         }
@@ -150,21 +125,16 @@ const AppRoutes = () => {
       <Route
         path="/gestionSubcategorias"
         element={
-          <PrivateRoute>
+          <PrivateRoute allowedRoles={["administrador"]}>
             <GestionSubCate />
           </PrivateRoute>
         }
       />
+
       {/* Redirección por defecto */}
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
-};
-
-// Componente PrivateRoute para proteger rutas
-const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
 };
 
 export default AppRoutes;
