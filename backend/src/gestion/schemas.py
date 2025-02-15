@@ -315,6 +315,31 @@ class Envio(EnvioBase):
 class EnvioCreate(EnvioBase):
     envio_id: int = Field(..., example=1)
 
+
+# ============================================================
+# Esquema Base de Empresa (atributos basicos)
+# ============================================================
+class EmpresaBase  (BaseModel):
+    nombre: str = Field(..., example="Andreani")
+    direccion: Optional[str] = Field(None, example="Avenida Siempre Viva 123")
+    telefono: Optional[str] = Field(None, example="+54 9 11 1234-5678")
+    imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
+
+
+# ============================================================
+# Esquema para la creación de una empresa
+# ============================================================
+class EmpresaCreate(EmpresaBase):
+    pass  # Se hereda directamente del BaseModel sin cambios
+
+# ============================================================
+# Esquema para representar una empresa con ID (respuesta de la API)
+# ============================================================
+class Empresa(EmpresaBase): 
+    id: int
+
+    class Config:
+        from_attributes = True
 #PAGO
 #--------------------------------------------------------------------------------------------
 # ============================================================

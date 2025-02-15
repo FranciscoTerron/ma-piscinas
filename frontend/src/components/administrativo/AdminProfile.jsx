@@ -19,12 +19,13 @@ import {
   FaMoneyCheckAlt,
   FaBell, 
   FaCog,
-  FaChevronRight 
+  FaChevronRight, 
+  FaTruck
 } from "react-icons/fa";
 import { 
   AiFillProduct,
 } from "react-icons/ai";
-import { listarUsuarios, listarProductos, listarPagos } from "../../services/api";
+import { listarUsuarios, listarProductos, listarPagos, listarEnvios } from "../../services/api";
 import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
 
 const AdminProfile = () => {
@@ -32,12 +33,14 @@ const AdminProfile = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [productos, setProductos] = useState([]);
   const [pagos, setPagos] = useState([]);
+  const [envios, setEnvios] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
     cargarProductos();
     cargarUsuarios();
     cargarPagos();
+    cargarEnvios();
   }, []);
 
   const cargarUsuarios = async () => {
@@ -85,6 +88,21 @@ const AdminProfile = () => {
     }
   };
 
+  const cargarEnvios = async () => {
+    try {
+      const data = await listarEnvios();
+      setPagos(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar envios.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const cards = [
     { 
       id: 'user', 
@@ -109,6 +127,15 @@ const AdminProfile = () => {
       route: '/gestionPagos', 
       icon: FaMoneyCheckAlt ,
       stats: `${pagos.length} pagos`
+    },
+
+    { 
+      id: 'envios', 
+      title: 'Gestión de Envios',
+      description: 'Envios, registros, métodos de envio',
+      route: '/gestionEnvios', 
+      icon: FaTruck ,
+      stats: `${envios.length} envios`
     }
   ];
 

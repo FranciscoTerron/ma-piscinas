@@ -10,35 +10,35 @@ const Migaja = () => {
     return JSON.parse(localStorage.getItem("breadcrumbHistory")) || [];
   });
 
-  // Rutas que deben reiniciar el historial
-  const resetRoutes = ["/perfilUsuario"];
-
-  // Ruta de inicio según el rol del usuario
-  const homePath = userRole === "cliente" ? "/perfil" : "/panelAdministrativo";
+  const resetRoutes = ["/perfilUsuario", "/inicio" , "/register"];
+  const homePath = userRole === "cliente" ? "/inicio" : "/panelAdministrativo";
 
   useEffect(() => {
     setHistory((prev) => {
       let newHistory;
-      
-      if (resetRoutes.includes(location.pathname)) {
-        newHistory = [location.pathname]; // Reinicia el historial si es una ruta de reinicio
-      } else if (location.pathname === homePath) {
-        newHistory = []; // Si vuelve a "Inicio", borra el historial
+
+      if (location.pathname === homePath) {
+        newHistory = [homePath]; // Solo debe estar HomePath
+      } else if (resetRoutes.includes(location.pathname)) {
+        newHistory = [homePath, location.pathname]; // Reinicia con Home y la ruta actual
       } else {
-        const index = prev.indexOf(location.pathname);
-        if (index !== -1) {
-          newHistory = prev.slice(0, index + 1); // Elimina rutas a la derecha si se vuelve atrás
-        } else {
-          newHistory = [...prev, location.pathname]; // Agrega nueva ruta al historial
-        }
+        newHistory = prev.includes(location.pathname)
+          ? prev.slice(0, prev.indexOf(location.pathname) + 1) // Si ya existe, corta hasta ahí
+          : [...prev, location.pathname]; // Agrega la nueva ruta
       }
+
+      // Evita duplicados de HomePath
+      newHistory = newHistory.filter((path, index) => index === 0 || path !== homePath);
 
       localStorage.setItem("breadcrumbHistory", JSON.stringify(newHistory));
       return newHistory;
     });
   }, [location.pathname, homePath]);
 
-  if (history.length === 0 || location.pathname === "/login") return null;
+  // No mostrar migaja si solo está "Inicio" o estamos en login
+  if (history.length <= 1 || location.pathname === "/login") {
+    return null;
+  }
 
   const formatBreadcrumb = (text) => {
     return text
@@ -57,16 +57,10 @@ const Migaja = () => {
       borderRadius="md"
       boxShadow="md"
     >
-      <BreadcrumbItem>
-        <BreadcrumbLink as={Link} to={homePath} color="teal.500" fontWeight="bold">
-          Inicio
-        </BreadcrumbLink>
-      </BreadcrumbItem>
-
-      {history.map((path) => (
+      {history.map((path, index) => (
         <BreadcrumbItem key={path}>
-          <BreadcrumbLink as={Link} to={path} color="blackAlpha.700" fontWeight="bold">
-            {formatBreadcrumb(path.split("/").pop())}
+          <BreadcrumbLink as={Link} to={path} color={index === 0 ? "teal.500" : "blackAlpha.700"} fontWeight="bold">
+            {index === 0 ? "Inicio" : formatBreadcrumb(path.split("/").pop())}
           </BreadcrumbLink>
         </BreadcrumbItem>
       ))}

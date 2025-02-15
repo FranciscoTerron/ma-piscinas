@@ -125,20 +125,33 @@ class SubCategoria(BaseModel):
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
     categoria = relationship("CategoriaProducto", back_populates="subcategorias")
 
+# MODELO EMPRESA
+class Empresa(BaseModel):
+    __tablename__ = "empresas"  # Nombre correcto de la tabla
+
+    id = Column(Integer, primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String, index=True)
+    direccion: Mapped[str] = mapped_column(String, index=True)
+    telefono: Mapped[int] = mapped_column(Integer)
+    imagen: Mapped[str] = mapped_column(String, index=True)
+
+
+    envios = relationship("Envio", back_populates="empresa")  # Relación con Envio
+
+# MODELO ENVIO
 class Envio(BaseModel):
     __tablename__ = "envios"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     direccion: Mapped[str] = mapped_column(String, index=True)
-    empresa: Mapped[str] = mapped_column(String, index=True)
+    empresa_id = Column(Integer, ForeignKey("empresas.id"), nullable=False) 
+    empresa = relationship("Empresa", back_populates="envios")  # Relación con Empresa
+
     codigoSeguimiento: Mapped[str] = mapped_column(String, index=True)
     estado: Mapped[EstadoEnvio] = mapped_column(SQLAlchemyEnum(EstadoEnvio), default=EstadoEnvio.PREPARADO)
-    
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)  
-    pedido = relationship("Pedido", back_populates="envio")  # Relación bidireccional
-    
 
-    
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=False)
+    pedido = relationship("Pedido", back_populates="envio")  # Relación bidireccional con Pedido
     
 class Pedido(BaseModel):
     __tablename__ = "pedidos"

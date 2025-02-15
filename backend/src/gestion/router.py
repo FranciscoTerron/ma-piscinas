@@ -279,6 +279,42 @@ def eliminar_envio(envio_id: int, db: Session = Depends(get_db)):
     services.eliminar_envio(db, envio_id)
     return None
 
+# ============================================================
+# Crear una empresa
+# ============================================================
+@router.post("/empresas", response_model=schemas.Empresa, status_code=status.HTTP_201_CREATED)
+def crear_empresa(empresa: schemas.EmpresaCreate, db: Session = Depends(get_db)):
+    return services.crear_empresa(db, empresa)
+
+# ============================================================
+# Listar todas las empresas
+# ============================================================
+@router.get("/empresas", response_model=List[schemas.Empresa])
+def listar_empresas(db: Session = Depends(get_db)):
+    return services.listar_empresas(db)
+
+# ============================================================
+# Obtener una empresa por ID
+# ============================================================
+@router.get("/empresas/{empresa_id}", response_model=schemas.Empresa)
+def obtener_empresa(empresa_id: int, db: Session = Depends(get_db)):
+    return services.obtener_empresa_por_id(db, empresa_id)
+
+# ============================================================
+# Actualizar una empresa
+# ============================================================
+@router.put("/empresas/{empresa_id}", response_model=schemas.Empresa)
+def actualizar_empresa(empresa_id: int, empresa_update: schemas.EmpresaBase, db: Session = Depends(get_db)):
+    return services.actualizar_empresa(db, empresa_id, empresa_update)
+
+# ============================================================
+# Eliminar una empresa
+# ============================================================
+@router.delete("/empresas/{empresa_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_empresa(empresa_id: int, db: Session = Depends(get_db)):
+    services.eliminar_empresa(db, empresa_id)
+    return None
+
 #PAGO
 #-----------------------------------------------------------------------------
 # Rutas para Pagos

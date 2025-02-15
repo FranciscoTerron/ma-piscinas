@@ -212,6 +212,55 @@ export const obtenerMetodosPago = async () => {
   return response.data;
 };
 
+
+// Listar Envios
+export const listarEnvios = async () => {
+  const response = await api.get("/envios");
+  return response.data;
+};
+
+// Listar empresas
+export const listarMetodosEnvio = async () => {
+  const response = await api.get("/empresas");
+  return response.data;
+};
+
+// Obtener Envios
+export const obtenerEnvios = async () => {
+  const response = await api.get(`/envios/`);
+  return response.data;
+};
+
+// Eliminar Envio
+export const eliminarEnvio = async (envioId) => {
+  await api.delete(`/envios/${envioId}`);
+};
+
+// Crear Método de envio
+export const agregarMetodoEnvio = async (metodoData) => {
+  const response = await api.post("/empresas", metodoData);
+  return response.data;
+};
+
+// Actualizar Método de Envio
+export const actualizarMetodoEnvio = async (metodoId, metodoData) => {
+  const response = await api.put(`//${metodoId}`, metodoData);
+  return response.data;
+}
+
+// Eliminar Método de Envio
+export const eliminarMetodoEnvio = async (metodoId) => {
+  await api.delete(`/empresas/${metodoId}`);
+};
+
+// Listar Métodos de Envio
+export const listarMetodosEnvios = async () => {
+  const response = await api.get("/empresas");
+  return response.data;
+};
+
+
+
 export const listarActividadesRecientes = async () => {
   const response = await axios.get("http://localhost:8000/actividades");
   return response.data; // Devuelve solo los datos

@@ -68,23 +68,25 @@ const Contacto = () => {
                 borderColor="#87CEEB"
               >
                 <VStack spacing={4} align="flex-start">
-                    <Text fontSize="md" color="#00008B">
-                        📞 Lorem ipsum dolor
-                    </Text>
-                    <Text fontSize="md" color="#00008B">
-                        📧 Lorem ipsum dolor sit amet.
-                    </Text>
-                    <Text fontSize="md" color="#00008B">
-                        📍 Lorem, ipsum dolor.
-                    </Text>
+                <Text fontSize="md" color="#00008B" _hover={{ transform: "translateX(5px)", transition: "0.3s ease" }}>
+                  📞 Lorem ipsum dolor
+                </Text>
+                <Text fontSize="md" color="#00008B" _hover={{ transform: "translateX(5px)", transition: "0.3s ease" }}>
+                  📧 Lorem ipsum dolor sit amet.
+                </Text>
+                <Text fontSize="md" color="#00008B" _hover={{ transform: "translateX(5px)", transition: "0.3s ease" }}>
+                  📍 Lorem, ipsum dolor.
+                </Text>
                     <HStack spacing={2} align="center">
                         <Link 
                         href="https://www.instagram.com/mapiscinas.nqn/" 
                         isExternal 
                         display="flex" 
                         alignItems="center"
+                        _hover={{ transform: "scale(1.1)", color: "#E1306C" }} // Color típico de Instagram
+                        transition="all 0.3s ease"
                         >
-                        <FaInstagram size={24} color="#00008B" />
+                        <FaInstagram size={24} color= "#E1306C" />
                         <Text fontSize="md" color="#00008B" ml={2}>
                             Seguinos en Instagram
                         </Text>
@@ -96,8 +98,10 @@ const Contacto = () => {
                         isExternal 
                         display="flex" 
                         alignItems="center"
+                        _hover={{ transform: "scale(1.1)", color: "#1877F2" }} 
+                        transition="all 0.3s ease"
                         >
-                        <FaFacebook size={24} color="#00008B" />
+                        <FaFacebook size={24} color="#1877F2" />
                         <Text fontSize="md" color="#00008B" ml={2}>
                             Seguinos en Facebook
                         </Text>
@@ -114,13 +118,16 @@ const Contacto = () => {
             pl={{ md: 8 }}
           >
             <Box 
-              p={6} 
-              borderRadius="lg" 
-              width="full"
-              bg="#F8FBFD"
-              border="1px solid"
-              borderColor="#87CEEB"
-            >
+                p={6} 
+                borderRadius="lg" 
+                width="full"
+                bg="#F8FBFD"
+                border="1px solid"
+                borderColor="#87CEEB"
+                _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+                transition="all 0.3s ease"
+              >
+
               <VStack spacing={3} align="stretch">
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   NOMBRE
@@ -131,45 +138,54 @@ const Contacto = () => {
                   color="black" 
                   borderRadius="md"
                   borderColor="gray.200"
+                  _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                  transition="all 0.3s ease"
                 />
 
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   EMAIL
                 </Text>
                 <Input 
-                  placeholder="Email" 
-                  bg="white" 
-                  color="black" 
-                  borderRadius="md" 
-                  borderColor="gray.200"
-                />
+                    placeholder="Email" 
+                    bg="white" 
+                    color="black" 
+                    borderRadius="md"
+                    borderColor="gray.200"
+                    _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                    transition="all 0.3s ease"
+                  />
 
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   TELÉFONO (OPCIONAL)
                 </Text>
                 <Input 
-                  placeholder="Teléfono" 
+                  placeholder="Telefono" 
                   bg="white" 
                   color="black" 
-                  borderRadius="md" 
+                  borderRadius="md"
                   borderColor="gray.200"
+                  _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                  transition="all 0.3s ease"
                 />
 
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   MENSAJE (OPCIONAL)
                 </Text>
                 <Textarea 
-                  placeholder="Mensaje" 
-                  bg="white" 
-                  color="black" 
-                  borderRadius="md" 
-                  borderColor="gray.200"
-                />
+                    placeholder="Nombre" 
+                    bg="white" 
+                    color="black" 
+                    borderRadius="md"
+                    borderColor="gray.200"
+                    _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                    transition="all 0.3s ease"
+                  />
 
                 <Button 
                   bg="#00CED1" 
                   color="white" 
-                  _hover={{ bg: "#008B8B" }}
+                  _hover={{ bg: "#008B8B", boxShadow: "lg", transform: "scale(1.05)" }}
+                  transition="all 0.3s ease"
                   size="lg"
                 >
                   Enviar

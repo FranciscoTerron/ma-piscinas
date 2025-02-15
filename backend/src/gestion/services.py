@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -339,6 +339,50 @@ def actualizar_envio(db: Session, envio_id: int, envio_update: schemas.EnvioBase
 def eliminar_envio(db: Session, envio_id: int) -> None:
     envio = obtener_envio_por_id(db, envio_id)
     db.delete(envio)
+    db.commit()
+    
+# ============================================================
+# Crear una nueva empresa
+# ============================================================
+def crear_empresa(db: Session, empresa: schemas.EmpresaCreate) -> Empresa:
+    nueva_empresa = Empresa(**empresa.dict())
+    db.add(nueva_empresa)
+    db.commit()
+    db.refresh(nueva_empresa)
+    return nueva_empresa
+
+# ============================================================
+# Listar todas las empresas
+# ============================================================
+def listar_empresas(db: Session):
+    return db.query(Empresa).all()
+
+# ============================================================
+# Obtener una empresa por ID
+# ============================================================
+def obtener_empresa_por_id(db: Session, empresa_id: int):
+    empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
+    if not empresa:
+        raise HTTPException(status_code=404, detail="Empresa no encontrada")
+    return empresa
+
+# ============================================================
+# Actualizar una empresa
+# ============================================================
+def actualizar_empresa(db: Session, empresa_id: int, empresa_update: schemas.EmpresaBase):
+    empresa = obtener_empresa_por_id(db, empresa_id)
+    for key, value in empresa_update.dict(exclude_unset=True).items():
+        setattr(empresa, key, value)
+    db.commit()
+    db.refresh(empresa)
+    return empresa
+
+# ============================================================
+# Eliminar una empresa
+# ============================================================
+def eliminar_empresa(db: Session, empresa_id: int):
+    empresa = obtener_empresa_por_id(db, empresa_id)
+    db.delete(empresa)
     db.commit()
     
 #PAGO
