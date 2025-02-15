@@ -91,7 +91,7 @@ const AdminProfile = () => {
   const cargarEnvios = async () => {
     try {
       const data = await listarEnvios();
-      setPagos(data);
+      setEnvios(data);
     } catch (error) {
       toast({
         title: "Error",

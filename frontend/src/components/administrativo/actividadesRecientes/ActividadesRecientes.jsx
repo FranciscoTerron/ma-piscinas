@@ -20,10 +20,31 @@ const ActividadesRecientes = () => {
     const obtenerActividades = async () => {
       try {
         const data = await listarActividadesRecientes();
-        console.log("Datos recibidos en el frontend:", data); // 👀 Verifica aquí
-        setActividades(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+          // Obtener solo la última actividad de cada tipo de evento
+          const ultimasActividades = Object.values(
+            data.reduce((acc, actividad) => {
+              const { tipo_evento, fecha } = actividad;
+              // Si no existe en el acumulador o esta es más reciente, la reemplazamos
+              if (!acc[tipo_evento] || new Date(actividad.fecha) > new Date(acc[tipo_evento].fecha)) {
+                acc[tipo_evento] = actividad;
+              }
+              return acc;
+            }, {})
+          );
+          setActividades(ultimasActividades);
+        } else {
+          setActividades([]);
+        }
       } catch (error) {
         console.error("Error obteniendo actividades:", error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar las actividades recientes.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       } finally {
         setCargando(false);
       }
@@ -48,31 +69,37 @@ const ActividadesRecientes = () => {
         Actividades Recientes
       </Text>
       <VStack spacing={3} align="stretch">
-        {actividades.map((actividad) => (
-          <HStack
-            key={actividad.id}
-            justify="space-between"
-            p={4}
-            borderRadius="lg"
-            bg="gray.50"
-            _hover={{ bg: 'gray.100', transform: 'scale(1.02)', transition: '0.2s' }}
-          >
-            <HStack spacing={3}>
-              <Icon as={AiOutlineClockCircle} color="blue.500" />
-              <Text color="gray.700">{actividad.descripcion}</Text>
+        {actividades.length === 0 ? (
+          <Text color="gray.500">No hay actividades recientes.</Text>
+        ) : (
+          actividades.map((actividad) => (
+            <HStack
+              key={actividad.id}
+              justify="space-between"
+              p={4}
+              borderRadius="lg"
+              bg="gray.50"
+              _hover={{ bg: 'gray.100', transform: 'scale(1.02)', transition: '0.2s' }}
+            >
+              <HStack spacing={8} alignItems="center">
+                <Icon as={AiOutlineClockCircle} color="blue.500" boxSize="1.2em" position="relative" top="-6px" />
+                <Text color="gray.700" fontSize="md" fontWeight="medium" flex="1" textAlign="center">
+                  {actividad.descripcion}
+                </Text>
+              </HStack>
+              <Text fontSize="sm" color="gray.500">
+                {new Date(actividad.fecha).toLocaleString('es-ES', {
+                  weekday: 'short',
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </Text>
             </HStack>
-            <Text fontSize="sm" color="gray.500">
-              {new Date(actividad.tiempo).toLocaleString('es-ES', {
-                weekday: 'short',
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Text>
-          </HStack>
-        ))}
+          ))
+        )}
       </VStack>
     </Box>
   );

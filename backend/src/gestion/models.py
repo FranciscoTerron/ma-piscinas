@@ -35,7 +35,10 @@ class MetodoPagoEnum(Enum):
     TRANSFERENCIA = "TRANSFERENCIA"
     EFECTIVO = "EFECTIVO"
 
-
+class TipoActividad(Enum):
+    CREACION_USUARIO = "CREACION_USUARIO"
+    CREACION_PRODUCTO = "CREACION_PRODUCTO"
+    CREACION_EMPRESA = "CREACION_EMPRESA"
 
 class Usuario(BaseModel):
     __tablename__ = "usuarios"
@@ -212,9 +215,10 @@ class Actividad(BaseModel):
     __tablename__ = "actividades"
 
     id = Column(Integer, primary_key=True, index=True)
-    descripcion = Column(String, index=True, nullable=False)
-    tiempo = Column(DateTime, default=datetime.utcnow)
-     
-    # Relación con Usuario
-    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    tipo_evento: Mapped[TipoActividad] = mapped_column(SQLAlchemyEnum(TipoActividad), index=True)
+    descripcion: Mapped[str] = mapped_column(String, nullable=False)
+    referencia_id: Mapped[Optional[int]] = mapped_column(Integer, index=True)  
+    fecha: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     usuario = relationship("Usuario", back_populates="actividades")

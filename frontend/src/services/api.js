@@ -262,6 +262,6 @@ export const listarMetodosEnvios = async () => {
 
 
 export const listarActividadesRecientes = async () => {
-  const response = await axios.get("http://localhost:8000/actividades");
-  return response.data; // Devuelve solo los datos
+  const response = await api.get("/actividades");
+  return response.data; 
 };

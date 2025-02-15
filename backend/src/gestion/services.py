@@ -848,13 +848,17 @@ def eliminar_producto_del_carrito(db: Session, carrito_id: int, producto_id: int
 
 #ACTIVIDADES
 #------------------------------------------------------------------------------------------------------------
-# Crear Actividades
-def crear_actividad(db: Session, actividad_data: schemas.ActividadCreate):
-    nueva_actividad = Actividad(**actividad_data.dict())
+def listar_actividades(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(Actividad).order_by(Actividad.fecha.desc()).offset(skip).limit(limit).all()
+
+def registrar_actividad(db: Session, actividad_data: schemas.ActividadCreate):
+    nueva_actividad = Actividad(
+        tipo_evento=actividad_data.tipo_evento,
+        descripcion=actividad_data.descripcion,
+        referencia_id=actividad_data.referencia_id,
+        usuario_id=actividad_data.usuario_id
+    )
     db.add(nueva_actividad)
     db.commit()
     db.refresh(nueva_actividad)
     return nueva_actividad
-
-def listar_actividades(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(Actividad).order_by(Actividad.tiempo.desc()).offset(skip).limit(limit).all()

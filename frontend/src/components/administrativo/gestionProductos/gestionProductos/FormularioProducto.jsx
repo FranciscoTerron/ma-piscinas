@@ -21,6 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { crearProducto, actualizarProducto, listarCategorias } from '../../../../services/api';
+import { useAuth } from '../../../../context/AuthContext';
 
 const initialProductoState = {
   nombre: "",
@@ -36,7 +37,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   const [categorias, setCategorias] = useState([]);
   const [imagenPreview, setImagenPreview] = useState(null);
   const toast = useToast();
-
+  const { userId } = useAuth();
   useEffect(() => {
     if (producto) {
       setFormData({
@@ -187,6 +188,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     formDataToSend.append("precio", parseFloat(formData.precio));
     formDataToSend.append("stock", parseInt(formData.stock));
     formDataToSend.append("categoria_id", parseInt(formData.categoriaId));
+    formDataToSend.append("usuario_id", parseInt(userId));
   
     if (producto) {
       if (formData.imagen && formData.imagen instanceof File) {

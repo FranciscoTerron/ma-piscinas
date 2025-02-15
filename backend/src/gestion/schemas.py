@@ -45,6 +45,14 @@ class MetodoPagoEnum(str, Enum):
     EFECTIVO = "EFECTIVO"
 
 # ============================================================
+# Tipo de Actividad
+# ============================================================
+class TipoActividadEnum(str, Enum):
+    CREACION_USUARIO = "CREACION_USUARIO"
+    CREACION_PRODUCTO = "CREACION_PRODUCTO"
+    CREACION_EMPRESA = "CREACION_EMPRESA"
+    
+# ============================================================
 # Esquema base para evitar repetir codigo
 # ============================================================
 
@@ -384,17 +392,17 @@ class MetodoPagoUpdate(MetodoPagoBase):
 # Esquema para Metodo Pago BASE
 # ============================================================# Esquema de respuesta corregido
 class ActividadBase(BaseModel):
-    id: int
+    tipo_evento: str
     descripcion: str
-    tiempo: datetime | None  # Permitir None
-    usuario: dict | None     # Convertir usuario a diccionario
+    referencia_id: Optional[int] = None
+    usuario_id: int
 
 class ActividadCreate(ActividadBase):
     pass
 
-class ActividadOut(ActividadBase):
+class Actividad(ActividadBase):
     id: int
-    tiempo: datetime
+    fecha: datetime
 
     class Config:
-        from_attributes = True
+        orm_mode = True

@@ -15,7 +15,17 @@ router = APIRouter()
 
 @router.post("/register", response_model=schemas.Usuario)
 def register(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
-    return services.registrar_usuario(db, usuario)
+
+    nuevo_usuario = services.registrar_usuario(db, usuario)
+
+    services.registrar_actividad(db, schemas.ActividadCreate(
+        tipo_evento="CREACION_USUARIO",
+        descripcion=f"Se registro el usuario {nuevo_usuario.nombre}",
+        referencia_id=nuevo_usuario.id,
+        usuario_id=nuevo_usuario.id
+    ))
+
+    return nuevo_usuario
 
 # ============================================================
 # Ruta para el login
@@ -196,9 +206,19 @@ def crear_producto(
     stock: int = Form(...),
     categoria_id: int = Form(...),
     imagen: UploadFile = File(...),
+    usuario_id: int = Form(...),  
     db: Session = Depends(get_db)
 ):
-    return services.crear_producto(db, nombre, descripcion, precio, stock, categoria_id, imagen)
+    nuevo_producto = services.crear_producto(db, nombre, descripcion, precio, stock, categoria_id, imagen)
+
+    services.registrar_actividad(db, schemas.ActividadCreate(
+        tipo_evento="CREACION_PRODUCTO",
+        descripcion=f"Se creó el producto {nombre}",
+        referencia_id=nuevo_producto.id,
+        usuario_id=usuario_id
+    ))
+
+    return nuevo_producto
 
 # ============================================================
 # Ruta para listar productos
@@ -227,7 +247,8 @@ def actualizar_producto(
     precio: float = Form(...),
     stock: int = Form(...),
     categoria_id: int = Form(...),
-    imagen: Optional[UploadFile] = File(None), 
+    imagen: Optional[UploadFile] = File(None),
+    usuario_id: int = Form(...),
     db: Session = Depends(get_db),
 ):
     return services.actualizar_producto(db, producto_id, nombre, descripcion, precio, stock, categoria_id, imagen)
@@ -717,40 +738,15 @@ def obtener_detalle(carrito_id: int, detalle_id: int, db: Session = Depends(get_
 # ============================================================
 # Registrar una nueva actividad
 # ============================================================
-@router.post("/actividades", response_model=schemas.ActividadOut, status_code=status.HTTP_201_CREATED)
-def registrar_actividad(
-    actividad: schemas.ActividadCreate,
+@router.post("/actividades", response_model=schemas.Actividad, status_code=status.HTTP_201_CREATED)
+def registrar_actividad_api(
+    actividad_data: schemas.ActividadCreate,
     db: Session = Depends(get_db)
 ):
-    """
-    Registra una nueva actividad en el sistema.
-    """
-    nueva_actividad = schemas.Actividad(**actividad.dict())
-    db.add(nueva_actividad)
-    db.commit()
-    db.refresh(nueva_actividad)
-    return nueva_actividad
-
+    return services.registrar_actividad(db, actividad_data)
 # ============================================================
 # Obtener actividades recientes
 # ============================================================
-@router.get("/actividades", response_model=list[schemas.ActividadBase])
+@router.get("/actividades", response_model=List[schemas.Actividad])
 def listar_actividades(db: Session = Depends(get_db)):
-    actividades = db.query(schemas.Actividad).order_by(schemas.Actividad.tiempo.desc()).all()
-    
-    # Convertir usuario en diccionario y manejar None en tiempo
-    actividades_serializadas = [
-        {
-            "id": act.id,
-            "descripcion": act.descripcion,
-            "tiempo": act.tiempo if act.tiempo else datetime.utcnow(),  # Si es None, poner timestamp actual
-            "usuario": {
-                "id": act.usuario.id,
-                "nombre": act.usuario.nombre,
-                "email": act.usuario.email
-            } if act.usuario else None  # Convertir objeto Usuario a diccionario
-        }
-        for act in actividades
-    ]
-
-    return actividades_serializadas
+    return services.listar_actividades(db)
