@@ -283,8 +283,14 @@ def eliminar_envio(envio_id: int, db: Session = Depends(get_db)):
 # Crear una empresa
 # ============================================================
 @router.post("/empresas", response_model=schemas.Empresa, status_code=status.HTTP_201_CREATED)
-def crear_empresa(empresa: schemas.EmpresaCreate, db: Session = Depends(get_db)):
-    return services.crear_empresa(db, empresa)
+def crear_empresa(
+    nombre: str = Form(...),
+    direccion: str = Form(...),
+    telefono: int = Form(...),
+    imagen: UploadFile = File(None),  
+    db: Session = Depends(get_db)
+):
+    return services.crear_empresa(db, nombre, direccion, telefono, imagen)
 
 # ============================================================
 # Listar todas las empresas
@@ -304,8 +310,15 @@ def obtener_empresa(empresa_id: int, db: Session = Depends(get_db)):
 # Actualizar una empresa
 # ============================================================
 @router.put("/empresas/{empresa_id}", response_model=schemas.Empresa)
-def actualizar_empresa(empresa_id: int, empresa_update: schemas.EmpresaBase, db: Session = Depends(get_db)):
-    return services.actualizar_empresa(db, empresa_id, empresa_update)
+def actualizar_empresa(
+    empresa_id: int, 
+    nombre: str = Form(...),
+    direccion: str = Form(...),
+    telefono: int = Form(...),
+    imagen: UploadFile = File(None), 
+    db: Session = Depends(get_db)
+    ):
+    return services.actualizar_empresa(db, empresa_id, nombre, direccion, telefono, imagen)
 
 # ============================================================
 # Eliminar una empresa

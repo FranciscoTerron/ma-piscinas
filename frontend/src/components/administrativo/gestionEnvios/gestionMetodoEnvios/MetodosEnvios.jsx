@@ -68,7 +68,7 @@ const MetodosEnvios = () => {
         </HStack>
 
         <ListarMetodosEnvio
-          empresas={empresas}
+          metodosEnvio={empresas}
           onEditar={handleEditarEmpresa}
           onEliminar={cargarEmpresas}
         />

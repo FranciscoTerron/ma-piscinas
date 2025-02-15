@@ -322,7 +322,7 @@ class EnvioCreate(EnvioBase):
 class EmpresaBase  (BaseModel):
     nombre: str = Field(..., example="Andreani")
     direccion: Optional[str] = Field(None, example="Avenida Siempre Viva 123")
-    telefono: Optional[str] = Field(None, example="+54 9 11 1234-5678")
+    telefono: Optional[int] = Field(None, example=5491112345678)
     imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
 
 

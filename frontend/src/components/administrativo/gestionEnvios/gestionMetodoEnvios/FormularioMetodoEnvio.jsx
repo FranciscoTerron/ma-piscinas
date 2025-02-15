@@ -102,7 +102,7 @@ const FormularioMetodoEnvio = ({ isOpen, onClose, onSubmitSuccess, empresa }) =>
     const formDataToSend = new FormData();
     formDataToSend.append("nombre", formData.nombre);
     formDataToSend.append("direccion", formData.direccion);
-    formDataToSend.append("telefono", formData.telefono);
+    formDataToSend.append("telefono", parseInt(formData.telefono));
 
     if (empresa) {
       if (formData.imagen && formData.imagen instanceof File) {

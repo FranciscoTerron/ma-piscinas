@@ -344,8 +344,32 @@ def eliminar_envio(db: Session, envio_id: int) -> None:
 # ============================================================
 # Crear una nueva empresa
 # ============================================================
-def crear_empresa(db: Session, empresa: schemas.EmpresaCreate) -> Empresa:
-    nueva_empresa = Empresa(**empresa.dict())
+def crear_empresa(
+    db: Session,
+    nombre: str,
+    direccion: str,
+    telefono: int,
+    imagen: UploadFile = None
+) -> Empresa:
+    # Subir el imagen si se proporciona
+    image_url = None
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="empresas")
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
+
+    # Crear la empresa
+    nueva_empresa = Empresa(
+        nombre=nombre,
+        direccion=direccion,
+        telefono=telefono,
+        imagen=image_url  # Guardar la URL del logo si se subió
+    )
     db.add(nueva_empresa)
     db.commit()
     db.refresh(nueva_empresa)
@@ -369,10 +393,33 @@ def obtener_empresa_por_id(db: Session, empresa_id: int):
 # ============================================================
 # Actualizar una empresa
 # ============================================================
-def actualizar_empresa(db: Session, empresa_id: int, empresa_update: schemas.EmpresaBase):
+def actualizar_empresa(
+    db: Session, 
+    empresa_id: int, 
+    nombre: str,
+    direccion: str,
+    telefono: int,
+    imagen: UploadFile = None
+    ) -> Empresa:
     empresa = obtener_empresa_por_id(db, empresa_id)
-    for key, value in empresa_update.dict(exclude_unset=True).items():
-        setattr(empresa, key, value)
+    
+    empresa.nombre
+    empresa.direccion
+    empresa.telefono
+    # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="empresas")
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}"
+            )
+        empresa.imagen = image_url
+
     db.commit()
     db.refresh(empresa)
     return empresa

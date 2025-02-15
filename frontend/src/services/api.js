@@ -244,7 +244,7 @@ export const agregarMetodoEnvio = async (metodoData) => {
 
 // Actualizar Método de Envio
 export const actualizarMetodoEnvio = async (metodoId, metodoData) => {
-  const response = await api.put(`//${metodoId}`, metodoData);
+  const response = await api.put(`/empresas/${metodoId}`, metodoData);
   return response.data;
 }
 
