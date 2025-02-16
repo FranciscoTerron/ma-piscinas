@@ -374,18 +374,20 @@ class Pago(PagoBase):
 # Esquema para Metodo Pago BASE
 # ============================================================
 
+
 class MetodoPagoBase(BaseModel):
-    tipo: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
     nombre: str = Field(..., example="Visa")
+    tipo: MetodoPagoEnum = Field(default=MetodoPagoEnum.TARJETA)
+    imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
+
 
 class MetodoPago(MetodoPagoBase):
     id: int
 
     class Config:
         from_attributes = True
-
-class MetodoPagoUpdate(MetodoPagoBase):
-    pass
+class MetodoPagoCreate(MetodoPagoBase):
+    pass  # Se hereda directamente del BaseModel sin cambios
 
 #ACTIVIDADES
 # ============================================================

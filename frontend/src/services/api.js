@@ -27,8 +27,8 @@ api.interceptors.response.use(
 );
 
 // Servicios para Usuarios-------------------------------------------
-export const register = async (userData) => {
-  const response = await api.post("/register", userData);
+export const registrar = async (userData) => {
+  const response = await api.post("/registrar", userData);
   return response.data;
 };
 

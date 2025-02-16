@@ -207,6 +207,8 @@ class MetodoPago(BaseModel):
     id = Column(Integer, primary_key=True, index=True)
     tipo: Mapped[MetodoPagoEnum] = mapped_column(SQLAlchemyEnum(MetodoPagoEnum), default=MetodoPagoEnum.TARJETA)
     nombre: Mapped[str] = mapped_column(String, index=True)
+    imagen: Mapped[str] = mapped_column(String, index=True)
+
 
     pago = relationship("Pago", back_populates="metodoPago")
     

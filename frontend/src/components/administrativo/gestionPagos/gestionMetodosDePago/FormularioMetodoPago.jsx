@@ -14,27 +14,81 @@ import {
   Button,
   useToast,
   VStack,
+  Box,
+  Image,
+  Icon,
+  Text,
 } from "@chakra-ui/react";
+import { FaCloudUploadAlt } from "react-icons/fa";
 import { agregarMetodoPago, actualizarMetodoPago } from "../../../../services/api";
 
+const initialFormData = {
+  nombre: "",
+  tipo: "",
+  imagen: "",
+};
+
 const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
-  const [nombre, setNombre] = useState("");
-  const [tipo, setTipo] = useState("");
+  const [formData, setFormData] = useState(initialFormData);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
     if (metodo) {
-      setNombre(metodo.nombre || "");
-      setTipo(metodo.tipo || "");
+      setFormData({
+        nombre: metodo.nombre || "",
+        tipo: metodo.tipo || "",
+        imagen: "", // Inicia como vacío
+      });
+
+      if (metodo.imagen && typeof metodo.imagen === "string" && metodo.imagen.startsWith("http")) {
+        setImagenPreview(metodo.imagen);
+      } else {
+        setImagenPreview(null);
+      }
     } else {
-      setNombre("");
-      setTipo("");
+      setFormData(initialFormData);
+      setImagenPreview(null);
     }
   }, [metodo]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match("image.*")) {
+        toast({
+          title: "Error",
+          description: "Seleccione un archivo de imagen válido (jpg, png, etc).",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenPreview(reader.result);
+        setFormData((prev) => ({
+          ...prev,
+          imagen: file,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!nombre || !tipo) {
+    if (!formData.nombre || !formData.tipo) {
       toast({
         title: "Error",
         description: "Todos los campos son obligatorios.",
@@ -46,9 +100,17 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
     }
 
     setIsSubmitting(true);
+    const formDataToSend = new FormData();
+    formDataToSend.append("nombre", formData.nombre);
+    formDataToSend.append("tipo", formData.tipo.toUpperCase());
+
+    if (formData.imagen && formData.imagen instanceof File) {
+      formDataToSend.append("imagen", formData.imagen);
+    }
+
     try {
       if (metodo) {
-        await actualizarMetodoPago(metodo.id, { nombre, tipo: tipo.toUpperCase() });
+        await actualizarMetodoPago(metodo.id, formDataToSend);
         toast({
           title: "Método de pago actualizado",
           description: "Se ha actualizado correctamente.",
@@ -57,7 +119,7 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
           isClosable: true,
         });
       } else {
-        await agregarMetodoPago({ nombre, tipo });
+        await agregarMetodoPago(formDataToSend);
         toast({
           title: "Método de pago agregado",
           description: "Se ha registrado correctamente.",
@@ -68,6 +130,8 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
       }
       onSubmitSuccess();
       onClose();
+      setFormData(initialFormData);
+      setImagenPreview(null);
     } catch (error) {
       toast({
         title: "Error",
@@ -88,14 +152,15 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
         <ModalHeader borderBottom="1px" borderColor="gray.900" color="black">
           {metodo ? "Editar Método de Pago" : "Agregar Método de Pago"}
         </ModalHeader>
-        <ModalCloseButton color={"black"}/>
+        <ModalCloseButton color={"black"} />
         <ModalBody py={6} color="black">
           <VStack spacing={4}>
             <FormControl isRequired>
               <FormLabel>Nombre</FormLabel>
               <Input
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                name="nombre"
+                value={formData.nombre}
+                onChange={handleInputChange}
                 placeholder="Nombre del método de pago"
                 bg="white"
                 border="1px"
@@ -106,8 +171,9 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
             <FormControl isRequired>
               <FormLabel>Tipo</FormLabel>
               <Select
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value)}
+                name="tipo"
+                value={formData.tipo}
+                onChange={handleInputChange}
                 bg="white"
                 border="1px"
                 borderColor="gray.200"
@@ -115,8 +181,8 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
                 sx={{
                   '& option': {
                     backgroundColor: 'white !important',
-                    color: 'gray.600'
-                  }
+                    color: 'gray.600',
+                  },
                 }}
               >
                 <option value="">Seleccione un tipo</option>
@@ -124,6 +190,42 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
                 <option value="TARJETA">Tarjeta</option>
                 <option value="TRANSFERENCIA">Transferencia</option>
               </Select>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Imagen</FormLabel>
+              <Box
+                borderWidth={2}
+                borderRadius="md"
+                borderStyle="dashed"
+                borderColor="gray.300"
+                p={4}
+                textAlign="center"
+                cursor="pointer"
+                onClick={() => document.getElementById("imagen-input").click()}
+                _hover={{ bg: "gray.50" }}
+              >
+                <Input
+                  id="imagen-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImagenChange}
+                  display="none"
+                />
+                {imagenPreview ? (
+                  <Image
+                    src={imagenPreview}
+                    alt="Preview"
+                    maxH="200px"
+                    mx="auto"
+                    borderRadius="md"
+                  />
+                ) : (
+                  <VStack spacing={2}>
+                    <Icon as={FaCloudUploadAlt} w={10} h={10} color="gray.400" />
+                    <Text color="gray.500">Click para seleccionar una imagen</Text>
+                  </VStack>
+                )}
+              </Box>
             </FormControl>
           </VStack>
         </ModalBody>

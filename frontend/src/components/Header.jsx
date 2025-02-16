@@ -28,7 +28,7 @@ const Header = () => {
     return (
       <Button
         as={RouterLink}
-        to={isLoginPage ? '/register' : '/login'}
+        to={isLoginPage ? '/registrar' : '/login'}
         bg="#00008B"
         color="white"
         _hover={{

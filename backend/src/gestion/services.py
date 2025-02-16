@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -465,15 +465,72 @@ def eliminar_pago(db: Session, pago_id: int):
 #METODO DE PAGO
 #--------------------------------------------------------------------------------------
 # Crear Método de Pago
-def crear_metodo_pago(db: Session, metodo_pago: schemas.MetodoPagoBase):
+# ============================================================
+
+def crear_metodo_pago(
+    db: Session,
+    nombre: str,
+    tipo: MetodoPagoEnum,
+    imagen: UploadFile = None
+) -> MetodoPago:
+    # Subir la imagen si se proporciona
+    image_url = None
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="metodos-pago")
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
+
+    # Crear el método de pago
     nuevo_metodo_pago = MetodoPago(
-        tipo=metodo_pago.tipo,  
-        nombre=metodo_pago.nombre  
+        nombre=nombre,
+        tipo=tipo.name,  
+        imagen=image_url  # Guardar la URL de la imagen si se subió
     )
     db.add(nuevo_metodo_pago)
     db.commit()
     db.refresh(nuevo_metodo_pago)
     return nuevo_metodo_pago
+
+# Actualizar Método de Pago
+def actualizar_metodo_pago(
+    db: Session, 
+    metodo_pago_id: int, 
+    nombre: str,
+    tipo: MetodoPagoEnum,  
+    imagen: UploadFile = None
+) -> MetodoPago:
+    # Obtener el método de pago por ID
+    metodo_pago = obtener_metodo_pago_por_id(db, metodo_pago_id)
+    
+    # Actualizar los campos 'nombre' y 'tipo'
+    metodo_pago.nombre = nombre
+    metodo_pago.tipo = tipo
+    
+    # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="metodos-pago")  # Usar carpeta específica para métodos de pago
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}"
+            )
+        metodo_pago.imagen = image_url  # Actualizar el atributo imagen con la URL
+
+    # Guardar los cambios en la base de datos
+    db.commit()
+    db.refresh(metodo_pago)
+    
+    return metodo_pago
+
 
 
 # Listar Métodos de Pago
@@ -496,16 +553,6 @@ def eliminar_metodo_pago(db: Session, metodo_pago_id: int):
     db.commit()
     return None
 
-# Actualizar Métpdp de pago
-def actualizar_metodo_pago(db: Session, metodo_pago_id: int, metodo_pago_update: schemas.MetodoPagoUpdate) -> MetodoPago:
-    metodo_pago = obtener_metodo_pago_por_id(db, metodo_pago_id)
-    # Se actualizan únicamente los campos enviados en la solicitud
-    update_data = metodo_pago_update.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(metodo_pago, key, value)
-    db.commit()
-    db.refresh(metodo_pago)
-    return metodo_pago
 
 #Obtener metodo de pago por id
 def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
@@ -513,6 +560,8 @@ def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
     if not metodo_pago:
         raise HTTPException(status_code=404, detail="metodo pago no encontrado")
     return metodo_pago
+
+
 
 #PEDIDO
 #--------------------------------------------------------------------------------------

@@ -15,9 +15,9 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { register } from '../services/api';
+import { registrar } from '../services/api';
 
-const Register = () => {
+const Registrar = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -32,7 +32,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register(formData);
+      await registrar(formData);
       toast({
         title: 'Registro exitoso',
         status: 'success',
@@ -167,4 +167,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Registrar;

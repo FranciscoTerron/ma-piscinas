@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from '../src/components/PrivateRoute';  
 import Error403 from '../src/components/Error403';
-import Register from '../src/components/Register';
 import Login from '../src/components/Login';
 import PerfilUsuario from '../src/components/perfilPersonal/PerfilUsuario';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
@@ -24,6 +23,7 @@ import Inicio from './components/cliente/Inicio';
 import GestionEnvios from './components/administrativo/gestionEnvios/GestionEnvios';
 import RegistroEnvios from '../src/components/administrativo/gestionEnvios/RegistroEnvios';
 import MetodosEnvios from '../src/components/administrativo/gestionEnvios/gestionMetodoEnvios/MetodosEnvios';
+import Registrar from '../src/components/Registrar';
 
 
 
@@ -31,7 +31,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route path="/register" element={<Register />} />
+      <Route path="/registrar" element={<Registrar />} />
       <Route path="/login" element={<Login />} />
       <Route path="/error403" element={<Error403 />} />
       <Route path="/comoComprar" element={<ComoComprar />} />

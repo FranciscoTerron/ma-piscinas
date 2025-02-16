@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from src.database import get_db
-from src.gestion import schemas, services
+from src.gestion import schemas, services, models
 from src.auth.dependencies import get_current_user
 from typing import List, Optional
 from datetime import datetime
+from src.gestion.models import MetodoPagoEnum
+
 router = APIRouter()
 
 
@@ -13,8 +15,8 @@ router = APIRouter()
 # Ruta para el registro 
 # ============================================================
 
-@router.post("/register", response_model=schemas.Usuario)
-def register(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+@router.post("/registrar", response_model=schemas.Usuario)
+def registrar(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
 
     nuevo_usuario = services.registrar_usuario(db, usuario)
 
@@ -390,8 +392,14 @@ def eliminar_pago(pago_id: int, db: Session = Depends(get_db)):
 # Ruta para crear un método de pago
 # ============================================================
 @router.post("/metodos-pago", response_model=schemas.MetodoPago, status_code=status.HTTP_201_CREATED)
-def crear_metodo_pago(metodo_pago: schemas.MetodoPagoBase, db: Session = Depends(get_db)):
-    return services.crear_metodo_pago(db, metodo_pago)
+def crear_metodo_pago(
+    nombre: str = Form(...),
+    tipo: models.MetodoPagoEnum = Form(...),  # Asegúrate de que el tipo sea parte del formulario
+    imagen: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    return services.crear_metodo_pago(db, nombre, tipo, imagen)
+
 
 # ============================================================
 # Ruta para listar todos los métodos de pago
@@ -419,9 +427,14 @@ def eliminar_metodo_pago(metodo_pago_id: int, db: Session = Depends(get_db)):
 # Ruta para actualizar un método de pago
 # ============================================================
 @router.put("/metodos-pago/{metodo_pago_id}", response_model=schemas.MetodoPago)
-def actualizar_pedido(metodo_pago_id: int, metodo_pago_update: schemas.MetodoPagoUpdate, db: Session = Depends(get_db)):
-    return services.actualizar_metodo_pago(db, metodo_pago_id, metodo_pago_update)
-
+def actualizar_metodo_pago(
+    metodo_pago_id: int, 
+    nombre: str,  
+    tipo: models.MetodoPagoEnum,  
+    imagen: UploadFile = File(None),  # Imagen con valor por defecto
+    db: Session = Depends(get_db)
+):
+    return services.actualizar_metodo_pago(db, metodo_pago_id, nombre, tipo, imagen)
 
 #PEDIDO
 #-----------------------------------------------------------------------------

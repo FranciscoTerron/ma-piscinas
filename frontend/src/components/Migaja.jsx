@@ -6,37 +6,40 @@ import { useAuth } from "../context/AuthContext";
 const Migaja = () => {
   const { userRole } = useAuth();
   const location = useLocation();
-  const [history, setHistory] = useState(() => {
-    return JSON.parse(localStorage.getItem("breadcrumbHistory")) || [];
-  });
+  const [history, setHistory] = useState([]);
 
-  const resetRoutes = ["/perfilUsuario", "/inicio" , "/register"];
   const homePath = userRole === "cliente" ? "/inicio" : "/panelAdministrativo";
+  const resetRoutes = ["/perfilUsuario", "/registrar", "/inicio"];
 
   useEffect(() => {
-    setHistory((prev) => {
-      let newHistory;
+    let newHistory;
 
-      if (location.pathname === homePath) {
-        newHistory = [homePath]; // Solo debe estar HomePath
-      } else if (resetRoutes.includes(location.pathname)) {
-        newHistory = [homePath, location.pathname]; // Reinicia con Home y la ruta actual
+    if (location.pathname === homePath) {
+      // Si estamos en la página de inicio, solo debe haber una entrada en el historial
+      newHistory = [homePath];
+    } else if (resetRoutes.includes(location.pathname)) {
+      // Si la ruta es una de las que deben reiniciar el historial
+      newHistory = [homePath, location.pathname];
+    } else {
+      // Obtener historial anterior
+      const previousHistory = JSON.parse(localStorage.getItem("breadcrumbHistory")) || [];
+
+      if (previousHistory.includes(location.pathname)) {
+        // Si ya existe en el historial, cortamos hasta ahí
+        newHistory = previousHistory.slice(0, previousHistory.indexOf(location.pathname) + 1);
       } else {
-        newHistory = prev.includes(location.pathname)
-          ? prev.slice(0, prev.indexOf(location.pathname) + 1) // Si ya existe, corta hasta ahí
-          : [...prev, location.pathname]; // Agrega la nueva ruta
+        // Si es una nueva ruta, la agregamos al historial asegurando que Inicio es único
+        newHistory = [homePath, ...previousHistory.filter(path => path !== homePath), location.pathname];
       }
+    }
 
-      // Evita duplicados de HomePath
-      newHistory = newHistory.filter((path, index) => index === 0 || path !== homePath);
-
-      localStorage.setItem("breadcrumbHistory", JSON.stringify(newHistory));
-      return newHistory;
-    });
+    // Guardar en localStorage
+    localStorage.setItem("breadcrumbHistory", JSON.stringify(newHistory));
+    setHistory(newHistory);
   }, [location.pathname, homePath]);
 
-  // No mostrar migaja si solo está "Inicio" o estamos en login
-  if (history.length <= 1 || location.pathname === "/login") {
+  // No mostrar migaja si estamos en login o si solo está "Inicio"
+  if (history.length <= 1 || location.pathname === "/login" || location.pathname === "/inicio") {
     return null;
   }
 
