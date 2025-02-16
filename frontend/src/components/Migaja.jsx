@@ -9,7 +9,7 @@ const Migaja = () => {
   const [history, setHistory] = useState([]);
 
   const homePath = userRole === "cliente" ? "/inicio" : "/panelAdministrativo";
-  const resetRoutes = ["/perfilUsuario", "/registrar", "/inicio"];
+  const resetRoutes = ["/perfilUsuario", "/registrar", "/inicio", "/contacto", "/quienesSomos","/comoComprar","/productos","/politicasDeDevolucion"];
 
   useEffect(() => {
     let newHistory;
@@ -39,7 +39,7 @@ const Migaja = () => {
   }, [location.pathname, homePath]);
 
   // No mostrar migaja si estamos en login o si solo está "Inicio"
-  if (history.length <= 1 || location.pathname === "/login" || location.pathname === "/inicio") {
+  if (history.length <= 1 || location.pathname === "/login" || location.pathname === "/inicio" || location.pathname === "/registrar") {
     return null;
   }
 

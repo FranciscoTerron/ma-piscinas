@@ -6,10 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import cloudinary
 
 # Importamos la conexión a la base de datos y los modelos
-from src.database import engine
+from src.database import engine, SessionLocal
 from src.models import BaseModel
-# Importamos los routers desde nuestros módulos
-from src.gestion.router import router as gestion_router
+from src.gestion.router import router as gestion_router # Importamos los routers desde nuestros módulos
+from src.gestion.services import verificar_y_crear_roles 
 
 load_dotenv()
 
@@ -25,7 +25,13 @@ cloudinary.config(
 
 @asynccontextmanager
 async def db_creation_lifespan(app: FastAPI):
-    BaseModel.metadata.create_all(bind=engine)
+    BaseModel.metadata.create_all(bind=engine)  # Crear tablas si no existen
+    
+    # Verificar y crear roles
+    db = SessionLocal()
+    verificar_y_crear_roles(db)
+    db.close()
+    
     yield
 
 app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Flex, IconButton, Text, Link, HStack, VStack, Input, Button, Image, Divider } from '@chakra-ui/react';
 import { FaInstagram, FaFacebook, FaPaperPlane } from 'react-icons/fa';
+import { listarMetodosEnvios, listarMetodosPago } from '../services/api';
 
 const PaymentMethodsSection = ({ methods }) => (
   <VStack align="flex-start" spacing={3}>
@@ -8,9 +9,9 @@ const PaymentMethodsSection = ({ methods }) => (
     <HStack spacing={4}>
       {methods.map((method) => (
         <Image 
-          key={method.name}
-          src={method.url} 
-          alt={method.name} 
+          key={method.id} // Usamos el ID como clave única
+          src={method.imagen} // Usamos la URL de la imagen de Cloudinary
+          alt={method.nombre} // Usamos el nombre como texto alternativo
           boxSize="50px" 
         />
       ))}
@@ -24,9 +25,9 @@ const ShippingMethodsSection = ({ methods }) => (
     <HStack spacing={4}>
       {methods.map((method) => (
         <Image 
-          key={method.name}
-          src={method.url} 
-          alt={method.name} 
+          key={method.id} // Usamos el ID como clave única
+          src={method.imagen} // Usamos la URL de la imagen de Cloudinary
+          alt={method.nombre} // Usamos el nombre como texto alternativo
           boxSize="50px" 
         />
       ))}
@@ -96,35 +97,38 @@ const NewsletterSection = () => (
 );
 
 const Footer = () => {
-  const paymentMethods = [
-    {
-      name: "Visa",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408267/footer/mddajtiigpizd8dlopni.png"
-    },
-    {
-      name: "Mastercard",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408267/footer/otv83x493xgqajegimjq.png"
-    },
-    {
-      name: "Pago Facil",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408267/footer/aj9m7pre9d9xd56ijbxe.png"
-    },
-    {
-      name: "Naranja",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408267/footer/ohc42blx9ythcbhxg3ap.png"
-    }
-  ];
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const shippingMethods = [
-    {
-      name: "Andreani",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408279/footer/n1zib3c0kojwankgwnhr.png"
-    },
-    {
-      name: "Cruz del Sur",
-      url: "https://res.cloudinary.com/dytfdvlse/image/upload/v1739408279/footer/s0nihtyoobhkesrqi816.png"
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pagos, envios] = await Promise.all([
+          listarMetodosPago(),
+          listarMetodosEnvios(),
+        ]);
+        setPaymentMethods(pagos);
+        setShippingMethods(envios);
+      } catch (error) {
+        setError("Error al cargar los datos");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <Text>Cargando...</Text>;
+  }
+
+  if (error) {
+    return <Text color="red.500">{error}</Text>;
+  }
 
   return (
     <Box as="footer" bg="#00CED1" color="#00008B" py={8} px={10}>

@@ -12,6 +12,15 @@ import cloudinary.uploader
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+# Para que se creen los roles automaticamente, si es que no existen
+ROLES_REQUERIDOS = ["cliente","administrador"] 
+def verificar_y_crear_roles(db: Session):
+    for rol_nombre in ROLES_REQUERIDOS:
+        if not db.query(Rol).filter(Rol.nombre == rol_nombre).first():
+            nuevo_rol = Rol(nombre=rol_nombre)
+            db.add(nuevo_rol)
+    db.commit()
+
 # CRUD para Usuario
 def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
     # Verificar si el email ya está registrado

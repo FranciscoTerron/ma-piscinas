@@ -5,6 +5,7 @@ from datetime import datetime, UTC
 from src.models import BaseModel
 from passlib.context import CryptContext
 from enum import Enum
+from src.utils.time import now
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -49,7 +50,7 @@ class Usuario(BaseModel):
     hashed_password: Mapped[str] = mapped_column(String)
     telefono: Mapped[int] = mapped_column(Integer)
     direccion: Mapped[str] = mapped_column(String)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
     rol_id = Column(Integer, ForeignKey("roles.id"))
     rol = relationship("Rol", backref="usuarios")
     carrito = relationship("Carrito", back_populates="usuario")
@@ -75,7 +76,7 @@ class Carrito(BaseModel):
     __tablename__ = "carritos"
      
     id = Column(Integer, primary_key=True, index=True)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
     estado: Mapped[EstadoCarrito] = mapped_column(SQLAlchemyEnum(EstadoCarrito), default=EstadoCarrito.PENDIENTE)
     
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)  # Clave foránea a Usuario
@@ -160,7 +161,7 @@ class Pedido(BaseModel):
     __tablename__ = "pedidos"
     
     id = Column(Integer, primary_key=True, index=True)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(UTC))
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
     total: Mapped[float] = mapped_column(Float)
     estado: Mapped[EstadoPedido] = mapped_column(SQLAlchemyEnum(EstadoPedido), default=EstadoPedido.PENDIENTE)
     
@@ -190,7 +191,7 @@ class Pago(BaseModel):
     __tablename__ = "pagos"
 
     id = Column(Integer, primary_key=True, index=True)
-    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
     monto: Mapped[float] = mapped_column(Float)
     estado: Mapped[EstadoPago] = mapped_column(SQLAlchemyEnum(EstadoPago), default=EstadoPago.PENDIENTE)
 
@@ -220,7 +221,7 @@ class Actividad(BaseModel):
     tipo_evento: Mapped[TipoActividad] = mapped_column(SQLAlchemyEnum(TipoActividad), index=True)
     descripcion: Mapped[str] = mapped_column(String, nullable=False)
     referencia_id: Mapped[Optional[int]] = mapped_column(Integer, index=True)  
-    fecha: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    fecha: Mapped[datetime] = mapped_column(DateTime, default=now)
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     usuario = relationship("Usuario", back_populates="actividades")
