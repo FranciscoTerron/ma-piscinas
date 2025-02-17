@@ -19,6 +19,7 @@ import ComoComprar from '../src/components/cliente/ComoComprar';
 import QuienesSomos from '../src/components/cliente/QuienesSomos';
 import PoliticasDevolucion from '../src/components/cliente/PoliticasDevolucion';
 import Contacto from '../src/components/cliente/Contacto';
+import Productos from '../src/components/cliente/Productos';
 import Inicio from './components/cliente/Inicio';
 import GestionEnvios from './components/administrativo/gestionEnvios/GestionEnvios';
 import RegistroEnvios from '../src/components/administrativo/gestionEnvios/RegistroEnvios';
@@ -38,6 +39,7 @@ const AppRoutes = () => {
       <Route path="/quienesSomos" element={<QuienesSomos />} />
       <Route path="/politicasDeDevolucion" element={<PoliticasDevolucion />} />
       <Route path="/contacto" element={<Contacto />} />
+      <Route path="/productos" element= {<Productos/>} />
       <Route path="/inicio" element= {<Inicio/>} />
 
       {/* Rutas protegidas */}
