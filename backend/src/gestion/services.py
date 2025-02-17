@@ -920,3 +920,16 @@ def registrar_actividad(db: Session, actividad_data: schemas.ActividadCreate):
     db.commit()
     db.refresh(nueva_actividad)
     return nueva_actividad
+
+#REPORTES
+#---------------------------------------------------------------------------------------------
+def obtener_usuario_mas_activo(db: Session):
+    usuario_mas_activo = db.query(
+        Usuario.nombre, func.count(Pedido.id).label("compras")
+    ).join(Pedido, Usuario.id == Pedido.usuario_id).group_by(Usuario.nombre).order_by(func.count(Pedido.id).desc()).first()
+
+    if usuario_mas_activo:
+        return {"nombre": usuario_mas_activo[0], "compras": usuario_mas_activo[1]}
+    else:
+        return {"nombre": "Sin datos", "compras": 0}
+

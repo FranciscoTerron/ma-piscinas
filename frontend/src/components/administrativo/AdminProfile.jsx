@@ -20,7 +20,8 @@ import {
   FaBell, 
   FaCog,
   FaChevronRight, 
-  FaTruck
+  FaTruck,
+  FaChartBar
 } from "react-icons/fa";
 import { 
   AiFillProduct,
@@ -34,6 +35,7 @@ const AdminProfile = () => {
   const [productos, setProductos] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [envios, setEnvios] = useState([]);
+  const [reportes, setReportes] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const AdminProfile = () => {
     cargarUsuarios();
     cargarPagos();
     cargarEnvios();
+    cargarReportes();
   }, []);
 
   const cargarUsuarios = async () => {
@@ -103,6 +106,21 @@ const AdminProfile = () => {
     }
   };
 
+  const cargarReportes = async () => {
+    try {
+      const data = await listarReportes();
+      setReportes(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar reportes.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const cards = [
     { 
       id: 'user', 
@@ -136,6 +154,15 @@ const AdminProfile = () => {
       route: '/gestionEnvios', 
       icon: FaTruck ,
       stats: `${envios.length} envios`
+    },
+
+    { 
+      id: 'reportes', 
+      title: 'Reportes',
+      description: 'Analisis, estadisticas',
+      route: '/reportes', 
+      icon: FaChartBar,
+      stats: `${reportes.length} reportes`
     }
   ];
 

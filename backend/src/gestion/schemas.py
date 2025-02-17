@@ -408,3 +408,30 @@ class Actividad(ActividadBase):
 
     class Config:
         orm_mode = True
+        
+#Reportes
+# ============================================================
+# Esquema para Reportes
+# ============================================================
+
+class UsuarioReporteSchema(BaseModel):
+    nombre: str
+    compras: int
+
+class ProductoReporteSchema(BaseModel):
+    nombre: str
+    ventas: int
+
+class IngresoMensualSchema(BaseModel):
+    mes: str
+    ingresos: float
+
+class MetodoPagoSchema(BaseModel):
+    nombre: str
+    usos: int
+
+class ReporteSchema(BaseModel):
+    usuarios_mas_activos: List[UsuarioReporteSchema]
+    productos_mas_vendidos: List[ProductoReporteSchema]
+    ingresos_mensuales: List[IngresoMensualSchema]
+    metodos_pago_usados: List[MetodoPagoSchema]

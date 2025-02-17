@@ -265,3 +265,13 @@ export const listarActividadesRecientes = async () => {
   const response = await api.get("/actividades");
   return response.data; 
 };
+
+export const obtenerUsuarioMasActivo = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/reportes/usuario_mas_activo');
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo usuario más activo', error);
+    return null;
+  }
+};

@@ -763,3 +763,10 @@ def registrar_actividad_api(
 @router.get("/actividades", response_model=List[schemas.Actividad])
 def listar_actividades(db: Session = Depends(get_db)):
     return services.listar_actividades(db)
+
+# ============================================================
+# Obtener Reportes
+# ============================================================
+@router.get("/reportes/usuario_mas_activo", response_model=dict)
+def obtener_usuario_mas_activo(db: Session = Depends(get_db)):
+    return services.obtener_usuario_mas_activo(db)

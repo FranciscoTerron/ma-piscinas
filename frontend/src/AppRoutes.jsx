@@ -25,6 +25,7 @@ import GestionEnvios from './components/administrativo/gestionEnvios/GestionEnvi
 import RegistroEnvios from '../src/components/administrativo/gestionEnvios/RegistroEnvios';
 import MetodosEnvios from '../src/components/administrativo/gestionEnvios/gestionMetodoEnvios/MetodosEnvios';
 import Registrar from '../src/components/Registrar';
+import Reportes from './components/administrativo/reportes/Reportes';
 
 
 
@@ -170,6 +171,15 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={["administrador"]}>
             <MetodosEnvios />
+          </PrivateRoute>
+        } 
+      />
+
+      <Route 
+        path="/reportes" 
+        element={
+          <PrivateRoute allowedRoles={["administrador"]}>
+            <Reportes />
           </PrivateRoute>
         } 
       />
