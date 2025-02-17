@@ -260,7 +260,6 @@ export const listarMetodosEnvios = async () => {
 };
 
 
-
 export const listarActividadesRecientes = async () => {
   const response = await api.get("/actividades");
   return response.data; 
@@ -274,4 +273,16 @@ export const obtenerUsuarioMasActivo = async () => {
     console.error('Error obteniendo usuario más activo', error);
     return null;
   }
+};
+
+// Servicios para Pedidos
+// ---------------------------------------------------------------------
+export const listarPedidos = async () => {
+  const response = await api.get("/pedidos");
+  return response.data;
+};
+
+export const listarPedidoDetalles = async () => {
+  const response = await api.get("/pedido-detalles");
+  return response.data;
 };

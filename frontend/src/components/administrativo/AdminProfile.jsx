@@ -26,7 +26,7 @@ import {
 import { 
   AiFillProduct,
 } from "react-icons/ai";
-import { listarUsuarios, listarProductos, listarPagos, listarEnvios } from "../../services/api";
+import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos ,obtenerUsuarioMasActivo } from "../../services/api";
 import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
 
 const AdminProfile = () => {
@@ -35,6 +35,7 @@ const AdminProfile = () => {
   const [productos, setProductos] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [envios, setEnvios] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
   const [reportes, setReportes] = useState([]);
   const toast = useToast();
 
@@ -44,6 +45,7 @@ const AdminProfile = () => {
     cargarPagos();
     cargarEnvios();
     cargarReportes();
+    cargarPedidos();
   }, []);
 
   const cargarUsuarios = async () => {
@@ -108,12 +110,27 @@ const AdminProfile = () => {
 
   const cargarReportes = async () => {
     try {
-      const data = await listarReportes();
+      const data = await obtenerUsuarioMasActivo();
       setReportes(data);
     } catch (error) {
       toast({
         title: "Error",
         description: "No se pudo cargar reportes.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarPedidos = async () => {
+    try {
+      const data = await listarPedidos();
+      setPedidos(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar pedidos.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -155,7 +172,14 @@ const AdminProfile = () => {
       icon: FaTruck ,
       stats: `${envios.length} envios`
     },
-
+    { 
+      id: 'pedidos', 
+      title: 'Gestión de Pedidos',
+      description: 'Pedidos y sus detalles',
+      route: '/pedidos', 
+      icon: FaChartBar,
+      stats: `${pedidos.length} pedidos`
+    },
     { 
       id: 'reportes', 
       title: 'Reportes',
@@ -163,7 +187,7 @@ const AdminProfile = () => {
       route: '/reportes', 
       icon: FaChartBar,
       stats: `${reportes.length} reportes`
-    }
+    },
   ];
 
   return (

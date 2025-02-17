@@ -14,6 +14,7 @@ import AdministracionProductos from '../src/components/administrativo/gestionPro
 import GestionProductos from '../src/components/administrativo/gestionProductos/gestionProductos/GestionProductos';
 import AdministracionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/AdministracionCategorias';
 import GestionCategorias from '../src/components/administrativo/gestionProductos/gestionCategorias/gestionCategorias/GestionCategorias';
+import GestionPedidos from '../src/components/administrativo/gestionPedidos/GestionPedidos'
 import GestionSubCate from '../src/components/administrativo/gestionProductos/gestionCategorias/gestionSubCategorias/GestionSubCate';
 import ComoComprar from '../src/components/cliente/ComoComprar';
 import QuienesSomos from '../src/components/cliente/QuienesSomos';
@@ -180,6 +181,15 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={["administrador"]}>
             <Reportes />
+          </PrivateRoute>
+        } 
+      />
+
+      <Route 
+        path="/pedidos" 
+        element={
+          <PrivateRoute allowedRoles={["administrador"]}>
+            <GestionPedidos />
           </PrivateRoute>
         } 
       />
