@@ -210,7 +210,6 @@ class MetodoPago(BaseModel):
     nombre: Mapped[str] = mapped_column(String, index=True)
     imagen: Mapped[str] = mapped_column(String, index=True)
 
-
     pago = relationship("Pago", back_populates="metodoPago")
     
     

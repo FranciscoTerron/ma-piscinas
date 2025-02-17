@@ -40,9 +40,9 @@ class EstadoPagoEnum(str, Enum):
 # Metodo de pago
 # ============================================================
 class MetodoPagoEnum(str, Enum):
+    EFECTIVO = "EFECTIVO"
     TARJETA = "TARJETA"
     TRANSFERENCIA = "TRANSFERENCIA"
-    EFECTIVO = "EFECTIVO"
 
 # ============================================================
 # Tipo de Actividad
@@ -381,7 +381,7 @@ class MetodoPagoBase(BaseModel):
     imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
 
 class MetodoPago(MetodoPagoBase):
-    id: int
+    id: int 
 
     class Config:
         from_attributes = True

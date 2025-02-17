@@ -412,9 +412,9 @@ def actualizar_empresa(
     ) -> Empresa:
     empresa = obtener_empresa_por_id(db, empresa_id)
     
-    empresa.nombre
-    empresa.direccion
-    empresa.telefono
+    empresa.nombre = nombre
+    empresa.direccion = direccion
+    empresa.telefono = telefono
     # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
     if imagen:
         try:
@@ -511,7 +511,7 @@ def actualizar_metodo_pago(
     metodo_pago_id: int, 
     nombre: str,
     tipo: MetodoPagoEnum,  
-    imagen: UploadFile = None
+    imagen: UploadFile = None 
 ) -> MetodoPago:
     # Obtener el método de pago por ID
     metodo_pago = obtener_metodo_pago_por_id(db, metodo_pago_id)

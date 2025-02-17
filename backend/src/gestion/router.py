@@ -429,9 +429,9 @@ def eliminar_metodo_pago(metodo_pago_id: int, db: Session = Depends(get_db)):
 @router.put("/metodos-pago/{metodo_pago_id}", response_model=schemas.MetodoPago)
 def actualizar_metodo_pago(
     metodo_pago_id: int, 
-    nombre: str,  
-    tipo: models.MetodoPagoEnum,  
-    imagen: UploadFile = File(None),  # Imagen con valor por defecto
+    nombre: str = Form(...),  
+    tipo: models.MetodoPagoEnum = Form(...),  
+    imagen: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
     return services.actualizar_metodo_pago(db, metodo_pago_id, nombre, tipo, imagen)

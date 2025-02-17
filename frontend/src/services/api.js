@@ -204,7 +204,7 @@ export const agregarMetodoPago = async (metodoData) => {
 export const actualizarMetodoPago = async (metodoId, metodoData) => {
   const response = await api.put(`/metodos-pago/${metodoId}`, metodoData);
   return response.data;
-}
+} 
 
 // Obtener Metodos de pago
 export const obtenerMetodosPago = async () => {

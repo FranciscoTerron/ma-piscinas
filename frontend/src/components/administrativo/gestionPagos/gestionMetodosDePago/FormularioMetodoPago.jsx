@@ -103,7 +103,6 @@ const FormularioMetodoPago = ({ isOpen, onClose, onSubmitSuccess, metodo }) => {
     const formDataToSend = new FormData();
     formDataToSend.append("nombre", formData.nombre);
     formDataToSend.append("tipo", formData.tipo.toUpperCase());
-
     if (formData.imagen && formData.imagen instanceof File) {
       formDataToSend.append("imagen", formData.imagen);
     }
