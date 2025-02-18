@@ -27,8 +27,7 @@ import RegistroEnvios from '../src/components/administrativo/gestionEnvios/Regis
 import MetodosEnvios from '../src/components/administrativo/gestionEnvios/gestionMetodoEnvios/MetodosEnvios';
 import Registrar from '../src/components/Registrar';
 import Reportes from './components/administrativo/reportes/Reportes';
-
-
+import Producto from '../src/components/cliente/Producto';
 
 const AppRoutes = () => {
   return (
@@ -42,6 +41,7 @@ const AppRoutes = () => {
       <Route path="/politicasDeDevolucion" element={<PoliticasDevolucion />} />
       <Route path="/contacto" element={<Contacto />} />
       <Route path="/productos" element= {<Productos/>} />
+      <Route path="/producto/:id" element={<Producto />} />
       <Route path="/inicio" element= {<Inicio/>} />
 
       {/* Rutas protegidas */}

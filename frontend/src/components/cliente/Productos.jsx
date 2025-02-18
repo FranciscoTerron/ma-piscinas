@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { 
-  Container, VStack, HStack, Text, Box, Grid, Image, Button, Badge, useToast, Input, Select,
+import { Container, VStack, HStack, Text, Box, Grid, Image, Button, Badge, useToast, Input, Select,
   Skeleton, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton,
   useDisclosure, IconButton, RangeSlider, RangeSliderTrack, RangeSliderFilledTrack, RangeSliderThumb,
-  Flex, useBreakpointValue, InputGroup, InputLeftElement,
-  Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, Divider
-} from "@chakra-ui/react";
+  Flex, useBreakpointValue, InputGroup, InputLeftElement} from "@chakra-ui/react";
 import { FiSearch, FiMenu, FiShoppingCart, FiFilter, FiSliders } from 'react-icons/fi';
 import { listarProductos, listarCategorias } from "../../services/api";
+import { Link } from "react-router-dom";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -17,17 +15,13 @@ const Productos = () => {
   const [selectedCategoria, setSelectedCategoria] = useState("todas");
   const [ordenarPor, setOrdenarPor] = useState("relevancia");
   const [rangoPrecio, setRangoPrecio] = useState([0, 10000000]);
-  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
-  const { isOpen: isModalOpen, onOpen: onModalOpen, onClose: onModalClose } = useDisclosure();
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-  
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
+  const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
     cargarDatos();
   }, []);
-
   const cargarDatos = async () => {
     try {
       setLoading(true);
@@ -49,7 +43,6 @@ const Productos = () => {
       setLoading(false);
     }
   };
-
   const productosFiltrados = productos.filter(producto => {
     // Filtro por búsqueda
     const matchesSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase());
@@ -76,7 +69,6 @@ const Productos = () => {
         return 0;
     }
   });
-
   const FiltersContent = () => (
     <VStack spacing={4} align="start" w="full">
       <HStack spacing={2}>
@@ -104,7 +96,6 @@ const Productos = () => {
           ))}
         </Select>
       </Box>
-
       <Box w="full">
         <Text mb={2}>Ordenar por</Text>
         <Select
@@ -123,7 +114,6 @@ const Productos = () => {
           <option value="descuento">Mayor descuento</option>
         </Select>
       </Box>
-
       <Box w="full">
         <HStack spacing={2} mb={2}>
           <FiSliders />
@@ -149,7 +139,6 @@ const Productos = () => {
       </Box>
     </VStack>
   );
-
   const ProductoSkeleton = () => (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
       <Skeleton height="200px" mb={4} />
@@ -159,47 +148,53 @@ const Productos = () => {
       <Skeleton height="40px" />
     </Box>
   );
-
   return (
     <Container maxW="container.xl" py={4} color={"black"}>
       <Text fontSize="35px" fontWeight="bold" mb={4} textAlign="center">Productos</Text>
-      
       <Flex mb={6} gap={4} direction={{ base: "column", md: "row" }}>
-        <HStack flex={1}>
+      <HStack flex={1} justify="flex-start">
+        <InputGroup width={{ base: "100%", md: "300px" }}>
+          <InputLeftElement pointerEvents="none">
+            <FiSearch color="gray.500" />
+          </InputLeftElement>
           <Input
             placeholder="Buscar productos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             border="2px solid gray"
           />
-          {isMobile && (
-            <IconButton
-              icon={<FiMenu />}
-              onClick={onDrawerOpen}
-              aria-label="Abrir filtros"
-            />
-          )}
-        </HStack>
+        </InputGroup>
+        {isMobile && (
+          <IconButton
+            variant="outline"
+            color="#00008B"
+            borderColor="#00008B"
+            icon={<FiMenu />}
+            onClick={onOpen}
+            aria-label="Abrir filtros"
+          />
+        )}
+      </HStack>
       </Flex>
-
       <HStack align="start" spacing={8}>
+        {/* Filtros para desktop */}
         {!isMobile && (
-          <Box w="250px">
+          <Box w="250px" bg="white" borderColor="#00008B" >
             <FiltersContent />
           </Box>
         )}
-
-        <Drawer isOpen={isDrawerOpen} placement="right" onClose={onDrawerClose}>
+        {/* Drawer de filtros para mobile */}
+        <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
           <DrawerOverlay />
-          <DrawerContent>
-            <DrawerCloseButton />
+          <DrawerContent bg="white" borderColor="#00008B" color={"black"}>
+            <DrawerCloseButton color={"black"}/>
             <DrawerHeader>Filtros</DrawerHeader>
             <DrawerBody>
               <FiltersContent />
             </DrawerBody>
           </DrawerContent>
         </Drawer>
-
+        {/* Grid de productos */}
         <Box flex={1}>
           <Grid
             templateColumns={{
@@ -261,106 +256,32 @@ const Productos = () => {
                     <Text fontSize="sm" color="gray.600" mb={4}>
                       3 cuotas sin interés de ${(producto.precio / 3).toFixed(2)}
                     </Text>
-                    <Button
-                      colorScheme="blue"
-                      w="full"
-                      size="lg"
-                      leftIcon={<FiShoppingCart />}
-                      _hover={{ transform: "scale(1.02)" }}
-                    >
-                      Agregar al carrito
-                    </Button>
-                    <Button
-                      mt={2}
-                      w="full"
-                      colorScheme="teal"
-                      onClick={() => {
-                        setSelectedProduct(producto);
-                        onModalOpen();
-                      }}
-                    >
-                      Ver más
-                    </Button>
+                    <VStack spacing={2} w="full">
+                      <Button
+                        colorScheme="blue"
+                        w="full"
+                        leftIcon={<FiShoppingCart />}
+                        _hover={{ transform: "scale(1.02)" }}
+                      >
+                        Agregar al carrito
+                      </Button>
+                      <Link to={`/producto/${producto.id}`} style={{ width: '100%' }}>
+                        <Button
+                          variant="outline"
+                          colorScheme="blue"
+                          w="full"
+                          _hover={{ transform: "scale(1.02)" }}
+                        >
+                          Ver más
+                        </Button>
+                      </Link>
+                    </VStack>
                   </Box>
                 ))}
           </Grid>
         </Box>
       </HStack>
-
-      {selectedProduct && (
-        <Modal 
-          isOpen={isModalOpen} 
-          onClose={() => { onModalClose(); setSelectedProduct(null); }} 
-          size="xl"
-          scrollBehavior="inside"
-        >
-          {/* Overlay con opacidad más ligera */}
-          <ModalOverlay bg="rgba(0, 0, 0, 0.3)" />
-          <ModalContent 
-            borderRadius="lg" 
-            border="2px solid" 
-            borderColor="blue.200" 
-            boxShadow="xl"
-            bg="white"
-          >
-            <ModalHeader textAlign="center" bg="blue.100" color="blue.700">
-              {selectedProduct.nombre}
-            </ModalHeader>
-            <ModalCloseButton color="blue.700" />
-            <ModalBody
-              sx={{
-                "&::-webkit-scrollbar": {
-                  width: "8px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  background: "#E0F7FA", // fondo celeste claro
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "#81D4FA", // celeste medio
-                  borderRadius: "8px",
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  background: "#4FC3F7", // celeste más oscuro al pasar el mouse
-                },
-              }}
-            >
-              <Image
-                src={selectedProduct.imagen}
-                alt={selectedProduct.nombre}
-                borderRadius="md"
-                mb={4}
-                w="100%"
-              />
-              <Flex align="center" justify="space-between" mb={4}>
-                <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                  ${selectedProduct.precio.toLocaleString()}
-                </Text>
-                {selectedProduct.descuento && (
-                  <Badge colorScheme="red" fontSize="lg" p={2}>
-                    {selectedProduct.descuento}% OFF
-                  </Badge>
-                )}
-              </Flex>
-              <Divider mb={4} />
-              <Text fontSize="md" color="black">
-                <strong>Descripción: </strong>
-                {selectedProduct.descripcion || "No hay descripción disponible para este producto."}
-              </Text>
-              <Text fontSize="md" color="black" mt={2}>
-                <strong>Stock: </strong>
-                {selectedProduct.stock || "No hay stock disponible"}
-              </Text>
-            </ModalBody>
-            <ModalFooter justifyContent="center">
-              <Button colorScheme="blue" onClick={() => { onModalClose(); setSelectedProduct(null); }}>
-                Cerrar
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
     </Container>
   );
 };
-
 export default Productos;

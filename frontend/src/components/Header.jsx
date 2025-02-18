@@ -2,6 +2,7 @@ import React from 'react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { Box, Button, HStack, useToast, Menu, MenuButton, MenuList, MenuItem, IconButton, Heading } from '@chakra-ui/react';
 import { HiMenu } from 'react-icons/hi';
+import { FiShoppingCart } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
@@ -96,6 +97,23 @@ const Header = () => {
           </Menu>
         )}
       </HStack>
+      <Button
+        ml={2}
+        as={IconButton}
+        aria-label="Carrito"
+        icon={<FiShoppingCart />}
+        bg="#00CED1"
+        color="#00008B"
+        _hover={{
+          color: "black",
+          transform: 'scale(1.05)',
+          transition: 'all 0.2s ease-in-out'
+        }}
+        _active={{
+          color: "#4169E1",
+          transform: 'scale(0.95)'
+        }}
+      />
     </Box>
   );
 };

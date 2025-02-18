@@ -295,3 +295,43 @@ export const listarPedidoDetalles = async () => {
   const response = await api.get("/pedido-detalles");
   return response.data;
 };
+
+
+// Servicios para Carrito
+export const crearCarrito = async (carritoData) => {
+  const response = await api.post("/carritos", carritoData);
+  return response.data;
+};
+
+export const obtenerCarritoUsuario = async () => {
+  const response = await api.get("/carritos/usuario");
+  return response.data;
+};
+
+export const agregarProductoAlCarrito = async (productoId, detalleData) => {
+  const response = await api.post("/carritos/productos", detalleData, {
+    params: { producto_id: productoId },
+  });
+  return response.data;
+};
+
+export const actualizarCantidadProducto = async (productoId, nuevaCantidad) => {
+  const response = await api.put("/carritos/productos", null, {
+    params: { producto_id: productoId, nueva_cantidad: nuevaCantidad },
+  });
+  return response.data;
+};
+
+export const eliminarProductoDelCarrito = async (productoId) => {
+  const response = await api.delete("/carritos/productos", {
+    params: { producto_id: productoId },
+  });
+  return response.data;
+};
+
+export const obtenerDetallesCarrito = async (carritoId) => {
+  const response = await api.get("/carritosdetalles/", {
+    params: { carrito_id: carritoId },
+  });
+  return response.data;
+};
