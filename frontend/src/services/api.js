@@ -32,6 +32,15 @@ export const registrar = async (userData) => {
   return response.data;
 };
 
+export const obtenerUsuarioPorId = async (usuarioId) => {
+  try {
+    const response = await api.get(`/usuarios/${usuarioId}`);
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+};
+
 export const login = async (email, password) => {
   const response = await axios.post(
     'http://127.0.0.1:8000/login',

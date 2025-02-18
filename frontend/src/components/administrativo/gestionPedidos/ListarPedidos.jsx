@@ -10,17 +10,32 @@ import {
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
-import { FaEye } from "react-icons/fa";
+import { FaEye, FaUser } from "react-icons/fa";
 import ListarDetallesPedido from "./ListarDetallesPedido";
+import VerUsuario from "./VerUsuario";
+import { obtenerUsuarioPorId } from "../../../services/api";
+
 
 const ListarPedidos = ({ pedidos }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isDetallesOpen, onOpen: onDetallesOpen, onClose: onDetallesClose } = useDisclosure();
+  const { isOpen: isUsuarioOpen, onOpen: onUsuarioOpen, onClose: onUsuarioClose } = useDisclosure();
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   const handleVerDetalles = (pedidoId) => {
     setPedidoSeleccionado(pedidoId);
-    onOpen();
+    onDetallesOpen();
   };
+
+  const handleVerUsuario = async (usuarioId) => {
+    console.log("Usuario ID recibido:", usuarioId); // 👀 Verifica si el ID es correcto
+    const usuario = await obtenerUsuarioPorId(usuarioId);
+    console.log("Usuario obtenido:", usuario); // Debería mostrar los datos
+    setUsuarioSeleccionado(usuario);
+    onUsuarioOpen();
+  };
+
+  
 
   return (
     <>
@@ -38,42 +53,33 @@ const ListarPedidos = ({ pedidos }) => {
               <Th textAlign="center" color="gray.700" width="10%">ID</Th>
               <Th textAlign="left" color="gray.700" width="20%">Fecha</Th>
               <Th textAlign="right" color="gray.700" width="20%">Total</Th>
-              <Th textAlign="center" color="gray.700" width="20%">Estado</Th>
-              <Th textAlign="center" color="gray.700" width="20%">Acciones</Th>
+              <Th textAlign="center" color="gray.700" width="15%">Estado</Th>
+              <Th textAlign="center" color="gray.700" width="35%">Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>
             {pedidos.map((pedido) => (
-              <Tr 
-                key={pedido.id} 
-                _hover={{ bg: "gray.50" }} 
-                transition="all 0.2s"
-              >
-                <Td textAlign="center" fontSize="sm" color="gray.600">
-                  #{pedido.id}
-                </Td>
-                <Td color="gray.700">
-                  {new Date(pedido.fecha).toLocaleDateString()}
-                </Td>
+              <Tr key={pedido.id} _hover={{ bg: "gray.50" }} transition="all 0.2s">
+                <Td textAlign="center" fontSize="sm" color="gray.600">#{pedido.id}</Td>
+                <Td color="gray.700">{new Date(pedido.fecha).toLocaleDateString()}</Td>
                 <Td textAlign="right" fontWeight="bold" color="gray.800">
                   ${pedido.total.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                 </Td>
-                <Td 
-                  textAlign="center" 
-                  fontWeight="bold"
-                  color={pedido.estado === "Entregado" ? "green.600" : "red.600"}
-                >
+                <Td textAlign="center" fontWeight="bold" color={pedido.estado === "Entregado" ? "green.600" : "red.600"}>
                   {pedido.estado}
                 </Td>
                 <Td textAlign="center">
-                  <Button
-                    leftIcon={<FaEye />}
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                    onClick={() => handleVerDetalles(pedido.id)}
-                  >
+                  <Button leftIcon={<FaEye />} size="sm" colorScheme="blue" variant="outline" onClick={() => handleVerDetalles(pedido.id)}>
                     Ver Detalles
+                  </Button>
+                  <Button
+                    leftIcon={<FaUser />}
+                    size="sm"
+                    colorScheme="teal"
+                    variant="outline"
+                    ml={2}
+                    onClick={() => handleVerUsuario(pedido.usuario_id || pedido.usuario?.id)}                  >
+                    Ver Usuario
                   </Button>
                 </Td>
               </Tr>
@@ -83,12 +89,12 @@ const ListarPedidos = ({ pedidos }) => {
       </Box>
 
       {pedidoSeleccionado && (
-        <ListarDetallesPedido
-          pedidoId={pedidoSeleccionado}
-          isOpen={isOpen}
-          onClose={onClose}
-        />
+        <ListarDetallesPedido pedidoId={pedidoSeleccionado} isOpen={isDetallesOpen} onClose={onDetallesClose} />
       )}
+      {usuarioSeleccionado && (
+        <VerUsuario usuario={usuarioSeleccionado} isOpen={isUsuarioOpen} onClose={onUsuarioClose} />
+      )}
+
     </>
   );
 };

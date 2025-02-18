@@ -244,6 +244,7 @@ class PedidoBase(BaseModel):
 class PedidoEstadoUpdate(PedidoBase):
     estado: EstadoPedidoEnum
 
+
 class Pedido(PedidoBase):
     id: int
     usuario_id: int
@@ -251,6 +252,8 @@ class Pedido(PedidoBase):
 
     class Config:
         from_attributes = True
+        
+    
         
 # ============================================================
 # Esquema para crear un pedido

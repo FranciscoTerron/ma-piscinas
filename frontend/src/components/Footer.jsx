@@ -109,14 +109,8 @@ const Footer = () => {
           listarMetodosPago(),
           listarMetodosEnvios(),
         ]);
-  
-        // Verificar si los datos obtenidos son realmente métodos de pago o envío
-        if (Array.isArray(pagos) && pagos.length > 0 && pagos[0].hasOwnProperty("imagen")) {
-          setPaymentMethods(pagos);
-        }
-        if (Array.isArray(envios) && envios.length > 0 && envios[0].hasOwnProperty("imagen")) {
-          setShippingMethods(envios);
-        }
+        setPaymentMethods(pagos);
+        setShippingMethods(envios);
       } catch (error) {
         setError("Error al cargar los datos");
         console.error(error);
@@ -124,10 +118,10 @@ const Footer = () => {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
   if (loading) {
     return <Text>Cargando...</Text>;
   }

@@ -41,6 +41,20 @@ def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
 # Ruta para USUARIO
 # -----------------------------------------------------------------------------------------
 # ============================================================
+# Ruta para obtener usuario
+# ============================================================
+@router.get("/usuarios/{usuario_id}")
+def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    
+    usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    return usuario
+
+
+# ============================================================
 # Ruta para listar usuarios
 # ============================================================
 
@@ -528,6 +542,7 @@ def actualizar_estado_pedido(pedido_id: int, estado_update: schemas.PedidoEstado
     """
     pedido = services.actualizar_estado_pedido(db, pedido_id, estado_update.estado)
     return pedido
+
 
 #DETALLE PEDIDO
 #-----------------------------------------------------------------------------------------
