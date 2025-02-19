@@ -8,31 +8,26 @@ import { AuthProvider } from './context/AuthContext';
 import AppRoutes from './AppRoutes'; 
 import Migaja from './components/Migaja';
 import BotonWhatsApp from './components/cliente/BotonWhatsapp';
+import { CartProvider } from "./context/CartContext";
 
 const App = () => {
   return (
     <ChakraProvider>
       <AuthProvider>
-        <Router>
-          <Flex 
-            direction="column" 
-            minHeight="100vh" 
-            bg="white" 
-          >
-            <Header />
-            <Navegador />
-            <Migaja/>
-            <Box 
-              flex="1" 
-              bg="white" 
-              py={4} 
-            >
-              <AppRoutes />
-            </Box>
-            <Footer />
-            <BotonWhatsApp />
-          </Flex>
-        </Router>
+        <CartProvider>
+          <Router>
+            <Flex direction="column" minHeight="100vh" bg="white">
+              <Header />
+              <Navegador />
+              <Migaja />
+              <Box flex="1" bg="white" py={4}>
+                <AppRoutes />
+              </Box>
+              <Footer />
+              <BotonWhatsApp />
+            </Flex>
+          </Router>
+        </CartProvider>
       </AuthProvider>
     </ChakraProvider>
   );

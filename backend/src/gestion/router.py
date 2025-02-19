@@ -630,43 +630,18 @@ def agregar_detalle_a_pedido(pedido_id: int, detalle: schemas.PedidoDetalleBase,
 
 #Carrito
 # ============================================================
-# Crear carrito
+# Obtener el carrito del usuario autenticado (o crearlo si no existe)
 # ============================================================
-@router.post("/carritos", response_model=schemas.Carrito, status_code=status.HTTP_201_CREATED)
-def crear_carrito(
-    carrito_data: schemas.CarritoBase,
-    current_user: schemas.Usuario = Depends(get_current_user), #Con esto miramos el usuario actual
-    db: Session = Depends(get_db)
-):
-    carrito = services.create_carrito(db, carrito_data, current_user.id)
-    return carrito
-
-# ============================================================
-# Obtener todos los carritos
-# ============================================================
-
-@router.get("/carritos", response_model=List[schemas.Carrito])
-def obtener_carritos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    """Obtiene la lista de todos los carritos."""
-    return services.listar_carritos(db, skip, limit)
-
-
-# ----------------------------------------------------
-# Obtener el carrito del usuario autenticado
-# ----------------------------------------------------
-@router.get("/carritos/{usuario_id}", response_model=schemas.Carrito)
-def obtener_carrito_usuario(
+@router.get("/carritos", response_model=schemas.Carrito)
+def obtener_carrito(
     current_user: schemas.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    carrito = services.obtener_carrito_por_usuario(db, current_user.id)
-    if not carrito:
-        raise HTTPException(status_code=404, detail="Carrito no encontrado para el usuario")
-    return carrito
+    return services.obtener_carrito_o_crear(db, current_user.id)
 
-# ----------------------------------------------------
-# Agregar un producto al carrito
-# ----------------------------------------------------
+# ============================================================
+# Agregar un producto al carrito (fusionando carritos de sesión si es necesario)
+# ============================================================
 @router.post("/carritos/productos", response_model=schemas.CarritoDetalle, status_code=status.HTTP_201_CREATED)
 def agregar_producto_al_carrito(
     detalle_data: schemas.CarritoDetalleBase,
@@ -674,92 +649,61 @@ def agregar_producto_al_carrito(
     current_user: schemas.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Obtener el carrito activo del usuario; si no existe, se puede crear uno.
-    carrito = services.obtener_carrito_por_usuario(db, current_user.id)
-    if not carrito:
-        # Si no existe carrito, se crea uno nuevo usando valores por defecto.
-        carrito = services.create_carrito(db, schemas.CarritoBase(), current_user.id)
+    carrito = services.obtener_carrito_o_crear(db, current_user.id)
     detalle = services.agregar_producto_al_carrito(db, carrito.id, producto_id, detalle_data)
     return detalle
 
-# ----------------------------------------------------
-# Actualizar la cantidad de un producto en el carrito
-# ----------------------------------------------------
-@router.put("/carritos/productos", response_model=schemas.CarritoDetalle)
+# ============================================================
+# Actualizar cantidad de un producto en el carrito
+# ============================================================
+@router.patch("/carritos/productos/{producto_id}", response_model=schemas.CarritoDetalle)
 def actualizar_cantidad_producto(
-    producto_id: int = Query(..., description="ID del producto a actualizar"),
+    producto_id: int,
     nueva_cantidad: int = Query(..., description="Nueva cantidad para el producto"),
     current_user: schemas.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    carrito = services.obtener_carrito_por_usuario(db, current_user.id)
-    if not carrito:
-        raise HTTPException(status_code=404, detail="Carrito no encontrado")
+    carrito = services.obtener_carrito_o_crear(db, current_user.id)
     detalle = services.actualizar_cantidad_producto(db, carrito.id, producto_id, nueva_cantidad)
     return detalle
 
-# ----------------------------------------------------
+# ============================================================
 # Eliminar un producto del carrito
-# ----------------------------------------------------
-@router.delete("/carritos/productos", status_code=status.HTTP_204_NO_CONTENT)
+# ============================================================
+@router.delete("/carritos/productos/{producto_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_producto_del_carrito(
-    producto_id: int = Query(..., description="ID del producto a eliminar"),
+    producto_id: int,
+    current_user: schemas.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    carrito = services.obtener_carrito_o_crear(db, current_user.id)
+    services.eliminar_producto_del_carrito(db, carrito.id, producto_id)
+    return {"detail": "Producto eliminado del carrito"}
+
+# ============================================================
+# Listar detalles del carrito del usuario autenticado
+# ============================================================
+@router.get("/carritos/detalles", response_model=List[schemas.CarritoDetalle])
+def listar_detalles(
+    current_user: schemas.Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    carrito = services.obtener_carrito_o_crear(db, current_user.id)
+    return services.listar_detalles(db, carrito.id)
+
+# ----------------------------------------------------
+# Vaciar Carrito
+# ----------------------------------------------------
+@router.delete("/carritos/vaciar", status_code=status.HTTP_204_NO_CONTENT)
+def vaciar_carrito(
     current_user: schemas.Usuario = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     carrito = services.obtener_carrito_por_usuario(db, current_user.id)
     if not carrito:
         raise HTTPException(status_code=404, detail="Carrito no encontrado")
-    services.eliminar_producto_del_carrito(db, carrito.id, producto_id)
-    return {"detail": "Producto eliminado del carrito"}
-
-
-# DETALLE CARRITO
-#----------------------------------------------------------------------------
-
-# ============================================================
-# Ruta para crear detalle 
-# ============================================================
-
-@router.post("/carritosdetalles/", response_model=schemas.CarritoDetalle, status_code=status.HTTP_201_CREATED)
-def crear_detalle_carrito(
-    carrito_id: int,
-    detalle_data: schemas.CarritoDetalleBase,
-    producto_id: int = Query(..., description="ID del producto a agregar al carrito"),
-    db: Session = Depends(get_db)
-):
-    """
-    Crea un nuevo detalle para el carrito indicado.  
-    Se espera recibir el ID del producto como parámetro de query.
-    """
-    detalle = services.crear_detalle(db, detalle_data, carrito_id, producto_id)
-    return detalle
-
-# ============================================================
-# Listar los detalles de un carrito en particular
-# ============================================================
-
-@router.get("/carritosdetalles/", response_model=List[schemas.CarritoDetalle])
-def listar_detalles(
-    carrito_id: int,
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """Lista los detalles del carrito indicado."""
-    return services.listar_detalles(db, carrito_id, skip, limit)
-
-# ============================================================
-# Obtener un detalle de un carrito puntual
-# ============================================================
-
-@router.get("/carritosdetalles/{detalle_id}", response_model=schemas.CarritoDetalle)
-def obtener_detalle(carrito_id: int, detalle_id: int, db: Session = Depends(get_db)):
-    """Obtiene un detalle específico del carrito."""
-    detalle = services.obtener_detalle(db, detalle_id)
-    if not detalle or detalle.carrito_id != carrito_id:
-        raise HTTPException(status_code=404, detail="Detalle del carrito no encontrado")
-    return detalle  
+    services.vaciar_carrito(db, carrito.id)
+    return {"detail": "Carrito vaciado"}
 
 #ACTIVIDADES
 #----------------------------------------------------------------------------

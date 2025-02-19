@@ -1,15 +1,28 @@
 import React from 'react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
-import { Box, Button, HStack, useToast, Menu, MenuButton, MenuList, MenuItem, IconButton, Heading } from '@chakra-ui/react';
+import { 
+  Box, Button, HStack, useToast, Menu, MenuButton, MenuList, MenuItem, IconButton, 
+  Heading, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, 
+  ModalCloseButton, ModalBody 
+} from '@chakra-ui/react';
 import { HiMenu } from 'react-icons/hi';
-import { FiShoppingCart } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import CarritoIcono from '../components/carrito/CarritoIcono';
+import Carrito from '../components/carrito/Carrito';
 
 const Header = () => {
   const { user, logout } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { refreshCart } = useCart();
+
+  const handleCloseModal = () => {
+    refreshCart(); 
+    onClose();
+  };
 
   const handleLogout = () => {
     logout();
@@ -56,64 +69,63 @@ const Header = () => {
 
       <HStack spacing={4}>
         {renderAuthButton()}
+
         {user && (
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              aria-label="Opciones"
-              icon={<HiMenu />}
-              variant="outline"
-              color="#00008B"
-              borderColor="#00008B"
-              _hover={{
-                bg: "#87CEEB",
-                transform: 'scale(1.05)',
-                transition: 'all 0.2s ease-in-out'
-              }}
-              _active={{
-                bg: "#4169E1",
-                transform: 'scale(0.95)'
-              }}
-            />
-            <MenuList bg="white" borderColor="#00008B">
-              <MenuItem 
-                as={RouterLink} 
-                to={"/perfilUsuario"}
-                _hover={{ bg: "#87CEEB" }}
+          <>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Opciones"
+                icon={<HiMenu />}
+                variant="outline"
                 color="#00008B"
-                bg={"white"}
-              >
-                Mi Perfil
-              </MenuItem>
-              <MenuItem 
-                onClick={handleLogout} 
-                color="red.500"
-                bg={"white"}
-                _hover={{ bg: "#87CEEB" }}
-              >
-                Cerrar Sesión
-              </MenuItem>
-            </MenuList>
-          </Menu>
+                borderColor="#00008B"
+                _hover={{
+                  bg: "#87CEEB",
+                  transform: 'scale(1.05)',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                _active={{
+                  bg: "#4169E1",
+                  transform: 'scale(0.95)'
+                }}
+              />
+              <MenuList bg="white" borderColor="#00008B">
+                <MenuItem 
+                  as={RouterLink} 
+                  to={"/perfilUsuario"}
+                  _hover={{ bg: "#87CEEB" }}
+                  color="#00008B"
+                  bg="white"
+                >
+                  Mi Perfil
+                </MenuItem>
+                <MenuItem 
+                  onClick={handleLogout} 
+                  color="red.500"
+                  bg="white"
+                  _hover={{ bg: "#87CEEB" }}
+                >
+                  Cerrar Sesión
+                </MenuItem>
+              </MenuList>
+            </Menu>
+
+            <CarritoIcono onClick={onOpen} />
+            
+            <Modal isOpen={isOpen} onClose={handleCloseModal} size="md">
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Carrito de Compras</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody pb={6}>
+                  <Carrito onClose={handleCloseModal} />
+                </ModalBody>
+              </ModalContent>
+            </Modal>
+          </>
         )}
       </HStack>
-      <Button
-        ml={2}
-        as={IconButton}
-        aria-label="Carrito"
-        icon={<FiShoppingCart />}
-        bg="#00CED1"
-        color="#00008B"
-        _hover={{
-          color: "black",
-          transform: 'scale(1.05)',
-          transition: 'all 0.2s ease-in-out'
-        }}
-        _active={{
-          color: "#4169E1",
-          transform: 'scale(0.95)'
-        }}
-      />
     </Box>
   );
 };

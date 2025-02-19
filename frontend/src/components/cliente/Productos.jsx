@@ -6,6 +6,7 @@ import { Container, VStack, HStack, Text, Box, Grid, Image, Button, Badge, useTo
 import { FiSearch, FiMenu, FiShoppingCart, FiFilter, FiSliders } from 'react-icons/fi';
 import { listarProductos, listarCategorias } from "../../services/api";
 import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -17,6 +18,7 @@ const Productos = () => {
   const [rangoPrecio, setRangoPrecio] = useState([0, 10000000]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+  const { addToCart } = useCart();
 
   const isMobile = useBreakpointValue({ base: true, md: false });
   useEffect(() => {
@@ -262,6 +264,7 @@ const Productos = () => {
                         w="full"
                         leftIcon={<FiShoppingCart />}
                         _hover={{ transform: "scale(1.02)" }}
+                        onClick={() => addToCart(producto)}
                       >
                         Agregar al carrito
                       </Button>

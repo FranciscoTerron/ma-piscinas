@@ -296,42 +296,40 @@ export const listarPedidoDetalles = async () => {
   return response.data;
 };
 
-
 // Servicios para Carrito
-export const crearCarrito = async (carritoData) => {
-  const response = await api.post("/carritos", carritoData);
+//---------------------------------------------------------------------
+// Obtener el carrito del usuario autenticado (o crearlo si no existe)
+export const obtenerCarrito = async () => {
+  const response = await api.get("/carritos");
   return response.data;
 };
 
-export const obtenerCarritoUsuario = async () => {
-  const response = await api.get("/carritos/usuario");
-  return response.data;
-};
-
+// Agregar un producto al carrito
 export const agregarProductoAlCarrito = async (productoId, detalleData) => {
-  const response = await api.post("/carritos/productos", detalleData, {
-    params: { producto_id: productoId },
-  });
+  const response = await api.post(`/carritos/productos?producto_id=${productoId}`, detalleData);
   return response.data;
 };
 
+// Actualizar la cantidad de un producto en el carrito
 export const actualizarCantidadProducto = async (productoId, nuevaCantidad) => {
-  const response = await api.put("/carritos/productos", null, {
-    params: { producto_id: productoId, nueva_cantidad: nuevaCantidad },
+  const response = await api.patch(`/carritos/productos/${productoId}`, null, {
+    params: { nueva_cantidad: nuevaCantidad }
   });
   return response.data;
 };
 
+// Eliminar un producto del carrito
 export const eliminarProductoDelCarrito = async (productoId) => {
-  const response = await api.delete("/carritos/productos", {
-    params: { producto_id: productoId },
-  });
+  await api.delete(`/carritos/productos/${productoId}`);
+};
+
+// Listar detalles del carrito
+export const listarDetallesCarrito = async () => {
+  const response = await api.get("/carritos/detalles");
   return response.data;
 };
 
-export const obtenerDetallesCarrito = async (carritoId) => {
-  const response = await api.get("/carritosdetalles/", {
-    params: { carrito_id: carritoId },
-  });
-  return response.data;
+// Vaciar el carrito
+export const vaciarCarrito = async () => {
+  await api.delete("/carritos/vaciar");
 };

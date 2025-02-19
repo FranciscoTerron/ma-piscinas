@@ -4,12 +4,14 @@ import { Container, Box, Image, Text, VStack, HStack, Button, Badge, Skeleton, u
   Grid, GridItem} from '@chakra-ui/react';
 import { FiShoppingCart, FiTruck } from 'react-icons/fi';
 import { obtenerProducto } from '../../services/api';
+import { useCart } from "../../context/CartContext";
 
 const Producto = () => {
   const { id } = useParams();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const cargarProducto = async () => {
@@ -105,6 +107,7 @@ const Producto = () => {
                 width="100%"
                 leftIcon={<FiShoppingCart />}
                 mb={2}
+                onClick={() => addToCart(producto)}
               >
                 Agregar al carrito
               </Button>

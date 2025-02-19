@@ -904,6 +904,20 @@ def eliminar_producto_del_carrito(db: Session, carrito_id: int, producto_id: int
     db.commit()
     return {"detail": "Producto eliminado del carrito"}
 
+# ============================================================
+# Función auxiliar para obtener o crear el carrito automáticamente
+# ============================================================
+def obtener_carrito_o_crear(db: Session, usuario_id: int):
+    carrito = obtener_carrito_por_usuario(db, usuario_id)
+    if not carrito:
+        carrito = create_carrito(db, schemas.CarritoBase(), usuario_id)
+    return carrito
+
+def vaciar_carrito(db: Session, carrito_id: int):
+    """Elimina todos los productos de un carrito sin eliminar el carrito."""
+    db.query(CarritoDetalle).filter(CarritoDetalle.carrito_id == carrito_id).delete()
+    db.commit()
+
 #ACTIVIDADES
 #------------------------------------------------------------------------------------------------------------
 def listar_actividades(db: Session, skip: int = 0, limit: int = 10):
