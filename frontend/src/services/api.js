@@ -52,7 +52,12 @@ export const login = async (email, password) => {
 };
 
 export const listarUsuarios = async (paginaActual, usuariosPorPagina) => {
-  const response = await api.get("/usuarios", paginaActual, usuariosPorPagina);
+  const response = await api.get("/usuarios", {
+    params: {
+      pagina: paginaActual,
+      tamanio: usuariosPorPagina
+    }
+  });
   return response.data;
 };
 

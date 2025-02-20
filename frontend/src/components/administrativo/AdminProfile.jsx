@@ -1,4 +1,3 @@
-// AdminProfile.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -23,15 +22,14 @@ import {
   FaTruck,
   FaChartBar
 } from "react-icons/fa";
-import { 
-  AiFillProduct,
-} from "react-icons/ai";
-import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos ,obtenerUsuarioMasActivo } from "../../services/api";
+import { AiFillProduct } from "react-icons/ai";
+import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos, obtenerUsuarioMasActivo } from "../../services/api";
 import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
 
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
+  const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [productos, setProductos] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [envios, setEnvios] = useState([]);
@@ -48,10 +46,12 @@ const AdminProfile = () => {
     cargarPedidos();
   }, []);
 
-  const cargarUsuarios = async () => {
+  const cargarUsuarios = async (paginaActual, usuariosPorPagina) => {
     try {
-      const data = await listarUsuarios();
-      setUsuarios(data);
+      const data = await listarUsuarios(paginaActual, usuariosPorPagina);
+      // Asumiendo que la respuesta es { usuarios: [...], total: number }
+      setUsuarios(data.usuarios);
+      setTotalUsuarios(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -63,6 +63,7 @@ const AdminProfile = () => {
     }
   };
 
+  // Otras funciones para cargar productos, pagos, envíos, reportes y pedidos...
   const cargarProductos = async () => {
     try {
       const data = await listarProductos();
@@ -145,7 +146,7 @@ const AdminProfile = () => {
       description: 'Administrar usuarios, roles y permisos',
       route: '/gestionUsuarios', 
       icon: FaUsersCog,
-      stats: `${usuarios.length} usuarios activos`
+      stats: `${totalUsuarios} usuarios activos`
     },
     { 
       id: 'product', 
@@ -160,16 +161,15 @@ const AdminProfile = () => {
       title: 'Gestión de Pagos',
       description: 'Pagos, registros, métodos de pago',
       route: '/gestionPagos', 
-      icon: FaMoneyCheckAlt ,
+      icon: FaMoneyCheckAlt,
       stats: `${pagos.length} pagos`
     },
-
     { 
       id: 'envios', 
       title: 'Gestión de Envios',
       description: 'Envios, registros, métodos de envio',
       route: '/gestionEnvios', 
-      icon: FaTruck ,
+      icon: FaTruck,
       stats: `${envios.length} envios`
     },
     { 

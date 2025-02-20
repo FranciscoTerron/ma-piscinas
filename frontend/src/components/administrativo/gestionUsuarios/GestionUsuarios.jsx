@@ -1,7 +1,30 @@
 import React, { useEffect, useState } from "react";
-import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, IconButton, useDisclosure, AlertDialog, AlertDialogOverlay,
-  AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, useToast, Container, Text, HStack,
-  VStack, Select, Input} from "@chakra-ui/react";
+import {
+  Box,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Button,
+  IconButton,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  useToast,
+  Container,
+  Text,
+  HStack,
+  VStack,
+  Select,
+  Input,
+  Flex
+} from "@chakra-ui/react";
 import { FaTrash, FaUserCog } from 'react-icons/fa';
 import { listarUsuarios, eliminarUsuario, listarRoles, actualizarRol } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
@@ -25,6 +48,7 @@ const GestionUsuarios = () => {
     cargarUsuarios();
     cargarRoles();
   }, [paginaActual]);
+  
 
   const cargarRoles = async () => {
     try {
@@ -42,11 +66,12 @@ const GestionUsuarios = () => {
   };
 
   const cargarUsuarios = async () => {
-    try {
-      const data = await listarUsuarios(paginaActual, usuariosPorPagina);
+    try {  
+      const data = await listarUsuarios(paginaActual, usuariosPorPagina);    
       setUsuarios(data.usuarios);
       setTotalUsuarios(data.total);
     } catch (error) {
+      console.error("❌ Error cargando usuarios:", error);
       toast({
         title: "Error",
         description: "No se pudo cargar la lista de usuarios.",
@@ -56,7 +81,8 @@ const GestionUsuarios = () => {
       });
     }
   };
-
+  
+  
   const handleEliminarUsuario = async () => {
     try {
       await eliminarUsuario(usuarioAEliminar.id);
@@ -79,6 +105,10 @@ const GestionUsuarios = () => {
     } finally {
       onClose();
     }
+  };
+
+  const handleSiguientePagina = () => {
+    setPaginaActual(prev => prev + 1);
   };
 
   const confirmarEliminacion = (usuario) => {
@@ -136,7 +166,7 @@ const GestionUsuarios = () => {
   });
 
   return (
-    <Container maxW="container.xl" py={8}>
+    <Container maxW="container.xl" py={8} color="black">
       <VStack spacing={6} align="stretch">
         {/* Header */}
         <HStack justify="space-between">
@@ -145,7 +175,7 @@ const GestionUsuarios = () => {
             <VStack align="flex-start" spacing={0}>
               <HStack>
                 <FaUserCog size="24px" color="#4A5568"/>
-                <Text fontSize="2xl" fontWeight="bold" color="gray.700">
+                <Text fontSize="2xl" fontWeight="bold" color="blue.600">
                   Gestión de Usuarios
                 </Text>
               </HStack>
@@ -161,7 +191,7 @@ const GestionUsuarios = () => {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             bg="white"
-            border="1px solid"
+            border="1px"
             borderColor="gray.300"
             _focus={{ borderColor: "blue.500" }}
             color="black" 
@@ -172,7 +202,7 @@ const GestionUsuarios = () => {
             value={String(filtroRol)}
             onChange={(e) => setFiltroRol(e.target.value)}
             bg="white"
-            border="1px solid"
+            border="1px"
             borderColor="gray.300"
             _focus={{ borderColor: "blue.500" }}
             color="black" 
@@ -191,25 +221,26 @@ const GestionUsuarios = () => {
             ))}
           </Select>
         </HStack>
-        {/* Table */}
+        {/* Tabla de Usuarios */}
         <Box
+          p={6}
           bg="white"
-          borderRadius="lg"
-          boxShadow="sm"
-          border="1px solid"
+          borderRadius="xl"
+          boxShadow="lg"
+          border="1px"
           borderColor="gray.200"
           overflow="hidden"
         >
           <Table variant="simple">
-            <Thead bg="gray.50">
+            <Thead bg="blue.50">
               <Tr>
-                <Th textAlign="center" color="gray.600">ID</Th>
-                <Th textAlign="center" color="gray.600">Nombre</Th>
-                <Th textAlign="center" color="gray.600">Email</Th>
-                <Th textAlign="center" color="gray.600">Teléfono</Th>
-                <Th textAlign="center" color="gray.600">Dirección</Th>
-                <Th textAlign="center" color="gray.600">Rol</Th>
-                <Th textAlign="center" color="gray.600">Acciones</Th>
+                <Th textAlign="center" color="blue.600">ID</Th>
+                <Th textAlign="center" color="blue.600">Nombre</Th>
+                <Th textAlign="center" color="blue.600">Email</Th>
+                <Th textAlign="center" color="blue.600">Teléfono</Th>
+                <Th textAlign="center" color="blue.600">Dirección</Th>
+                <Th textAlign="center" color="blue.600">Rol</Th>
+                <Th textAlign="center" color="blue.600">Acciones</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -253,7 +284,7 @@ const GestionUsuarios = () => {
                       aria-label="Eliminar usuario"
                       icon={<FaTrash />}
                       size="sm"
-                      color={"red.900"}
+                      color="red.900"
                       colorScheme="red"
                       variant="ghost"
                       _hover={{ color: 'red.500' }}
@@ -265,7 +296,7 @@ const GestionUsuarios = () => {
               ))}
             </Tbody>
           </Table>
-          <HStack spacing={2} justify="center" mt={4} color={"black"}>
+          <HStack spacing={2} justify="center" mt={4} color="black">
             <Button
               colorScheme="blue"
               size="sm"
@@ -280,8 +311,8 @@ const GestionUsuarios = () => {
             <Button
               colorScheme="blue"
               size="sm"
-              onClick={() => setPaginaActual(paginaActual + 1)}
-              isDisabled={paginaActual === totalPaginas}
+              onClick={handleSiguientePagina}
+              isDisabled={paginaActual >= totalPaginas}
             >
               Siguiente
             </Button>
@@ -289,7 +320,7 @@ const GestionUsuarios = () => {
         </Box>
       </VStack>
 
-      {/* Alert Dialog */}
+      {/* Alert Dialog para eliminar usuario */}
       <AlertDialog isOpen={isOpen} onClose={onClose}>
         <AlertDialogOverlay>
           <AlertDialogContent bg="white">
@@ -309,8 +340,8 @@ const GestionUsuarios = () => {
               ? Esta acción no se puede deshacer.
             </AlertDialogBody>
             <AlertDialogFooter gap={3}>
-            <Button
-                bg= 'red.500'
+              <Button
+                bg="red.500"
                 onClick={handleEliminarUsuario}
                 _hover={{ bg: 'red.800' }}
               >
@@ -319,7 +350,7 @@ const GestionUsuarios = () => {
               <Button
                 onClick={onClose}
                 variant="outline"
-                bg= 'gray.500'
+                bg="gray.500"
                 _hover={{ bg: 'gray.800' }}
               >
                 Cancelar
