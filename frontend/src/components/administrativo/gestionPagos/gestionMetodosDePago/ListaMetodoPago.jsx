@@ -21,6 +21,11 @@ import {
   Image,
   Skeleton,
   useDisclosure,
+  Input,
+  Select,
+  HStack,
+  VStack,
+  Text
 } from "@chakra-ui/react";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { eliminarMetodoPago } from "../../../../services/api";
@@ -30,6 +35,11 @@ const ListaMetodosPago = ({ metodosPago = [], onEditar, onEliminar }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState("");
+
+  // Obtener tipos únicos para el filtro
+  const tiposUnicos = [...new Set(metodosPago.map(metodo => metodo.tipo))];
 
   const handleEliminarMetodo = async () => {
     setIsLoading(true);
@@ -62,11 +72,66 @@ const ListaMetodosPago = ({ metodosPago = [], onEditar, onEliminar }) => {
     onOpen();
   };
 
+  // Filtrar métodos de pago
+  const metodosFiltrados = metodosPago.filter(metodo => {
+    const coincideBusqueda = 
+      metodo.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      metodo.tipo.toLowerCase().includes(busqueda.toLowerCase());
+    
+    const coincideTipo = filtroTipo ? metodo.tipo === filtroTipo : true;
+    
+    return coincideBusqueda && coincideTipo;
+  });
+
   return (
     <>
-      <Box bg="white" borderRadius="xl" boxShadow="sm" border="1px solid" borderColor="gray.200" overflow="hidden">
+      <VStack spacing={4} align="stretch" mb={2}>
+        <HStack spacing={4}>
+          <Input
+            placeholder="Buscar por nombre o tipo..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black" 
+            _placeholder={{ color: "gray.500" }} 
+          />
+          
+          <Select
+            placeholder="Todos los tipos"
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black"
+            sx={{
+              '& option': {
+                backgroundColor: 'white !important',
+                color: 'gray.600'
+              }
+            }}
+          >
+            {tiposUnicos.map((tipo, index) => (
+              <option key={index} value={tipo}>{tipo}</option>
+            ))}
+          </Select>
+        </HStack>
+      </VStack>
+      <Box
+        p={6}
+        bg="white"
+        borderRadius="xl"
+        boxShadow="lg"
+        border="1px"
+        borderColor="gray.200"
+        overflow="hidden"
+      >
         <Table variant="simple">
-          <Thead bg="gray.50">
+          <Thead bg="blue.50">
             <Tr>
               <Th textAlign="center" color="gray.600">ID</Th>
               <Th textAlign="left" color="gray.600">Tipo</Th>
@@ -76,7 +141,7 @@ const ListaMetodosPago = ({ metodosPago = [], onEditar, onEliminar }) => {
             </Tr>
           </Thead>
           <Tbody>
-            {metodosPago.map((metodo) => (
+            {metodosFiltrados.map((metodo) => (
               <Tr key={metodo.id} _hover={{ bg: "gray.50" }} transition="all 0.2s">
                 <Td textAlign="center" fontSize="sm" color="gray.500">#{metodo.id}</Td>
                 <Td fontWeight="medium" color="gray.700">{metodo.tipo}</Td>
