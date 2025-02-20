@@ -113,11 +113,10 @@ const Header = () => {
 
             <CarritoIcono onClick={onOpen} />
             
-            <Modal isOpen={isOpen} onClose={handleCloseModal} size="md">
+            <Modal isOpen={isOpen} onClose={handleCloseModal} size="3xl">
               <ModalOverlay />
-              <ModalContent>
-                <ModalHeader>Carrito de Compras</ModalHeader>
-                <ModalCloseButton />
+              <ModalContent bg={"blue.50"}>
+                <ModalCloseButton color={"black"}/>
                 <ModalBody pb={6}>
                   <Carrito onClose={handleCloseModal} />
                 </ModalBody>

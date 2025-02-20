@@ -4,41 +4,65 @@ import {
   Button, 
   Heading, 
   Text, 
-  VStack, 
-  HStack, 
-  Image, 
-  Divider, 
-  Spinner,
   useToast,
-  Badge,
-  Container
+  Spinner,
+  Container,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogBody,
+  AlertDialogFooter,
+  IconButton,
+  Flex,
+  Badge
 } from "@chakra-ui/react";
+import { FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import { 
   obtenerCarrito, 
   eliminarProductoDelCarrito, 
   vaciarCarrito, 
-  listarDetallesCarrito 
+  listarDetallesCarrito,
+  actualizarCantidadProducto,
+  listarProductos
 } from "../../services/api";
 
 const Carrito = () => {
   const [carrito, setCarrito] = useState(null);
+  const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [productoToDelete, setProductoToDelete] = useState(null);
+  const [isClearAlertOpen, setIsClearAlertOpen] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
     cargarCarrito();
+    cargarProductos();
   }, []);
+
+  const cargarProductos = async () => {
+    try {
+      const data = await listarProductos();
+      setProductos(data);
+    } catch (error) {
+      console.error("Error cargando productos", error);
+    }
+  };
 
   const cargarCarrito = async () => {
     try {
       setLoading(true);
-      const detalles = await listarDetallesCarrito(); // Usando la API para obtener detalles
+      const detalles = await listarDetallesCarrito();
       const data = await obtenerCarrito();
-      setCarrito({
-        ...data,
-        detalles: detalles // Incorporando los detalles del carrito
-      });
+      setCarrito({ ...data, detalles });
       setError(null);
     } catch (error) {
       console.error("Error al obtener el carrito", error);
@@ -55,12 +79,36 @@ const Carrito = () => {
     }
   };
 
-  const handleEliminarProducto = async (productoId) => {
+  const obtenerNombreProducto = (productoId) => {
+    const producto = productos.find(p => p.id === productoId);
+    return producto ? producto.nombre : "Producto no encontrado";
+  };
+
+  const handleActualizarCantidad = async (productoId, nuevaCantidad) => {
     try {
-      await eliminarProductoDelCarrito(productoId);
+      if (nuevaCantidad === 0) {
+        setProductoToDelete(productoId);
+        setIsDeleteAlertOpen(true);
+        return;
+      }
+      
+      await actualizarCantidadProducto(productoId, nuevaCantidad);
+      cargarCarrito();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar la cantidad",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await eliminarProductoDelCarrito(productoToDelete);
       toast({
         title: "Producto eliminado",
-        description: "El producto se eliminó del carrito",
         status: "success",
         duration: 2000,
       });
@@ -72,6 +120,9 @@ const Carrito = () => {
         status: "error",
         duration: 3000,
       });
+    } finally {
+      setIsDeleteAlertOpen(false);
+      setProductoToDelete(null);
     }
   };
 
@@ -81,10 +132,10 @@ const Carrito = () => {
       setCarrito({ detalles: [] });
       toast({
         title: "Carrito vaciado",
-        description: "Se han eliminado todos los productos",
         status: "info",
         duration: 2000,
       });
+      setIsClearAlertOpen(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -104,128 +155,205 @@ const Carrito = () => {
 
   if (loading) return (
     <Container centerContent py={10}>
-      <Spinner 
-        size="xl" 
-        color="blue.500" 
-        thickness="4px"
-        speed="0.65s"
-      />
+      <Spinner size="xl" color="blue.500" thickness="4px"/>
     </Container>
   );
 
   if (error) return (
     <Container centerContent py={10}>
       <Text color="red.500">{error}</Text>
-      <Button 
-        mt={4} 
-        colorScheme="blue" 
-        onClick={cargarCarrito}
-      >
+      <Button mt={4} colorScheme="blue" onClick={cargarCarrito}>
         Reintentar
       </Button>
     </Container>
   );
 
   return (
-    <Container maxW="container.md" py={8}>
-      <Box 
-        p={6} 
-        bg="white" 
-        borderRadius="xl" 
-        boxShadow="lg"
-        border="1px"
-        borderColor="blue.100"
-      >
-        <Heading 
-          size="lg" 
-          mb={6} 
-          color="blue.600"
-          textAlign="center"
-        >
+    <Container maxW="container.lg" py={8} color={"black"}>
+      <Box p={6} bg="white" borderRadius="xl" boxShadow="lg" border="1px" borderColor="gray.200">
+        <Heading size="lg" mb={6} color="blue.600" textAlign="center">
           Mi Carrito
         </Heading>
-        
+
         {carrito?.detalles?.length ? (
-          <VStack spacing={4} align="stretch">
-            {carrito.detalles.map((detalle) => (
-              <Box 
-                key={detalle.id} 
-                p={4} 
-                borderWidth="1px"
-                borderRadius="lg"
-                borderColor="blue.100"
-                bg="blue.50"
-                _hover={{ bg: "blue.100" }}
-                transition="all 0.2s"
-              >
-                <HStack justifyContent="space-between">
-                  <HStack spacing={4}>
-                    {/*<Image 
-                      boxSize="80px"
-                      objectFit="cover"
-                      src={detalle.producto.imagen} 
-                      alt={detalle.producto.nombre}
-                      borderRadius="md"
-                      fallbackSrc="https://via.placeholder.com/80"
-                    />*/}
-                    <VStack align="start" spacing={1}>
-                      <Text fontWeight="bold" color="blue.700">
-                        {detalle.producto_id}
-                      </Text>
-                      <Badge colorScheme="blue">
-                        Cantidad: {detalle.cantidad}
-                      </Badge>
-                      <Text color="blue.600" fontSize="lg" fontWeight="semibold">
-                        ${detalle.subtotal}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                  <Button 
-                    colorScheme="red" 
-                    size="sm"
-                    onClick={() => handleEliminarProducto(detalle.producto_id)}
-                  >
-                    Eliminar
-                  </Button>
-                </HStack>
-              </Box>
-            ))}
-            
-            <Divider my={4} borderColor="blue.200" />
-            
-            <Box p={4} bg="blue.50" borderRadius="lg">
-              <HStack justify="space-between">
-                <Text fontSize="lg" fontWeight="bold" color="blue.700">
+          <>
+            <Table variant="simple">
+              <Thead bg="blue.50">
+                <Tr>
+                  <Th color="blue.600">Producto</Th>
+                  <Th color="blue.600" textAlign="center">Cantidad</Th>
+                  <Th color="blue.600" textAlign="center">Precio Unitario</Th>
+                  <Th color="blue.600" textAlign="right">Subtotal</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {carrito.detalles.map((detalle) => (
+                  <Tr key={detalle.id} _hover={{ bg: "gray.50" }}>
+                    <Td fontWeight="medium">{obtenerNombreProducto(detalle.producto_id)}</Td>
+                    <Td textAlign="center">
+                      <Flex align="center" justify="center" gap={2}>
+                        <IconButton
+                          icon={<FaMinus />}
+                          size="sm"
+                          color={"black"}
+                          onClick={() => handleActualizarCantidad(detalle.producto_id, detalle.cantidad - 1)}
+                        />
+                        <Badge fontSize="md" px={3} py={1} borderRadius="md" color={"black"}>
+                          {detalle.cantidad}
+                        </Badge>
+                        <IconButton
+                          icon={<FaPlus />}
+                          size="sm"
+                          color={"black"}
+                          onClick={() => handleActualizarCantidad(detalle.producto_id, detalle.cantidad + 1)}
+                        />
+                      </Flex>
+                    </Td>
+                    <Td textAlign="center">${(detalle.subtotal / detalle.cantidad).toFixed(2)}</Td>
+                    <Td textAlign="right">${detalle.subtotal.toFixed(2)}</Td>
+                    <Td textAlign="right">
+                      <IconButton
+                        icon={<FaTrash />}
+                        size="sm"
+                        color={"red.900"}
+                        colorScheme="red"
+                        variant="ghost"
+                        onClick={() => {
+                          setProductoToDelete(detalle.producto_id);
+                          setIsDeleteAlertOpen(true);
+                        }}
+                      />
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+
+            <Box mt={6} p={4} bg="gray.50" borderRadius="lg">
+              <Flex justify="space-between" align="center">
+                <Text fontSize="xl" fontWeight="bold" color="blue.600">
                   Total:
                 </Text>
-                <Text fontSize="xl" fontWeight="bold" color="blue.700">
+                <Text fontSize="xl" fontWeight="bold" color="blue.600">
                   ${calcularTotal().toFixed(2)}
                 </Text>
-              </HStack>
+              </Flex>
             </Box>
 
-            <Button 
-              colorScheme="red" 
-              onClick={handleVaciarCarrito}
-              size="lg"
-              mt={4}
-            >
-              Vaciar Carrito
-            </Button>
-          </VStack>
+            <Flex justify="space-between" mt={6}>
+              <Button
+                size="sm"
+                color="red.900"
+                colorScheme="red"
+                variant="ghost"
+                border="2px"
+                _hover={{ color: 'red.500' }}
+                onClick={() => setIsClearAlertOpen(true)}
+                leftIcon={<FaTrash />}
+              >
+                Vaciar Carrito
+              </Button>
+              <Button 
+                colorScheme="blue" 
+                size="sm"
+                px={6}
+                onClick={() => toast({ title: 'Redirigiendo a checkout...', status: 'info' })}
+              >
+                Continuar Compra
+              </Button>
+            </Flex>
+          </>
         ) : (
-          <Box 
-            textAlign="center" 
-            py={10}
-            bg="blue.50"
-            borderRadius="lg"
-          >
-            <Text fontSize="lg" color="blue.600">
-              No hay productos en el carrito.
+          <Box textAlign="center" py={10} bg="gray.50" borderRadius="lg">
+            <Text fontSize="lg" color="gray.600">
+              Tu carrito está vacío
             </Text>
           </Box>
         )}
       </Box>
+      <AlertDialog
+  isOpen={isClearAlertOpen}
+  leastDestructiveRef={undefined}
+  onClose={() => setIsClearAlertOpen(false)}
+>
+    <AlertDialogOverlay>
+      <AlertDialogContent bg="white">
+        <AlertDialogHeader 
+          fontSize="lg" 
+          fontWeight="bold" 
+          color="gray.800"
+          pb={4}
+        >
+          Vaciar Carrito
+        </AlertDialogHeader>
+        <AlertDialogBody color="gray.600">
+          ¿Estás seguro que deseas eliminar todos los productos del carrito?
+        </AlertDialogBody>
+        <AlertDialogFooter>
+          <Button 
+            onClick={handleVaciarCarrito}
+            color="white"
+            bg="red.500"
+            _hover={{ bg: "red.800" }}
+            mr={2}
+          >
+            Vaciar
+          </Button>
+          <Button 
+            onClick={() => setIsClearAlertOpen(false)}
+            variant="outline"
+            bg="gray.500"
+            _hover={{ bg: "gray.800" }}
+            color="white"
+          >
+            Cancelar
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialogOverlay>
+    </AlertDialog>
+      <AlertDialog
+        isOpen={isDeleteAlertOpen}
+        leastDestructiveRef={undefined}
+        onClose={() => setIsDeleteAlertOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent bg="white">
+            <AlertDialogHeader 
+              fontSize="lg" 
+              fontWeight="bold" 
+              color="gray.800"
+              pb={4}
+            >
+              Eliminar Producto
+            </AlertDialogHeader>
+            <AlertDialogBody color="gray.600">
+              ¿Estás seguro que deseas eliminar este producto del carrito?
+            </AlertDialogBody>
+            <AlertDialogFooter>
+            <Button 
+                onClick={handleConfirmDelete}
+                color="white"
+                bg="red.500"
+                _hover={{ bg: "red.800" }}
+                mr={2}
+              >
+                Eliminar
+              </Button>
+              <Button 
+                onClick={() => setIsDeleteAlertOpen(false)}
+                variant="outline"
+                bg="gray.500"
+                _hover={{ bg: "gray.800" }}
+                color="white"
+              >
+                Cancelar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   );
 };
