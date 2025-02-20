@@ -1,28 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  IconButton,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  useToast,
-  Container,
-  Text,
-  HStack,
-  VStack,
-  Select,
-} from "@chakra-ui/react";
+import {Box, Table, Thead, Tbody, Tr, Th, Td, Button, IconButton, useDisclosure, AlertDialog, AlertDialogOverlay,
+  AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, useToast, Container, Text, HStack,
+  VStack, Select, Input} from "@chakra-ui/react";
 import { FaTrash, FaUserCog } from 'react-icons/fa';
 import { listarUsuarios, eliminarUsuario, listarRoles, actualizarRol } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
@@ -35,11 +14,17 @@ const GestionUsuarios = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const { userRole } = useAuth();
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroRol, setFiltroRol] = useState(""); 
+  const [totalUsuarios, setTotalUsuarios] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const usuariosPorPagina = 3;
+  const totalPaginas = Math.ceil(totalUsuarios / usuariosPorPagina);
 
   useEffect(() => {
     cargarUsuarios();
     cargarRoles();
-  }, []);
+  }, [paginaActual]);
 
   const cargarRoles = async () => {
     try {
@@ -58,8 +43,9 @@ const GestionUsuarios = () => {
 
   const cargarUsuarios = async () => {
     try {
-      const data = await listarUsuarios();
-      setUsuarios(data);
+      const data = await listarUsuarios(paginaActual, usuariosPorPagina);
+      setUsuarios(data.usuarios);
+      setTotalUsuarios(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -138,6 +124,17 @@ const GestionUsuarios = () => {
     return rol ? rol.nombre : "Desconocido";
   };
 
+  const usuariosFiltrados = usuarios.filter((usuario) => {
+    const coincideBusqueda =
+      usuario.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      usuario.email.toLowerCase().includes(busqueda.toLowerCase());
+    
+    const rolUsuario = String(usuario.rol_id);
+    const coincideRol = filtroRol ? rolUsuario === filtroRol : true;
+  
+    return coincideBusqueda && coincideRol;
+  });
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
@@ -158,7 +155,42 @@ const GestionUsuarios = () => {
             </VStack>
           </HStack>
         </HStack>
-
+        <HStack spacing={4} w="full">
+          <Input
+            placeholder="Buscar por nombre o email..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            bg="white"
+            border="1px solid"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black" 
+            _placeholder={{ color: "gray.500" }} 
+          />
+          <Select
+            placeholder="Filtrar por rol"
+            value={String(filtroRol)}
+            onChange={(e) => setFiltroRol(e.target.value)}
+            bg="white"
+            border="1px solid"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black" 
+            _placeholder={{ color: "gray.500" }}
+            sx={{
+              '& option': {
+                backgroundColor: 'white !important',
+                color: 'gray.600'
+              }
+            }}
+          >
+            {roles.map((rol) => (
+              <option key={rol.id} value={String(rol.id)}>
+                {rol.nombre}
+              </option>
+            ))}
+          </Select>
+        </HStack>
         {/* Table */}
         <Box
           bg="white"
@@ -181,7 +213,7 @@ const GestionUsuarios = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {usuarios.map((usuario) => (
+              {usuariosFiltrados.map((usuario) => (
                 <Tr 
                   key={usuario.id}
                   _hover={{ bg: 'gray.50' }}
@@ -197,8 +229,8 @@ const GestionUsuarios = () => {
                   <Td textAlign="center" color="gray.600">
                     {userRole === "administrador" ? (
                       <Select
-                        value={usuario.rol_id}
-                        onChange={(e) => handleCambiarRol(usuario.id, e.target.value)}
+                        value={usuario.rol_id} 
+                        onChange={(e) => handleCambiarRol(usuario.id, parseInt(e.target.value))} 
                         sx={{
                           '& option': {
                             backgroundColor: 'white !important',
@@ -211,7 +243,6 @@ const GestionUsuarios = () => {
                             {rol.nombre}
                           </option>
                         ))}
-                        
                       </Select>
                     ) : (
                       obtenerNombreRol(usuario.rol_id)
@@ -234,6 +265,27 @@ const GestionUsuarios = () => {
               ))}
             </Tbody>
           </Table>
+          <HStack spacing={2} justify="center" mt={4} color={"black"}>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual - 1)}
+              isDisabled={paginaActual === 1}
+            >
+              Anterior
+            </Button>
+            <Text>
+              Página {paginaActual} de {totalPaginas}
+            </Text>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual + 1)}
+              isDisabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </Button>
+          </HStack>
         </Box>
       </VStack>
 

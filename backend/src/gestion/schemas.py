@@ -106,7 +106,7 @@ class UsuarioCreate(UsuarioBase):
 class Usuario(UsuarioBase):
     id: int = Field(..., example=1)
     fecha_creacion: datetime = Field(..., example="2023-10-01T12:00:00Z")
-
+    rol_id: int
     class Config:
         from_attributes = True
 

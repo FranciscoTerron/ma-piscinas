@@ -51,8 +51,8 @@ export const login = async (email, password) => {
   return response;
 };
 
-export const listarUsuarios = async () => {
-  const response = await api.get("/usuarios");
+export const listarUsuarios = async (paginaActual, usuariosPorPagina) => {
+  const response = await api.get("/usuarios", paginaActual, usuariosPorPagina);
   return response.data;
 };
 

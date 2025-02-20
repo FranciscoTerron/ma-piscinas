@@ -58,9 +58,9 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
 # Ruta para listar usuarios
 # ============================================================
 
-@router.get("/usuarios", response_model=List[schemas.Usuario])
-def listar_usuarios(db: Session = Depends(get_db)):
-    return services.listar_usuarios(db)
+@router.get("/usuarios")
+def listar_usuarios(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+    return services.listar_usuarios(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para actualizar usuario

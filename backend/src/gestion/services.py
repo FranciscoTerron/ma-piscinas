@@ -64,8 +64,14 @@ def autenticar_usuario(db: Session, nombre: str, password: str):
     )
     return access_token
 
-def listar_usuarios(db: Session) -> list[schemas.UsuarioRespuesta]:
-    return db.query(Usuario).all()
+def listar_usuarios(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Usuario).count()
+    usuarios = (db.query(Usuario)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "usuarios": usuarios}
+
 
 def obtener_usuario_por_id(db: Session, usuario_id: int) -> Usuario:
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
