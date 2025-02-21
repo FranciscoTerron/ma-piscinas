@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, case
 from sqlalchemy.exc import SQLAlchemyError
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -139,15 +139,33 @@ def actualizar_rol_usuario(db: Session, usuario_id: int, nuevo_rol_id: int):
 #CATEGORIAS
 #------------------------------------------------------------------------------------------------
 # Crear una nueva categoría
-def crear_categoria(db: Session, categoria: schemas.CategoriaProductoBase) -> CategoriaProducto:
-    db_categoria = CategoriaProducto(
-        nombre=categoria.nombre,
-        descripcion=categoria.descripcion
+def crear_categoria( db: Session,
+    nombre: str,
+    descripcion: str,
+    imagen: UploadFile = None
+) -> CategoriaProducto:
+   # Subir el imagen si se proporciona
+    image_url = None
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="empresas")
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
+
+    # Crear la categoria
+    nueva_categoria = CategoriaProducto(
+        nombre=nombre,
+        descripcion=descripcion,
+        imagen=image_url  # Guardar la URL del logo si se subió
     )
-    db.add(db_categoria)
+    db.add(nueva_categoria)
     db.commit()
-    db.refresh(db_categoria)
-    return db_categoria
+    db.refresh(nueva_categoria)
+    return nueva_categoria
 
 
 # Listar todas las categorías
@@ -167,13 +185,38 @@ def obtener_categoria_por_id(db: Session, categoria_id: int) -> CategoriaProduct
     return categoria
 
 # Actualizar una categoría existente
-def actualizar_categoria(db: Session, categoria_id: int, categoria_update: schemas.CategoriaProductoBase) -> CategoriaProducto:
+def actualizar_categoria(db: Session, 
+    categoria_id: int, 
+    nombre: str,
+    descripcion: str,
+    imagen: UploadFile = None) -> CategoriaProducto:
+    
     categoria = obtener_categoria_por_id(db, categoria_id)
-    categoria.nombre = categoria_update.nombre
-    categoria.descripcion = categoria_update.descripcion
+    categoria.nombre = nombre
+    categoria.descripcion = descripcion
+    
+    # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
+    if imagen:
+        try:
+            upload_result = cloudinary.uploader.upload(imagen.file, folder="categorias")  # Usar carpeta específica para métodos de pago
+            image_url = upload_result.get("secure_url")
+            if not image_url:
+                raise Exception("No se obtuvo URL de la imagen")
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error al subir la imagen a Cloudinary: {str(e)}"
+            )
+        categoria.imagen = image_url  # Actualizar el atributo imagen con la URL
+
+    # Guardar los cambios en la base de datos
     db.commit()
     db.refresh(categoria)
+    
     return categoria
+    
+
+
 
 # Eliminar una categoría
 def eliminar_categoria(db: Session, categoria_id: int):
@@ -976,15 +1019,19 @@ def registrar_actividad(db: Session, actividad_data: schemas.ActividadCreate):
 
 #REPORTES
 #---------------------------------------------------------------------------------------------
-def obtener_usuario_mas_activo(db: Session):
-    usuario_mas_activo = db.query(
-        Usuario.nombre, func.count(Pedido.id).label("compras")
-    ).join(Pedido, Usuario.id == Pedido.usuario_id).group_by(Usuario.nombre).order_by(func.count(Pedido.id).desc()).first()
+def obtener_top_usuarios_mas_activos(db: Session):
+    top_usuarios = (
+        db.query(
+            Usuario.nombre, func.count(Pedido.id).label("compras")
+        )
+        .join(Pedido, Usuario.id == Pedido.usuario_id)
+        .group_by(Usuario.nombre)
+        .order_by(func.count(Pedido.id).desc())
+        .limit(5)
+        .all()
+    )
 
-    if usuario_mas_activo:
-        return {"nombre": usuario_mas_activo[0], "compras": usuario_mas_activo[1]}
-    else:
-        return {"nombre": "Sin datos", "compras": 0}
+    return [{"nombre": usuario[0], "compras": usuario[1]} for usuario in top_usuarios]
 
 def generar_reporte_ventas_por_periodo(db: Session, tipo_periodo: str, fecha_inicio: datetime, fecha_fin: datetime):
     """
@@ -1134,3 +1181,99 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
             "porcentaje_cancelados": 0,
             "ultimos_3_meses": {}
         }
+
+#DESCUENTO
+#----------------------------------------------------------------------------------
+# Crear un nuevo descuento
+def crear_descuento(db: Session, descuento: schemas.DescuentoCreate) -> Descuento:
+    nuevo_descuento = Descuento(
+        nombre=descuento.nombre,
+        tipo=descuento.tipo,  # Porcentaje, monto fijo, etc.
+        valor=descuento.valor,
+        fecha_inicio=descuento.fecha_inicio,
+        fecha_fin=descuento.fecha_fin,
+        activo=descuento.activo
+    )
+    db.add(nuevo_descuento)
+    db.commit()
+    db.refresh(nuevo_descuento)
+    return nuevo_descuento
+
+# Listar descuentos con paginación
+def listar_descuentos(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Descuento).count()
+    descuentos = db.query(Descuento).offset((pagina - 1) * tamanio).limit(tamanio).all()
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "descuentos": descuentos}
+
+# Obtener un descuento por ID
+def obtener_descuento_por_id(db: Session, descuento_id: int) -> Descuento:
+    descuento = db.query(Descuento).filter(Descuento.id == descuento_id).first()
+    if not descuento:
+        raise HTTPException(status_code=404, detail="Descuento no encontrado")
+    return descuento
+
+# Actualizar un descuento
+def actualizar_descuento(db: Session, descuento_id: int, descuento_update: schemas.DescuentoUpdate) -> Descuento:
+    descuento = obtener_descuento_por_id(db, descuento_id)
+    for key, value in descuento_update.dict(exclude_unset=True).items():
+        setattr(descuento, key, value)
+    db.commit()
+    db.refresh(descuento)
+    return descuento
+
+# Eliminar un descuento
+def eliminar_descuento(db: Session, descuento_id: int):
+    descuento = obtener_descuento_por_id(db, descuento_id)
+    db.delete(descuento)
+    db.commit()
+
+# Aplicar descuento a un pedido
+def aplicar_descuento_pedido(db: Session, pedido_id: int, descuento_id: int) -> Pedido:
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+    descuento = obtener_descuento_por_id(db, descuento_id)
+
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    
+    if not descuento.activo or descuento.fecha_inicio > datetime.utcnow() or descuento.fecha_fin < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Descuento no válido")
+
+    # Aplicar descuento según tipo
+    if descuento.tipo == "porcentaje":
+        pedido.descuento_aplicado = pedido.total * (descuento.valor / 100)
+    elif descuento.tipo == "monto_fijo":
+        pedido.descuento_aplicado = min(descuento.valor, pedido.total)
+
+    pedido.total -= pedido.descuento_aplicado
+    db.commit()
+    db.refresh(pedido)
+    return pedido
+
+
+# Modificar la función para aplicar descuentos a productos
+def aplicar_descuento_producto(db: Session, pedido_id: int, descuento_id: int) -> Pedido:
+    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
+    descuento = obtener_descuento_por_id(db, descuento_id)
+
+    if not pedido:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+    
+    if not descuento.activo or descuento.fecha_inicio > datetime.utcnow() or descuento.fecha_fin < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Descuento no válido")
+
+    # Aplicar descuento a cada producto en el pedido
+    for producto in pedido.productos:  # Asegúrate de tener los productos en el pedido
+        if descuento.tipo == "porcentaje":
+            descuento_producto = producto.precio * (descuento.valor / 100)
+        elif descuento.tipo == "monto_fijo":
+            descuento_producto = min(descuento.valor, producto.precio)
+
+        producto.descuento_aplicado = descuento_producto  # Guarda el descuento aplicado en el producto
+        producto.precio -= descuento_producto  # Descuento en el precio del producto
+
+    # Recalcular el total del pedido después de aplicar los descuentos
+    pedido.total = sum(producto.precio for producto in pedido.productos)
+    db.commit()
+    db.refresh(pedido)
+    return pedido
+

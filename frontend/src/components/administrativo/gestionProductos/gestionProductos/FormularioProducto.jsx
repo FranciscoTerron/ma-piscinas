@@ -209,8 +209,9 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     }
   
     try {
+      let nuevo_producto;
       if (producto) {
-        await actualizarProducto(producto.id, formDataToSend);
+        nuevo_producto = await actualizarProducto(producto.id, formDataToSend);
         toast({
           title: "Éxito",
           description: "Producto actualizado correctamente.",
@@ -219,7 +220,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       } else {
-        await crearProducto(formDataToSend);
+        nuevo_producto = await crearProducto(formDataToSend);
         toast({
           title: "Éxito",
           description: "Producto agregado correctamente.",
@@ -228,11 +229,12 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       }
-  
-      onSubmitSuccess();
+
+      onSubmitSuccess(nuevo_producto);
       onClose();
       setFormData(initialProductoState);
       setImagenPreview(null);
+
     } catch (error) {
       console.error("Error al enviar el producto:", error);
       toast({
@@ -242,8 +244,13 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         duration: 5000,
         isClosable: true,
       });
+      
+      onClose();
+      setFormData(initialProductoState);
+      setImagenPreview(null);
     }
   };
+
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">

@@ -165,9 +165,14 @@ const productosFiltrados = productos.filter((producto) => {
         <FormularioProducto
           isOpen={isOpen}
           onClose={onClose}
+          onSubmitSuccess={() => {
+            cargarProductos(); // Recargar productos después de agregar o actualizar
+          }}
+        
           categorias={categorias}
           producto={productoSeleccionado}
           onEliminar={cargarProductos} // Eliminar parámetros
+          
         />
          
          <HStack spacing={2} justify="center" mt={4} color="black">

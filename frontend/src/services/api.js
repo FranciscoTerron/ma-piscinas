@@ -315,13 +315,13 @@ export const listarActividadesRecientes = async () => {
   return response.data; 
 };
 
-export const obtenerUsuarioMasActivo = async () => {
+export const obtenerTopUsuariosMasActivos = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/reportes/usuario_mas_activo');
+    const response = await axios.get('http://localhost:8000/reportes/usuarios_mas_activos');
     return response.data;
   } catch (error) {
-    console.error('Error obteniendo usuario más activo', error);
-    return null;
+    console.error('Error obteniendo top usuarios más activos', error);
+    return [];
   }
 };
 
@@ -337,8 +337,8 @@ export const listarPedidos = async (paginaActual, pedidosPorPagina) => {
   return response.data;
 };
 
-export const listarPedidoDetalles = async () => {
-  const response = await api.get("/pedido-detalles");
+export const listarPedidoDetalles = async (pedidoId) => {
+  const response = await api.get(`/pedidos/${pedidoId}/detalles`);
   return response.data;
 };
 
@@ -450,4 +450,49 @@ export const obtenerMetricasCancelaciones = async (mesesHistorial) => {
       ultimos_3_meses: {},
     };
   }
+};
+// Crear un descuento
+export const crearDescuento = async (descuentoData) => {
+  const response = await api.post("/descuentos/", descuentoData);
+  return response.data;
+};
+
+// Listar descuentos
+export const listarDescuentos = async (paginaActual, descuentosPorPagina) => {
+  const response = await api.get("/descuentos", {
+    params: {
+      pagina: paginaActual,
+      tamanio: descuentosPorPagina
+    }
+  });
+  return response.data;
+};
+
+// Obtener un descuento por ID
+export const obtenerDescuentoPorId = async (descuentoId) => {
+  const response = await api.get(`/descuentos/${descuentoId}`);
+  return response.data;
+};
+
+// Actualizar descuento
+export const actualizarDescuento = async (descuentoId, descuentoData) => {
+  const response = await api.put(`/descuentos/${descuentoId}`, descuentoData);
+  return response.data;
+};
+
+// Eliminar descuento
+export const eliminarDescuento = async (descuentoId) => {
+  await api.delete(`/descuentos/${descuentoId}`);
+};
+
+// Aplicar descuento a pedido
+export const aplicarDescuentoPedido = async (pedidoId, descuentoId) => {
+  const response = await api.post(`/pedidos/${pedidoId}/descuentos/${descuentoId}`);
+  return response.data;
+};
+
+// Aplicar descuento a un producto de pedido
+export const aplicarDescuentoProducto = async (pedidoId, descuentoId) => {
+  const response = await api.post(`/pedidos/${pedidoId}/descuento-producto/${descuentoId}`);
+  return response.data;
 };

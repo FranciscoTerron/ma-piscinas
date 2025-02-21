@@ -4,9 +4,9 @@ import {
   Button, GridItem, Card, CardBody, Stack, useToast,
   Heading, Flex, VStack, Badge
 } from "@chakra-ui/react";
-import { obtenerUsuarioMasActivo, obtenerVentasPorPeriodo, obtenerMetricasCancelaciones, 
+import { obtenerTopUsuariosMasActivos, obtenerVentasPorPeriodo, obtenerMetricasCancelaciones, 
   obtenerEstacionalidadProductos, obtenerCostosGanancias } from "../../../services/api";
-import ReporteUsuarioMasActivo from "./ReporteUsuarioMasActivo";
+import ReporteUsuariosMasActivos from "./ReporteUsuariosMasActivos";
 import ReporteVentas from "./ReporteVentas";
 import ReporteCancelaciones from "./ReporteCancelaciones";
 import ReporteEstacionalidad from "./ReporteEstacionalidad";
@@ -14,7 +14,7 @@ import ReporteCostosGanancias from "./ReporteCostosGanancias";
 import GoBackButton from '../../GoBackButton';
 
 const Reportes = () => {
-  const [usuarioMasActivo, setUsuarioMasActivo] = useState(null);
+  const [usuariosMasActivos, setUsuariosMasActivos] = useState(null);
   const [ventas, setVentas] = useState([]);
   const [cancelaciones, setCancelaciones] = useState({});
   const [estacionalidad, setEstacionalidad] = useState([]);
@@ -41,7 +41,7 @@ const Reportes = () => {
 
     setCargando(true);
     try {
-      const usuario = await obtenerUsuarioMasActivo();
+      const usuario = await obtenerTopUsuariosMasActivos();
       const ventasData = await obtenerVentasPorPeriodo(tipoPeriodo, fechaInicio, fechaFin);
       const cancelacionesData = await obtenerMetricasCancelaciones(3);
       const estacionalidadData = await obtenerEstacionalidadProductos(2025);
@@ -50,7 +50,7 @@ const Reportes = () => {
       setCostosGanancias(costosData);
       setEstacionalidad(estacionalidadData);
       setCancelaciones(cancelacionesData);
-      setUsuarioMasActivo(usuario);
+      setUsuariosMasActivos(usuario);
       setVentas(ventasData);
       
       toast({
@@ -268,13 +268,13 @@ const Reportes = () => {
                     <CardBody color={"black"}>
                       <Flex align="center" mb={6}>
                         <Text fontSize="xl" fontWeight="bold" color="gray.700">
-                          🏆 Usuario Más Activo
+                          🏆 Top 5 Usuarios Más Activo
                         </Text>
                         <Badge ml={3} colorScheme="green">
                           Destacado
                         </Badge>
                       </Flex>
-                      <ReporteUsuarioMasActivo data={usuarioMasActivo} />
+                      <ReporteUsuariosMasActivos data={usuariosMasActivos} />
                     </CardBody>
                   </Card>
                 </GridItem>

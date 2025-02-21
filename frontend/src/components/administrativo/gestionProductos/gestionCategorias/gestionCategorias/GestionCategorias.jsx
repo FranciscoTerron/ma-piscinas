@@ -35,6 +35,7 @@ const GestionCategoria = () => {
   const cargarCategorias = async (pagina, tamanio) => {
     try {
       const data = await listarCategorias(pagina, tamanio);
+      console.log("ACA",data);
       setCategorias(data.categorias);
       setTotalCategorias(data.total);
     } catch (error) {

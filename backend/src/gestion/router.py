@@ -139,14 +139,21 @@ def actualizar_rol_usuario(usuario_id: int, nuevo_rol: schemas.RolUpdate, db: Se
 # Ruta para crear categorias
 # ============================================================
 @router.post("/categorias", response_model=schemas.CategoriaProducto, status_code=status.HTTP_201_CREATED)
-def crear_categoria(categoria: schemas.CategoriaProductoBase, db: Session = Depends(get_db)):
-    return services.crear_categoria(db, categoria)
+def crear_categoria(
+    nombre: str = Form(...),
+    descripcion: str = Form(...),
+    imagen: UploadFile = File(None),  
+    db: Session = Depends(get_db)
+):
+    return services.crear_categoria(db, nombre, descripcion, imagen)
+
 
 # ============================================================
 # Ruta para listar categorias
 # ============================================================
 @router.get("/categorias")
 def listar_categorias(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+    
     return services.listar_categorias(db, pagina, tamanio)
 
 # ============================================================
@@ -156,12 +163,19 @@ def listar_categorias(pagina: int = 1, tamanio: int = 3, db: Session = Depends(g
 def obtener_categoria(categoria_id: int, db: Session = Depends(get_db)):
     return services.obtener_categoria_por_id(db, categoria_id)
 
+
 # ============================================================
-# Ruta para actualizar categoria
+# Ruta para actualizar categoria con imagen opcional
 # ============================================================
 @router.put("/categorias/{categoria_id}", response_model=schemas.CategoriaProducto)
-def actualizar_categoria(categoria_id: int, categoria_update: schemas.CategoriaProductoBase, db: Session = Depends(get_db)):
-    return services.actualizar_categoria(db, categoria_id, categoria_update)
+def actualizar_categoria(
+    categoria_id: int,
+    nombre: str = Form(...),
+    descripcion: str = Form(...), 
+    imagen: UploadFile = File(None),  # Recibimos el archivo de imagen si lo hay
+    db: Session = Depends(get_db)
+):
+    return services.actualizar_categoria(db, categoria_id, nombre,descripcion, imagen)
 
 
 # ============================================================
@@ -556,16 +570,6 @@ def crear_pedido_detalle(detalle: schemas.PedidoDetalleCreate, db: Session = Dep
     """
     return services.crear_pedido_detalle(db, detalle)
 
-# ============================================================
-# Ruta para listar detalles de pedidos
-# ============================================================
-
-@router.get("/pedido-detalles", response_model=List[schemas.PedidoDetalle])
-def listar_pedido_detalles(db: Session = Depends(get_db)):
-    """
-    Retorna una lista de todos los detalles de pedido.
-    """
-    return services.listar_pedido_detalles(db)
 
 # ============================================================
 # Ruta para obtener detalles por ID
@@ -726,9 +730,9 @@ def listar_actividades(db: Session = Depends(get_db)):
 # ============================================================
 # Obtener Reportes
 # ============================================================
-@router.get("/reportes/usuario_mas_activo", response_model=dict)
-def obtener_usuario_mas_activo(db: Session = Depends(get_db)):
-    return services.obtener_usuario_mas_activo(db)
+@router.get("/reportes/usuarios_mas_activos", response_model=list)
+def obtener_usuarios_mas_activos(db: Session = Depends(get_db)):
+    return services.obtener_top_usuarios_mas_activos(db)
 
 # ============================================================
 # Reporte de ventas por período
@@ -793,3 +797,60 @@ def obtener_metricas_cancelaciones(
     Calcula el porcentaje de pedidos cancelados y su evolución histórica
     """
     return services.calcular_metricas_cancelaciones(db, meses_historial)
+
+
+
+# ============================================================
+# Crear Descuento
+# ============================================================
+@router.post("/descuentos/", response_model=schemas.Descuento)
+def crear_descuento(descuento: schemas.DescuentoCreate, db: Session = Depends(get_db)):
+    return services.crear_descuento(db=db, descuento=descuento)
+
+# ============================================================
+# Listar Descuentos
+# ============================================================
+@router.get("/descuentos/", response_model=schemas.Descuento)
+def listar_descuentos(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.listar_descuentos(db=db, pagina=pagina, tamanio=tamanio)
+
+# ============================================================
+# Obtener descuento por ID
+# ============================================================
+
+@router.get("/descuentos/{descuento_id}", response_model=schemas.Descuento)
+def obtener_descuento_por_id(descuento_id: int, db: Session = Depends(get_db)):
+    return services.obtener_descuento_por_id(db=db, descuento_id=descuento_id)
+
+# ============================================================
+# Actualizar Descuento
+# ============================================================
+
+@router.put("/descuentos/{descuento_id}", response_model=schemas.Descuento)
+def actualizar_descuento(descuento_id: int, descuento_update: schemas.DescuentoUpdate, db: Session = Depends(get_db)):
+    return services.actualizar_descuento(db=db, descuento_id=descuento_id, descuento_update=descuento_update)
+
+# ============================================================
+# Eliminar Descuento
+# ============================================================
+
+@router.delete("/descuentos/{descuento_id}")
+def eliminar_descuento(descuento_id: int, db: Session = Depends(get_db)):
+    services.eliminar_descuento(db=db, descuento_id=descuento_id)
+    return {"message": "Descuento eliminado con éxito"}
+
+# ============================================================
+# Aplicar Descuento pedido
+# ============================================================
+
+@router.post("/pedidos/{pedido_id}/descuentos/{descuento_id}", response_model=schemas.Pedido)
+def aplicar_descuento_pedido(pedido_id: int, descuento_id: int, db: Session = Depends(get_db)):
+    return services.aplicar_descuento_pedido(db=db, pedido_id=pedido_id, descuento_id=descuento_id)
+
+# ============================================================
+# Aplicar Descuento producto
+# ============================================================
+
+@router.post("/pedidos/{pedido_id}/descuento-producto/{descuento_id}", response_model=schemas.Pedido)
+def aplicar_descuento_producto(pedido_id: int, descuento_id: int, db: Session = Depends(get_db)):
+    return services.aplicar_descuento_producto(db=db, pedido_id=pedido_id, descuento_id=descuento_id)

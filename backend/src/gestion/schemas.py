@@ -172,6 +172,8 @@ class Producto(ProductoBase):
 class CategoriaProductoBase(BaseModel):
     nombre: str = Field(..., example="Electrónica")
     descripcion: str = Field(..., example="Productos electrónicos y gadgets")
+    imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
+
 
 # ============================================================
 # Esquema para crear Categoria
@@ -460,3 +462,51 @@ class PedidosCanceladosResponse(BaseModel):
     pedidos_cancelados: int
     porcentaje_cancelados: float
     ultimos_3_meses: Dict[str, float]  # {"2023-10": 15.2, ...}
+    
+
+# ============================================================
+# Tipo de Descuento
+# ============================================================
+class TipoDescuentoEnum(str, Enum):
+    PORCENTAJE = "PORCENTAJE"
+    MONTO_FIJO = "MONTO_FIJO"
+    CUOTAS_SIN_INTERES = "CUOTAS_SIN_INTERES"
+
+# ============================================================
+# Esquema base para Descuento
+# ============================================================
+class DescuentoBase(BaseModel):
+    nombre: str = Field(..., example="Descuento de Verano")
+    descripcion: Optional[str] = Field(None, example="Descuento especial de verano")
+    tipo: TipoDescuentoEnum = Field(..., example="PORCENTAJE")
+    valor: float = Field(..., example=10.0)  # Puede ser un porcentaje (10%) o un monto fijo (100.0)
+    fecha_inicio: date = Field(..., example="2024-06-01")
+    fecha_fin: date = Field(..., example="2024-06-30")
+    activo: bool = Field(default=True, example=True)
+
+# ============================================================
+# Esquema para crear un Descuento
+# ============================================================
+class DescuentoCreate(DescuentoBase):
+    pass  # No requiere cambios adicionales
+
+# ============================================================
+# Esquema para actualizar un Descuento
+# ============================================================
+class DescuentoUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    tipo: Optional[TipoDescuentoEnum] = None
+    valor: Optional[float] = None
+    fecha_inicio: Optional[date] = None
+    fecha_fin: Optional[date] = None
+    activo: Optional[bool] = None
+
+# ============================================================
+# Esquema para devolver un Descuento (respuesta API)
+# ============================================================
+class Descuento(DescuentoBase):
+    id: int
+
+    class Config:
+        from_attributes = True

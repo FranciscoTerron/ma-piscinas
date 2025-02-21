@@ -40,6 +40,11 @@ class TipoActividad(Enum):
     CREACION_USUARIO = "CREACION_USUARIO"
     CREACION_PRODUCTO = "CREACION_PRODUCTO"
     CREACION_EMPRESA = "CREACION_EMPRESA"
+    
+class TipoDescuento(Enum):
+    PORCENTAJE = "PORCENTAJE"
+    MONTO_FIJO = "MONTO_FIJO"
+    CUOTAS_SIN_INTERES = "CUOTAS_SIN_INTERES"
 
 class Usuario(BaseModel):
     __tablename__ = "usuarios"
@@ -111,12 +116,16 @@ class Producto(BaseModel):
     categoria = relationship("CategoriaProducto", back_populates="productos")
     pedidoDetalle = relationship("PedidoDetalle", back_populates="producto")
     
+    descuentos = relationship("Descuento", back_populates="producto")
+    
 class CategoriaProducto(BaseModel):
     __tablename__ = "categorias"
 
     id = Column(Integer, primary_key=True, index=True)
     nombre: Mapped[str] = mapped_column(String, index=True)
     descripcion: Mapped[str] = mapped_column(String, index=True)
+    imagen: Mapped[str] = mapped_column(String, index=True)
+
 
     productos = relationship("Producto", back_populates="categoria")
     subcategorias = relationship("SubCategoria", back_populates="categoria")
@@ -171,6 +180,7 @@ class Pedido(BaseModel):
     envio = relationship("Envio", back_populates="pedido" )
     pago = relationship("Pago", back_populates="pedido" )
     pedidoDetalle = relationship("PedidoDetalle", back_populates="pedido")
+    descuentos = relationship("Descuento", back_populates="pedido")
     
 class PedidoDetalle(BaseModel): 
     __tablename__ = "pedidodetalles"
@@ -211,7 +221,7 @@ class MetodoPago(BaseModel):
     imagen: Mapped[str] = mapped_column(String, index=True)
 
     pago = relationship("Pago", back_populates="metodoPago")
-    
+    descuentos = relationship("Descuento", back_populates="metodo_pago")
     
 class Actividad(BaseModel):
     __tablename__ = "actividades"
@@ -224,3 +234,24 @@ class Actividad(BaseModel):
 
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     usuario = relationship("Usuario", back_populates="actividades")
+
+
+class Descuento(BaseModel):
+    __tablename__ = "descuentos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tipo: Mapped[TipoDescuento] = mapped_column(SQLAlchemyEnum(TipoDescuento), default=TipoDescuento.PORCENTAJE)
+    valor: Mapped[float] = mapped_column(Float, nullable=False)
+    fecha_inicio: Mapped[datetime] = mapped_column(DateTime, default=now)
+    fecha_fin: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    condiciones: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
+    # Relaciones
+    producto_id = Column(Integer, ForeignKey("productos.id"), nullable=True)
+    producto = relationship("Producto", back_populates="descuentos")
+
+    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=True)
+    pedido = relationship("Pedido", back_populates="descuentos")
+
+    metodo_pago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=True)
+    metodo_pago = relationship("MetodoPago", back_populates="descuentos")

@@ -23,6 +23,8 @@ import {
 } from "@chakra-ui/react";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { eliminarCategoria } from "../../../../../services/api";
+import { Image, Skeleton } from "@chakra-ui/react";
+
 
 const ListaCategorias = ({ categorias, onEditar, onEliminar }) => {
   const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
@@ -70,6 +72,7 @@ const ListaCategorias = ({ categorias, onEditar, onEliminar }) => {
               <Th textAlign="center" color="blue.600">ID</Th>
               <Th textAlign="left" color="blue.600">Nombre</Th>
               <Th textAlign="left" color="blue.600">Descripción</Th>
+              <Th textAlign="center" color="blue.600">Imagen</Th>
               <Th textAlign="center" color="blue.600">Acciones</Th>
             </Tr>
           </Thead>
@@ -79,6 +82,16 @@ const ListaCategorias = ({ categorias, onEditar, onEliminar }) => {
                 <Td textAlign="center" fontSize="sm" color="gray.500">#{categoria.id}</Td>
                 <Td fontWeight="medium" color="gray.700">{categoria.nombre}</Td>
                 <Td color="gray.600">{categoria.descripcion}</Td>
+                <Td textAlign="center">
+                  <Image
+                    src={categoria.imagen}
+                    alt={categoria.nombre}
+                    boxSize="40px"
+                    objectFit="cover"
+                    borderRadius="md"
+                    fallback={<Skeleton boxSize="40px" borderRadius="md" />}
+                  />
+                </Td>
                 <Td>
                   <Flex justify="center" gap={2}>
                     <Tooltip label="Editar categoría" hasArrow>

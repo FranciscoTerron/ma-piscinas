@@ -84,6 +84,10 @@ const Carrito = () => {
     return producto ? producto.nombre : "Producto no encontrado";
   };
 
+  const formatearMonto = (monto) => {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(monto);
+  }
+
   const handleActualizarCantidad = async (productoId, nuevaCantidad) => {
     try {
       if (nuevaCantidad === 0) {
@@ -171,8 +175,8 @@ const Carrito = () => {
   return (
     <Container maxW="container.lg" py={8} color={"black"}>
       <Box p={6} bg="white" borderRadius="xl" boxShadow="lg" border="1px" borderColor="gray.200">
-        <Heading size="lg" mb={6} color="blue.600" textAlign="center">
-          Mi Carrito
+        <Heading size="lg" mb={6} color="blue.600">
+          Carrito
         </Heading>
 
         {carrito?.detalles?.length ? (
@@ -210,8 +214,8 @@ const Carrito = () => {
                         />
                       </Flex>
                     </Td>
-                    <Td textAlign="center">${(detalle.subtotal / detalle.cantidad).toFixed(2)}</Td>
-                    <Td textAlign="right">${detalle.subtotal.toFixed(2)}</Td>
+                    <Td textAlign="center">{formatearMonto(detalle.subtotal / detalle.cantidad)}</Td>
+                    <Td textAlign="right">{formatearMonto(detalle.subtotal)}</Td>
                     <Td textAlign="right">
                       <IconButton
                         icon={<FaTrash />}
@@ -236,13 +240,13 @@ const Carrito = () => {
                   Total:
                 </Text>
                 <Text fontSize="xl" fontWeight="bold" color="blue.600">
-                  ${calcularTotal().toFixed(2)}
+                  {formatearMonto(calcularTotal())}
                 </Text>
               </Flex>
             </Box>
 
             <Flex justify="space-between" mt={6}>
-              <Button
+            <Button
                 size="sm"
                 color="red.900"
                 colorScheme="red"
