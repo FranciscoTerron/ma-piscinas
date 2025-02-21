@@ -4,16 +4,21 @@ import {
   Button, GridItem, Card, CardBody, Stack, useToast,
   Heading, Flex, VStack, Badge
 } from "@chakra-ui/react";
-import { obtenerUsuarioMasActivo, obtenerVentasPorPeriodo, obtenerMetricasCancelaciones } from "../../../services/api";
+import { obtenerUsuarioMasActivo, obtenerVentasPorPeriodo, obtenerMetricasCancelaciones, 
+  obtenerEstacionalidadProductos, obtenerCostosGanancias } from "../../../services/api";
 import ReporteUsuarioMasActivo from "./ReporteUsuarioMasActivo";
 import ReporteVentas from "./ReporteVentas";
 import ReporteCancelaciones from "./ReporteCancelaciones";
+import ReporteEstacionalidad from "./ReporteEstacionalidad";
+import ReporteCostosGanancias from "./ReporteCostosGanancias";
 import GoBackButton from '../../GoBackButton';
 
 const Reportes = () => {
   const [usuarioMasActivo, setUsuarioMasActivo] = useState(null);
   const [ventas, setVentas] = useState([]);
   const [cancelaciones, setCancelaciones] = useState({});
+  const [estacionalidad, setEstacionalidad] = useState([]);
+  const [costosGanancias, setCostosGanancias] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [tipoPeriodo, setTipoPeriodo] = useState("mensual");
   const [fechaInicio, setFechaInicio] = useState("2024-01-01");
@@ -39,7 +44,11 @@ const Reportes = () => {
       const usuario = await obtenerUsuarioMasActivo();
       const ventasData = await obtenerVentasPorPeriodo(tipoPeriodo, fechaInicio, fechaFin);
       const cancelacionesData = await obtenerMetricasCancelaciones(3);
-      
+      const estacionalidadData = await obtenerEstacionalidadProductos(2025);
+      const costosData = await obtenerCostosGanancias();
+        
+      setCostosGanancias(costosData);
+      setEstacionalidad(estacionalidadData);
       setCancelaciones(cancelacionesData);
       setUsuarioMasActivo(usuario);
       setVentas(ventasData);
@@ -235,13 +244,13 @@ const Reportes = () => {
                     <CardBody color={"black"}>
                         <Flex align="center" mb={6}>
                           <Text fontSize="xl" fontWeight="bold" color="gray.700">
-                            ❌ Cancelaciones
+                            ❌ Estacionalidad
                           </Text>
                           <Badge ml={3} colorScheme="green">
                             Cancelado
                           </Badge>
                         </Flex>
-                        <ReporteCancelaciones data={cancelaciones} />
+                        <ReporteEstacionalidad data={estacionalidad} />
                       </CardBody>
                   </Card>
                 </GridItem>
@@ -266,6 +275,30 @@ const Reportes = () => {
                         </Badge>
                       </Flex>
                       <ReporteUsuarioMasActivo data={usuarioMasActivo} />
+                    </CardBody>
+                  </Card>
+                </GridItem>
+
+                {/* Costo vs Ganancia */}
+                <GridItem>
+                  <Card 
+                    bg="white" 
+                    shadow="lg" 
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    borderColor="gray.100"
+                    mb={6}
+                  >
+                    <CardBody color={"black"}>
+                      <Flex align="center" mb={6}>
+                        <Text fontSize="xl" fontWeight="bold" color="gray.700">
+                          🏆 Costo vs. Ganancia
+                        </Text>
+                        <Badge ml={3} colorScheme="green">
+                          Destacado
+                        </Badge>
+                      </Flex>
+                      <ReporteCostosGanancias data={costosGanancias} />
                     </CardBody>
                   </Card>
                 </GridItem>

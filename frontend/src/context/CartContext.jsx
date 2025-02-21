@@ -37,7 +37,7 @@ export const CartProvider = ({ children }) => {
 
   useEffect(() => {
     fetchCart();
-    const interval = setInterval(fetchCart, 30000);
+    const interval = setInterval(fetchCart, 120000);
     return () => clearInterval(interval);
   }, [user]);
 

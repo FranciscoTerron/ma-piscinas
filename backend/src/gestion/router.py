@@ -744,7 +744,6 @@ def obtener_ventas_por_periodo(
     """
     Genera un reporte de ventas agrupado por período temporal.
     """
-    print(f"Recibido: {tipo_periodo}, {fecha_inicio}, {fecha_fin}")
     # Validar que fecha_inicio < fecha_fin
     if fecha_inicio >= fecha_fin:
         raise HTTPException(status_code=400, detail="fecha_inicio debe ser menor que fecha_fin")
