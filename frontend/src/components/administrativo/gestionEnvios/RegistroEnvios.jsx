@@ -1,45 +1,49 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  IconButton,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  useToast,
-  Container,
-  Text,
-  HStack,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Input,  Table, Thead, Tbody, Tr, Th, Td, Button, IconButton, useDisclosure,
+  AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody,
+  AlertDialogFooter, useToast, Container, Text, HStack, VStack, Select} from "@chakra-ui/react";
 import { FaTrash, FaTruck } from "react-icons/fa";
-import { obtenerEnvios, eliminarEnvio, listarEnvios } from "../../../services/api";
+import { eliminarEnvio, listarEnvios, listarMetodosEnvios } from "../../../services/api";
 import GoBackButton from "../../GoBackButton";
 
 const RegistrarEnvios = () => {
   const [envios, setEnvios] = useState([]);
+  const [metodosEnvios, setMetodosEnvios] = useState([]);
   const [envioAEliminar, setEnvioAEliminar] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
+  const [total, setTotal] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const porPagina = 10;
+  const totalPaginas = Math.ceil(total / porPagina);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroMetodo, setFiltroMetodo] = useState("");
+  console.log("ACA", envios);
   useEffect(() => {
     cargarEnvios();
-  }, []);
+    cargarMetodosEnvio();
+  }, [paginaActual]);
 
-  const cargarEnvios = async () => {
+  const cargarEnvios = async (paginaActual, usuariosPorPagina) => {
     try {
-      const data = await listarEnvios();
-      setEnvios(data);
+      const data = await listarEnvios(paginaActual, usuariosPorPagina);
+      setEnvios(data.envios);
+      setTotal(data.total);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de envíos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarMetodosEnvio = async (paginaActual, usuariosPorPagina) => {
+    try {
+      const data = await listarMetodosEnvios(paginaActual, usuariosPorPagina);
+      setMetodosEnvios(data.empresas);
     } catch (error) {
       toast({
         title: "Error",
@@ -80,6 +84,24 @@ const RegistrarEnvios = () => {
     onOpen();
   };
 
+  const obtenerNombreMetodosEnvios = (metodoEnvioId) => {
+    const empresa = metodosEnvios.find((r) => r.id === metodoEnvioId);
+    return empresa ? empresa.nombre : "Desconocido";
+  };
+  
+  const filtrados = envios.filter((envio) => {
+    const empresa = obtenerNombreMetodosEnvios(envio.empresa_id).toLowerCase();
+    const coincideBusqueda =
+      envio.estado.toLowerCase().includes(busqueda.toLowerCase()) ||
+      empresa.includes(busqueda.toLowerCase())
+    
+    const coincideMetodo = filtroMetodo 
+      ? String(envio.empresa_id) === filtroMetodo 
+      : true;
+
+    return coincideBusqueda && coincideMetodo;
+  });
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
@@ -94,34 +116,75 @@ const RegistrarEnvios = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {envios.length} envíos registrados
+                {total} envíos registrados
               </Text>
             </VStack>
           </HStack>
         </HStack>
-
-        <Box bg="white" borderRadius="lg" boxShadow="sm" border="1px solid" borderColor="gray.200" overflow="hidden">
+        {/* Nuevos Filtros */}
+        <HStack spacing={4} w="full">
+          <Input
+            placeholder="Buscar por estado, metodo de envio..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black" 
+            _placeholder={{ color: "gray.500" }} 
+          />
+          <Select
+            placeholder="Filtrar por método"
+            value={filtroMetodo}
+            onChange={(e) => setFiltroMetodo(e.target.value)}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            _focus={{ borderColor: "blue.500" }}
+            color="black"
+            sx={{
+              '& option': {
+                backgroundColor: 'white !important',
+                color: 'gray.600'
+              }
+            }}
+          >
+            {metodosEnvios.map((metodo) => (
+              <option key={metodo.id} value={String(metodo.id)}>
+                {metodo.nombre}
+              </option>
+            ))}
+          </Select>
+        </HStack>
+        <Box 
+          p={6}
+          bg="white"
+          borderRadius="xl"
+          boxShadow="lg"
+          border="1px"
+          borderColor="gray.200"
+          overflow="hidden"
+        >
           <Table variant="simple">
-            <Thead bg="gray.50">
+            <Thead bg="blue.50">
               <Tr>
-                <Th textAlign="center" color="gray.600">ID</Th>
-                <Th textAlign="center" color="gray.600">Fecha</Th>
-                <Th textAlign="center" color="gray.600">Destino</Th>
-                <Th textAlign="center" color="gray.600">Método de Envío</Th>
-                <Th textAlign="center" color="gray.600">Estado</Th>
-                <Th textAlign="center" color="gray.600">Acciones</Th>
+                <Th textAlign="center" color="blue.600">ID</Th>
+                <Th textAlign="center" color="blue.600">Código</Th>
+                <Th textAlign="center" color="blue.600">Dirección</Th>
+                <Th textAlign="center" color="blue.600">Método de Envío</Th>
+                <Th textAlign="center" color="blue.600">Estado</Th>
+                <Th textAlign="center" color="blue.600">Acciones</Th>
               </Tr>
             </Thead>
             <Tbody>
-              {envios.length > 0 ? (
-                envios.map((envio) => (
+              {filtrados.length > 0 ? (
+                filtrados.map((envio) => (
                   <Tr key={envio.id} _hover={{ bg: "gray.50" }} transition="background-color 0.2s">
                     <Td textAlign="center" color="gray.700">#{envio.id}</Td>
-                    <Td textAlign="center" color="gray.700">
-                      {new Date(envio.fecha).toLocaleDateString()}
-                    </Td>
-                    <Td textAlign="center" color="gray.700">{envio.destino}</Td>
-                    <Td textAlign="center" color="gray.700">{envio.metodo}</Td>
+                    <Td textAlign="center" color="gray.700">{envio.codigoSeguimiento}</Td>
+                    <Td textAlign="center" color="gray.700">{envio.direccion}</Td>
+                    <Td textAlign="center" color="gray.700">{obtenerNombreMetodosEnvios(envio.empresa_id)}</Td>
                     <Td textAlign="center" color={envio.estado === "Entregado" ? "green.500" : "red.500"}>
                       {envio.estado}
                     </Td>
@@ -148,6 +211,27 @@ const RegistrarEnvios = () => {
               )}
             </Tbody>
           </Table>
+          <HStack spacing={2} justify="center" mt={4} color={"black"}>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual - 1)}
+              isDisabled={paginaActual === 1}
+            >
+              Anterior
+            </Button>
+            <Text>
+              Página {paginaActual} de {totalPaginas}
+            </Text>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual + 1)}
+              isDisabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </Button>
+          </HStack>
         </Box>
       </VStack>
 

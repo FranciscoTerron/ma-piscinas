@@ -49,7 +49,7 @@ const Producto = () => {
     const cargarMetodosPago = async () => {
       try {
         const response = await listarMetodosPago();
-        setMetodosPago(response);
+        setMetodosPago(response.metodosPago);
       } catch (error) {
         console.error("Error al cargar métodos de pago", error);
       }

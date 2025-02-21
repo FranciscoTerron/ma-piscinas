@@ -86,11 +86,6 @@ const handleCategoriaChange = (e) => {
   setCategoriaSeleccionada(e.target.value);
 };
 
-// Manejar cambio en categoría seleccionada
-  const obtenerNombreCategoria = (categoriaId) => {
-    const categoria = categorias.find((cat) => cat.id === categoriaId);
-    return categoria ? categoria.nombre : "Sin categoría";
-  };
   
 const productosFiltrados = productos.filter((producto) => {
   const textoBusqueda = busqueda.toLowerCase();
@@ -145,6 +140,12 @@ const productosFiltrados = productos.filter((producto) => {
             border="1px"
             borderColor="gray.300"
             color="black"
+            sx={{
+              '& option': {
+                backgroundColor: 'white !important',
+                color: 'gray.600'
+              }
+            }}
           >
             {categorias.map((categoria) => (
               <option key={categoria.id} value={categoria.id}>

@@ -103,14 +103,14 @@ const Footer = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (paginaActual, usuariosPorPagina) => {
       try {
         const [pagos, envios] = await Promise.all([
-          listarMetodosPago(),
-          listarMetodosEnvios(),
+          listarMetodosPago(paginaActual, usuariosPorPagina),
+          listarMetodosEnvios(paginaActual, usuariosPorPagina),
         ]);
-        setPaymentMethods(pagos);
-        setShippingMethods(envios);
+        setPaymentMethods(pagos.metodosPago);
+        setShippingMethods(envios.empresas);
       } catch (error) {
         setError("Error al cargar los datos");
         console.error(error);

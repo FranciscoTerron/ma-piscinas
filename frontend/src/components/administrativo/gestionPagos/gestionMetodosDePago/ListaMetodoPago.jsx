@@ -36,7 +36,7 @@ const ListaMetodosPago = ({ metodosPago = [], onEditar, onEliminar }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const [busqueda, setBusqueda] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState("");
+  const [filtroTipo, setFiltroTipo] = useState(""); 
 
   // Obtener tipos únicos para el filtro
   const tiposUnicos = [...new Set(metodosPago.map(metodo => metodo.tipo))];
@@ -133,11 +133,11 @@ const ListaMetodosPago = ({ metodosPago = [], onEditar, onEliminar }) => {
         <Table variant="simple">
           <Thead bg="blue.50">
             <Tr>
-              <Th textAlign="center" color="gray.600">ID</Th>
-              <Th textAlign="left" color="gray.600">Tipo</Th>
-              <Th textAlign="left" color="gray.600">Nombre</Th>
-              <Th textAlign="center" color="gray.600">Imagen</Th>
-              <Th textAlign="center" color="gray.600">Acciones</Th>
+              <Th textAlign="center" color="blue.600">ID</Th>
+              <Th textAlign="left" color="blue.600">Tipo</Th>
+              <Th textAlign="left" color="blue.600">Nombre</Th>
+              <Th textAlign="center" color="blue.600">Imagen</Th>
+              <Th textAlign="center" color="blue.600">Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>

@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func, extract
+from sqlalchemy import func, extract, case
 from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
@@ -8,6 +8,8 @@ from passlib.context import CryptContext
 from datetime import datetime, UTC, timedelta
 from fastapi import HTTPException, status, UploadFile
 import cloudinary.uploader
+from collections import defaultdict
+from dateutil.relativedelta import relativedelta
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -339,8 +341,13 @@ def crear_envio(db: Session,  envio: schemas.EnvioCreate) -> Envio:
     return nuevo_envio
 
 #Listar envios
-def listar_envios(db: Session) -> List[Envio]:
-    return db.query(Envio).all()
+def listar_envios(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Envio).count()
+    envios = (db.query(Envio)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "envios": envios}
 
 #Obtener envios por id
 def obtener_envio_por_id(db: Session, envio_id: int) -> Envio:
@@ -401,8 +408,13 @@ def crear_empresa(
 # ============================================================
 # Listar todas las empresas
 # ============================================================
-def listar_empresas(db: Session):
-    return db.query(Empresa).all()
+def listar_empresas(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Empresa).count()
+    empresas = (db.query(Empresa)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "empresas": empresas}
 
 # ============================================================
 # Obtener una empresa por ID
@@ -466,8 +478,13 @@ def crear_pago(db: Session, pago: schemas.PagoBase):
     return nuevo_pago
 
 #Listar Pago
-def listar_pagos(db: Session):
-    return db.query(Pago).all()
+def listar_pagos(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Pago).count()
+    pagos = (db.query(Pago)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "pagos": pagos}
 
 #Obtener Pago
 def obtener_pago(db: Session, pago_id: int):
@@ -555,10 +572,14 @@ def actualizar_metodo_pago(
     return metodo_pago
 
 
-
 # Listar Métodos de Pago
-def listar_metodos_pago(db: Session):
-    return db.query(MetodoPago).all()
+def listar_metodos_pago(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(MetodoPago).count()
+    metodosPago = (db.query(MetodoPago)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "metodosPago": metodosPago}
 
 # Obtener Método de Pago por ID
 def obtener_metodo_pago(db: Session, metodo_pago_id: int):
@@ -964,3 +985,110 @@ def obtener_usuario_mas_activo(db: Session):
     else:
         return {"nombre": "Sin datos", "compras": 0}
 
+def generar_reporte_ventas_por_periodo(db: Session, tipo_periodo: str, fecha_inicio: datetime, fecha_fin: datetime):
+    # Determinar la función de truncamiento de fecha según el tipo de período
+    if tipo_periodo == "diario":
+        trunc_func = func.date
+    elif tipo_periodo == "semanal":
+        trunc_func = lambda x: func.date_trunc('week', x)
+    else:  # mensual
+        trunc_func = lambda x: func.date_trunc('month', x)
+
+    resultados = db.query(
+        trunc_func(Pedido.fecha_creacion).label("periodo"),
+        func.sum(Pedido.total).label("total_ventas"),
+        func.count(Pedido.id).label("cantidad_pedidos")
+    ).filter(
+        Pedido.fecha_creacion.between(fecha_inicio, fecha_fin),
+        Pedido.estado == "ENTREGADO"
+    ).group_by("periodo").order_by("periodo").all()
+
+    return [{
+        "periodo": str(res.periodo),
+        "total_ventas": res.total_ventas,
+        "cantidad_pedidos": res.cantidad_pedidos
+    } for res in resultados]
+
+def calcular_estacionalidad_productos(db: Session, anio: int):
+    subquery = db.query(
+        PedidoDetalle.producto_id,
+        func.extract('month', Pedido.fecha_creacion).label("mes"),
+        func.sum(PedidoDetalle.cantidad).label("ventas")
+    ).join(Pedido).filter(
+        func.extract('year', Pedido.fecha_creacion) == anio,
+        Pedido.estado == "ENTREGADO"
+    ).group_by(PedidoDetalle.producto_id, "mes").subquery()
+
+    productos = db.query(
+        Producto.id,
+        Producto.nombre,
+        func.coalesce(subquery.c.mes, "00").label("mes"),
+        func.coalesce(subquery.c.ventas, 0).label("ventas")
+    ).outerjoin(subquery, Producto.id == subquery.c.producto_id).all()
+
+    # Estructurar los resultados
+    reporte = {}
+    for p in productos:
+        if p.id not in reporte:
+            reporte[p.id] = {
+                "producto_id": p.id,
+                "nombre_producto": p.nombre,
+                "ventas_por_mes": defaultdict(int)
+            }
+        reporte[p.id]["ventas_por_mes"][f"{int(p.mes):02d}"] = p.ventas
+    
+    return list(reporte.values())
+
+def calcular_costos_ganancias(db: Session, producto_id: Optional[int], categoria_id: Optional[int]):
+    query = db.query(
+        Producto.id,
+        Producto.nombre,
+        Producto.costo,
+        func.sum(PedidoDetalle.cantidad).label("unidades_vendidas")
+    ).join(PedidoDetalle).join(Pedido).filter(
+        Pedido.estado == "ENTREGADO"
+    )
+
+    if producto_id:
+        query = query.filter(Producto.id == producto_id)
+    if categoria_id:
+        query = query.filter(Producto.categoria_id == categoria_id)
+
+    resultados = query.group_by(Producto.id).all()
+
+    return [{
+        "producto_id": res.id,
+        "nombre": res.nombre,
+        "costo_total": res.costo * res.unidades_vendidas,
+        "ganancia_total": (res.precio - res.costo) * res.unidades_vendidas,
+        "margen_ganancia": ((res.precio - res.costo) / res.precio * 100) if res.precio > 0 else 0
+    } for res in resultados]
+
+def calcular_metricas_cancelaciones(db: Session, meses_historial: int):
+    # Total general
+    total_pedidos = db.query(func.count(Pedido.id)).scalar()
+    cancelados = db.query(func.count(Pedido.id)).filter(
+        Pedido.estado == "CANCELADO"
+    ).scalar()
+
+    # Historial últimos N meses
+    fecha_limite = datetime.now() - relativedelta(months=meses_historial)
+    resultados = db.query(
+        func.to_char(Pedido.fecha_creacion, 'YYYY-MM').label("mes"),
+        func.count(Pedido.id).label("total"),
+        func.sum(case((Pedido.estado == "CANCELADO", 1), else_=0)).label("cancelados")
+    ).filter(
+        Pedido.fecha_creacion >= fecha_limite
+    ).group_by("mes").order_by("mes").all()
+
+    historial = {
+        res.mes: (res.cancelados / res.total * 100) if res.total > 0 else 0
+        for res in resultados
+    }
+
+    return {
+        "total_pedidos": total_pedidos,
+        "pedidos_cancelados": cancelados,
+        "porcentaje_cancelados": (cancelados / total_pedidos * 100) if total_pedidos > 0 else 0,
+        "ultimos_3_meses": historial
+    }

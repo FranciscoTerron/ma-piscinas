@@ -6,8 +6,8 @@ import GoBackButton from "../../GoBackButton";
 import { listarPagos, listarMetodosPago } from "../../../services/api";
 
 const GestionPagos = () => {
-  const [pagos, setPagos] = useState([]);
-  const [metodosPago, setMetodosPago] = useState([]);
+  const [totalPagos, setTotalPagos] = useState([]);
+  const [totalMetodosPago, setTotalMetodosPago] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -15,10 +15,10 @@ const GestionPagos = () => {
     cargarMetodosPago();
   }, []);
 
-  const cargarPagos = async () => {
+  const cargarPagos = async (paginaActual, usuariosPorPagina) => {
     try {
-      const data = await listarPagos();
-      setPagos(data);
+      const data = await listarPagos(paginaActual, usuariosPorPagina);
+      setTotalPagos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -30,10 +30,10 @@ const GestionPagos = () => {
     }
   };
 
-  const cargarMetodosPago = async () => {
+  const cargarMetodosPago = async (paginaActual, porPagina) => {
     try {
-      const data = await listarMetodosPago();
-      setMetodosPago(data);
+      const data = await listarMetodosPago(paginaActual, porPagina);
+      setTotalMetodosPago(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -52,7 +52,7 @@ const GestionPagos = () => {
       description: 'Consulta y administra los pagos realizados.',
       route: '/registroPagos', 
       icon: FaDollarSign,
-      stats: `${pagos.length} pagos registrados`
+      stats: `${totalPagos} pagos registrados`
     },
     { 
       id: 'metodosPago', 
@@ -60,7 +60,7 @@ const GestionPagos = () => {
       description: 'Administra los métodos de pago disponibles.',
       route: '/metodosPago', 
       icon: FaCreditCard,
-      stats: `${metodosPago.length} métodos de pago`
+      stats: `${totalMetodosPago} métodos de pago`
     },
   ];
 

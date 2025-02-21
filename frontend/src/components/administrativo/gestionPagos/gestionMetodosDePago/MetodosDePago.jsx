@@ -19,15 +19,20 @@ const MetodosDePago = () => {
   const [metodoSeleccionado, setMetodoSeleccionado] = useState(null);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [total, setTotal] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const porPagina = 10;
+  const totalPaginas = Math.ceil(total / porPagina);
 
   useEffect(() => {
     cargarMetodosPago();
-  }, []);
+  }, [paginaActual]);
 
   const cargarMetodosPago = async () => {
     try {
-      const data = await listarMetodosPago();
-      setMetodosPago(data);
+      const data = await listarMetodosPago(paginaActual, porPagina);
+      setMetodosPago(data.metodosPago);
+      setTotal(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -58,7 +63,7 @@ const MetodosDePago = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {metodosPago.length} métodos disponibles
+                {total} métodos disponibles
               </Text>
             </VStack>
           </HStack>
@@ -72,7 +77,27 @@ const MetodosDePago = () => {
           onEditar={handleEditarMetodo}
           onEliminar={cargarMetodosPago}
         />
-
+        <HStack spacing={2} justify="center" mt={4} color={"black"}>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={() => setPaginaActual(paginaActual - 1)}
+            isDisabled={paginaActual === 1}
+          >
+            Anterior
+          </Button>
+          <Text>
+            Página {paginaActual} de {totalPaginas}
+          </Text>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={() => setPaginaActual(paginaActual + 1)}
+            isDisabled={paginaActual === totalPaginas}
+          >
+            Siguiente
+          </Button>
+        </HStack>
         <FormularioMetodoPago
           isOpen={isOpen}
           onClose={onClose}

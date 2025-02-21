@@ -6,8 +6,8 @@ import GoBackButton from "../../GoBackButton";
 import { listarEnvios, listarMetodosEnvio } from "../../../services/api";
 
 const GestionEnvios = () => {
-  const [envios, setEnvios] = useState([]);
-  const [metodosEnvio, setMetodosEnvio] = useState([]);
+  const [totalEnvios, setEnvios] = useState([]);
+  const [totalMetodosEnvio, setMetodosEnvio] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const GestionEnvios = () => {
   const cargarEnvios = async () => {
     try {
       const data = await listarEnvios();
-      setEnvios(data);
+      setEnvios(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -33,7 +33,7 @@ const GestionEnvios = () => {
   const cargarMetodosEnvio = async () => {
     try {
       const data = await listarMetodosEnvio();
-      setMetodosEnvio(data);
+      setMetodosEnvio(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -52,7 +52,7 @@ const GestionEnvios = () => {
       description: 'Consulta y administra los envíos realizados.',
       route: '/registroEnvios', 
       icon: FaClipboardList,
-      stats: `${envios.length} envíos registrados`
+      stats: `${totalEnvios} envíos registrados`
     },
     { 
       id: 'metodosEnvio', 
@@ -60,7 +60,7 @@ const GestionEnvios = () => {
       description: 'Administra los métodos de envío disponibles.',
       route: '/metodosEnvios', 
       icon: FaTruck,
-      stats: `${metodosEnvio.length} métodos de envío`
+      stats: `${totalMetodosEnvio} métodos de envío`
     },
   ];
 

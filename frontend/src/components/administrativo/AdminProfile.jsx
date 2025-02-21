@@ -23,18 +23,16 @@ import {
   FaChartBar
 } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
-import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos, obtenerUsuarioMasActivo } from "../../services/api";
+import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos } from "../../services/api";
 import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
 
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
-  const [usuarios, setUsuarios] = useState([]);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [totalProductos, setProductos] = useState([]);
-  const [pagos, setPagos] = useState([]);
-  const [envios, setEnvios] = useState([]);
+  const [totalPagos, setTotalPagos] = useState(0);
+  const [totalEnvios, setTotalEnvios] = useState([]);
   const [totalPedidos, setTotalPedidos] = useState([]);
-  const [reportes, setReportes] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -42,7 +40,6 @@ const AdminProfile = () => {
     cargarUsuarios();
     cargarPagos();
     cargarEnvios();
-    cargarReportes();
     cargarPedidos();
   }, []);
 
@@ -50,7 +47,6 @@ const AdminProfile = () => {
     try {
       const data = await listarUsuarios(paginaActual, usuariosPorPagina);
       // Asumiendo que la respuesta es { usuarios: [...], total: number }
-      setUsuarios(data.usuarios);
       setTotalUsuarios(data.total);
     } catch (error) {
       toast({
@@ -82,7 +78,7 @@ const AdminProfile = () => {
   const cargarPagos = async () => {
     try {
       const data = await listarPagos();
-      setPagos(data);
+      setTotalPagos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -97,7 +93,7 @@ const AdminProfile = () => {
   const cargarEnvios = async () => {
     try {
       const data = await listarEnvios();
-      setEnvios(data);
+      setTotalEnvios(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -109,20 +105,6 @@ const AdminProfile = () => {
     }
   };
 
-  const cargarReportes = async () => {
-    try {
-      const data = await obtenerUsuarioMasActivo();
-      setReportes(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cargar reportes.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
 
   const cargarPedidos = async () => {
     try {
@@ -162,7 +144,7 @@ const AdminProfile = () => {
       description: 'Pagos, registros, métodos de pago',
       route: '/gestionPagos', 
       icon: FaMoneyCheckAlt,
-      stats: `${pagos.length} pagos`
+      stats: `${totalPagos} pagos`
     },
     { 
       id: 'envios', 
@@ -170,7 +152,7 @@ const AdminProfile = () => {
       description: 'Envios, registros, métodos de envio',
       route: '/gestionEnvios', 
       icon: FaTruck,
-      stats: `${envios.length} envios`
+      stats: `${totalEnvios} envios`
     },
     { 
       id: 'pedidos', 
@@ -186,7 +168,7 @@ const AdminProfile = () => {
       description: 'Analisis, estadisticas',
       route: '/reportes', 
       icon: FaChartBar,
-      stats: `${reportes.length} reportes`
+      stats: `Reportes diarios, semanales, mensuales`
     },
   ];
 

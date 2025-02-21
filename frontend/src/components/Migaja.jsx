@@ -43,8 +43,8 @@ const Migaja = () => {
         
         try {
           const productos = await listarProductos(); 
-          if (Array.isArray(productos)) {
-            const producto = productos.find((p) => p.id === parseInt(productoId));
+          if (Array.isArray(productos.productos)) {
+            const producto = productos.productos.find((p) => p.id === parseInt(productoId));
             setProductoNombre(producto ? producto.nombre : "Producto no encontrado");
           } else {
             console.error("Error: listarProductos() no devolvió un array", productos);

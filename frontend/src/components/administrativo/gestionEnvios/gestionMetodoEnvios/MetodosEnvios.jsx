@@ -19,15 +19,20 @@ const MetodosEnvios = () => {
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [total, setTotal] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const porPagina = 10;
+  const totalPaginas = Math.ceil(total / porPagina);
 
   useEffect(() => {
     cargarEmpresas();
-  }, []);
+  }, [paginaActual]);
 
-  const cargarEmpresas = async () => {
+  const cargarEmpresas = async (paginaActual, usuariosPorPagina) => {
     try {
-      const data = await listarMetodosEnvio();
-      setEmpresas(data);
+      const data = await listarMetodosEnvio(paginaActual, usuariosPorPagina);
+      setEmpresas(data.empresas);
+      setTotal(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -38,7 +43,7 @@ const MetodosEnvios = () => {
       });
     }
   };
-
+  
   const handleEditarEmpresa = (empresa) => {
     setEmpresaSeleccionada(empresa);
     onOpen();
@@ -58,7 +63,7 @@ const MetodosEnvios = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {empresas.length} empresas disponibles
+                {total} empresas disponibles
               </Text>
             </VStack>
           </HStack>
@@ -72,6 +77,28 @@ const MetodosEnvios = () => {
           onEditar={handleEditarEmpresa}
           onEliminar={cargarEmpresas}
         />
+
+        <HStack spacing={2} justify="center" mt={4} color={"black"}>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={() => setPaginaActual(paginaActual - 1)}
+            isDisabled={paginaActual === 1}
+          >
+            Anterior
+          </Button>
+          <Text>
+            Página {paginaActual} de {totalPaginas}
+          </Text>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={() => setPaginaActual(paginaActual + 1)}
+            isDisabled={paginaActual === totalPaginas}
+          >
+            Siguiente
+          </Button>
+        </HStack>
 
         <FormularioMetodoEnvio
           isOpen={isOpen}

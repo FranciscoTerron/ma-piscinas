@@ -14,16 +14,20 @@ const RegistroPagos = () => {
   const toast = useToast();
   const [busqueda, setBusqueda] = useState("");
   const [filtroMetodo, setFiltroMetodo] = useState("");
+  const [total, setTotal] = useState(0);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const porPagina = 10;
+  const totalPaginas = Math.ceil(total / porPagina);
 
   useEffect(() => {
     cargarPagos();
     cargarMetodosPago();
-  }, []);
+  }, [paginaActual]);
 
   const cargarMetodosPago = async () => {
     try {
       const data = await listarMetodosPago();
-      setMetodosPago(data);
+      setMetodosPago(data.metodosPago);
     } catch (error) {
       toast({
         title: "Error",
@@ -37,8 +41,9 @@ const RegistroPagos = () => {
 
   const cargarPagos = async () => {
     try {
-      const data = await listarPagos();
-      setPagos(data);
+      const data = await listarPagos(paginaActual, porPagina);
+      setPagos(data.pagos);
+      setTotal(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -113,7 +118,7 @@ const RegistroPagos = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {pagos.length} pagos registrados
+                {total} pagos registrados
               </Text>
             </VStack>
           </HStack>
@@ -169,12 +174,12 @@ const RegistroPagos = () => {
           <Table variant="simple">
             <Thead bg="blue.50">
               <Tr>
-                <Th textAlign="center" color="gray.600">ID</Th>
-                <Th textAlign="center" color="gray.600">Fecha</Th>
-                <Th textAlign="center" color="gray.600">Monto</Th>
-                <Th textAlign="center" color="gray.600">Método de Pago</Th>
-                <Th textAlign="center" color="gray.600">Estado</Th>
-                <Th textAlign="center" color="gray.600">Acciones</Th>
+                <Th textAlign="center" color="blue.600">ID</Th>
+                <Th textAlign="center" color="blue.600">Fecha</Th>
+                <Th textAlign="center" color="blue.600">Monto</Th>
+                <Th textAlign="center" color="blue.600">Método de Pago</Th>
+                <Th textAlign="center" color="blue.600">Estado</Th>
+                <Th textAlign="center" color="blue.600">Acciones</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -213,6 +218,27 @@ const RegistroPagos = () => {
               )}
             </Tbody>
           </Table>
+          <HStack spacing={2} justify="center" mt={4} color={"black"}>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual - 1)}
+              isDisabled={paginaActual === 1}
+            >
+              Anterior
+            </Button>
+            <Text>
+              Página {paginaActual} de {totalPaginas}
+            </Text>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={() => setPaginaActual(paginaActual + 1)}
+              isDisabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </Button>
+          </HStack>
         </Box>
       </VStack>
 

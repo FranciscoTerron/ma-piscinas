@@ -1,8 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field, validator
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, date
 from enum import Enum
-
 
 # ============================================================
 # Estado Carrito
@@ -438,3 +437,26 @@ class ReporteSchema(BaseModel):
     productos_mas_vendidos: List[ProductoReporteSchema]
     ingresos_mensuales: List[IngresoMensualSchema]
     metodos_pago_usados: List[MetodoPagoSchema]
+    
+class ReporteVentasPeriodo(BaseModel):
+    periodo: str
+    total_ventas: float
+    cantidad_pedidos: int
+
+class ProductoEstacionalidad(BaseModel):
+    producto_id: int
+    nombre_producto: str
+    ventas_por_mes: Dict[str, int]  # {"01": 150, "02": 200, ...}
+
+class CostoGananciaResponse(BaseModel):
+    producto_id: int
+    nombre: str
+    costo_total: float
+    ganancia_total: float
+    margen_ganancia: float
+
+class PedidosCanceladosResponse(BaseModel):
+    total_pedidos: int
+    pedidos_cancelados: int
+    porcentaje_cancelados: float
+    ultimos_3_meses: Dict[str, float]  # {"2023-10": 15.2, ...}

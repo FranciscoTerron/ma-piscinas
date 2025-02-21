@@ -282,16 +282,17 @@ def eliminar_producto(producto_id: int, db: Session = Depends(get_db)):
 
 # ============================================================
 # Ruta para crear envio
-# ============================================================@router.post("/envios", response_model=schemas.Envio, status_code=status.HTTP_201_CREATED)
+# ============================================================
+@router.post("/envios", response_model=schemas.Envio, status_code=status.HTTP_201_CREATED)
 def crear_envio(envio: schemas.EnvioCreate, db: Session = Depends(get_db)):
     return services.crear_envio(db, envio)
 
 # ============================================================
 # Ruta para listar envios
 # ============================================================
-@router.get("/envios", response_model=List[schemas.Envio])
-def listar_envios(db: Session = Depends(get_db)):
-    return services.listar_envios(db)
+@router.get("/envios")
+def listar_envios(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.listar_envios(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener los envios por ID
@@ -331,9 +332,9 @@ def crear_empresa(
 # ============================================================
 # Listar todas las empresas
 # ============================================================
-@router.get("/empresas", response_model=List[schemas.Empresa])
-def listar_empresas(db: Session = Depends(get_db)):
-    return services.listar_empresas(db)
+@router.get("/empresas")
+def listar_empresas(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.listar_empresas(db, pagina, tamanio)
 
 # ============================================================
 # Obtener una empresa por ID
@@ -378,9 +379,9 @@ def crear_pago(pago: schemas.PagoBase, db: Session = Depends(get_db)):
 # ============================================================
 # Ruta para listar todos los pagos
 # ============================================================
-@router.get("/pagos", response_model=List[schemas.Pago])
-def listar_pagos(db: Session = Depends(get_db)):
-    return services.listar_pagos(db)
+@router.get("/pagos")
+def listar_pagos(pagina: int = 1, tamanio: int = 10,db: Session = Depends(get_db)):
+    return services.listar_pagos(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener los pagos por ID
@@ -417,9 +418,9 @@ def crear_metodo_pago(
 # ============================================================
 # Ruta para listar todos los métodos de pago
 # ============================================================
-@router.get("/metodos-pago", response_model=List[schemas.MetodoPago])
-def listar_metodos_pago(db: Session = Depends(get_db)):
-    return services.listar_metodos_pago(db)
+@router.get("/metodos-pago")
+def listar_metodos_pago(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.listar_metodos_pago(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener un método de pago por ID
@@ -728,3 +729,63 @@ def listar_actividades(db: Session = Depends(get_db)):
 @router.get("/reportes/usuario_mas_activo", response_model=dict)
 def obtener_usuario_mas_activo(db: Session = Depends(get_db)):
     return services.obtener_usuario_mas_activo(db)
+
+# ============================================================
+# Reporte de ventas por período
+# ============================================================
+@router.get("/reportes/ventas-periodo", response_model=List[schemas.ReporteVentasPeriodo])
+def obtener_ventas_por_periodo(
+    tipo_periodo: str = Query("diario", enum=["diario", "semanal", "mensual"]),
+    fecha_inicio: datetime = Query(...),
+    fecha_fin: datetime = Query(...),
+    db: Session = Depends(get_db),
+    current_user: schemas.Usuario = Depends(get_current_user)
+):
+    """
+    Genera reporte de ventas agrupado por período temporal
+    Ejemplo de uso: /reportes/ventas-periodo?tipo_periodo=diario&fecha_inicio=2023-01-01&fecha_fin=2023-12-31
+    """
+    return services.generar_reporte_ventas_por_periodo(db, tipo_periodo, fecha_inicio, fecha_fin)
+
+# ============================================================
+# Estacionalidad de productos
+# ============================================================
+@router.get("/reportes/estacionalidad-productos", response_model=List[schemas.ProductoEstacionalidad])
+def obtener_estacionalidad_productos(
+    anio: int = Query(...),
+    db: Session = Depends(get_db),
+    current_user: schemas.Usuario = Depends(get_current_user)
+):
+    """
+    Muestra las ventas mensuales de cada producto para un año específico
+    """
+    return services.calcular_estacionalidad_productos(db, anio)
+
+# ============================================================
+# Costos vs Ganancias
+# ============================================================
+@router.get("/reportes/costos-ganancias", response_model=List[schemas.CostoGananciaResponse])
+def obtener_costos_ganancias(
+    producto_id: Optional[int] = None,
+    categoria_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: schemas.Usuario = Depends(get_current_user)
+):
+    """
+    Calcula costos y ganancias, filtrable por producto o categoría
+    """
+    return services.calcular_costos_ganancias(db, producto_id, categoria_id)
+
+# ============================================================
+# Porcentaje de pedidos cancelados
+# ============================================================
+@router.get("/reportes/pedidos-cancelados", response_model=schemas.PedidosCanceladosResponse)
+def obtener_metricas_cancelaciones(
+    meses_historial: int = Query(3, ge=1, le=12),
+    db: Session = Depends(get_db),
+    current_user: schemas.Usuario = Depends(get_current_user)
+):
+    """
+    Calcula el porcentaje de pedidos cancelados y su evolución histórica
+    """
+    return services.calcular_metricas_cancelaciones(db, meses_historial)

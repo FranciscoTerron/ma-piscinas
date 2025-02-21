@@ -62,7 +62,6 @@ export const listarUsuarios = async (paginaActual, usuariosPorPagina) => {
 };
 
 export const actualizarDatosPersonales = async (usuarioId, datosActualizados) => {
-  console.log("Usuario", datosActualizados);
   const response = await api.put(`/usuarios/datos-personales`, datosActualizados);
   return response.data;
 };
@@ -194,8 +193,13 @@ export const eliminarSubcategoria = async (subcategoriaId) => {
 // Servicios para PAGO Y METODO DE PAGO
 // ---------------------------------------------------------------------
 // Listar Pagos
-export const listarPagos = async () => {
-  const response = await api.get("/pagos");
+export const listarPagos = async (paginaActual, porPagina) => {
+  const response = await api.get("/pagos", {
+    params: {
+      pagina: paginaActual,
+      tamanio: porPagina
+    }
+  });
   return response.data;
 };
 
@@ -213,8 +217,13 @@ export const obtenerPagos = async (pagoId) => {
 
 
 // Listar Métodos de Pago
-export const listarMetodosPago = async () => {
-  const response = await api.get("/metodos-pago");
+export const listarMetodosPago = async (paginaActual, porPagina) => {
+  const response = await api.get("/metodos-pago", {
+    params: {
+      pagina: paginaActual,
+      tamanio: porPagina
+    }
+  });
   return response.data;
 };
 
@@ -243,22 +252,27 @@ export const obtenerMetodosPago = async () => {
 
 
 // Listar Envios
-export const listarEnvios = async () => {
-  const response = await api.get("/envios");
+export const listarEnvios = async (paginaActual, porPagina) => {
+  const response = await api.get("/envios", {
+    params: {
+      pagina: paginaActual,
+      tamanio: porPagina
+    }
+  });
   return response.data;
 };
 
 // Listar empresas
-export const listarMetodosEnvio = async () => {
-  const response = await api.get("/empresas");
+export const listarMetodosEnvio = async (paginaActual, porPagina) => {
+  const response = await api.get("/empresas", {
+    params: {
+      pagina: paginaActual,
+      tamanio: porPagina
+    }
+  });
   return response.data;
 };
 
-// Obtener Envios
-export const obtenerEnvios = async () => {
-  const response = await api.get(`/envios/`);
-  return response.data;
-};
 
 // Eliminar Envio
 export const eliminarEnvio = async (envioId) => {
@@ -282,12 +296,12 @@ export const eliminarMetodoEnvio = async (metodoId) => {
   await api.delete(`/empresas/${metodoId}`);
 };
 
+
 // Listar Métodos de Envio
 export const listarMetodosEnvios = async () => {
   const response = await api.get("/empresas");
   return response.data;
 };
-
 
 export const listarActividadesRecientes = async () => {
   const response = await api.get("/actividades");
@@ -357,4 +371,76 @@ export const listarDetallesCarrito = async () => {
 // Vaciar el carrito
 export const vaciarCarrito = async () => {
   await api.delete("/carritos/vaciar");
+};
+
+// Servicios para Reportes
+// ---------------------------------------------------------------------
+
+/**
+ * Obtiene las ventas agrupadas por período (diario, semanal, mensual)
+ */
+export const obtenerVentasPorPeriodo = async (tipoPeriodo, fechaInicio, fechaFin) => {
+  try {
+    const response = await api.get("/reportes/ventas-periodo", {
+      params: {
+        tipo_periodo: tipoPeriodo,
+        fecha_inicio: fechaInicio,
+        fecha_fin: fechaFin,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error obteniendo ventas por período:", error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene la estacionalidad de los productos (ventas mensuales por producto)
+ */
+export const obtenerEstacionalidadProductos = async (anio) => {
+  try {
+    const response = await api.get("/reportes/estacionalidad-productos", {
+      params: { anio },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error obteniendo estacionalidad de productos:", error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene el análisis de costos vs ganancias
+ */
+export const obtenerCostosGanancias = async (productoId = null, categoriaId = null) => {
+  try {
+    const response = await api.get("/reportes/costos-ganancias", {
+      params: { producto_id: productoId, categoria_id: categoriaId },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error obteniendo costos vs ganancias:", error);
+    return [];
+  }
+};
+
+/**
+ * Obtiene el porcentaje de pedidos cancelados y su evolución histórica
+ */
+export const obtenerMetricasCancelaciones = async (mesesHistorial = 3) => {
+  try {
+    const response = await api.get("/reportes/pedidos-cancelados", {
+      params: { meses_historial: mesesHistorial },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error obteniendo métricas de cancelaciones:", error);
+    return {
+      total_pedidos: 0,
+      pedidos_cancelados: 0,
+      porcentaje_cancelados: 0,
+      ultimos_3_meses: {},
+    };
+  }
 };

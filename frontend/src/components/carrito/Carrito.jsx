@@ -51,7 +51,7 @@ const Carrito = () => {
   const cargarProductos = async () => {
     try {
       const data = await listarProductos();
-      setProductos(data);
+      setProductos(data.productos);
     } catch (error) {
       console.error("Error cargando productos", error);
     }
