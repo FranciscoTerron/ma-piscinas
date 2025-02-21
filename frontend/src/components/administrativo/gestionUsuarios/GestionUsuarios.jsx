@@ -41,7 +41,7 @@ const GestionUsuarios = () => {
   const [filtroRol, setFiltroRol] = useState(""); 
   const [totalUsuarios, setTotalUsuarios] = useState(0);
   const [paginaActual, setPaginaActual] = useState(1);
-  const usuariosPorPagina = 3;
+  const usuariosPorPagina = 10;
   const totalPaginas = Math.ceil(totalUsuarios / usuariosPorPagina);
 
   useEffect(() => {

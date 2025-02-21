@@ -13,9 +13,7 @@ import {
 
 
 const VerUsuario = ({ usuario, isOpen, onClose }) => {
-  console.log("USUARIO",usuario);
   if (!usuario) return null;
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalOverlay bg="rgba(0, 0, 0, 0.3)" />

@@ -1,6 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, case
+from sqlalchemy.exc import SQLAlchemyError
 from src.gestion.models import Usuario, Rol, CategoriaProducto, Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
@@ -986,28 +987,52 @@ def obtener_usuario_mas_activo(db: Session):
         return {"nombre": "Sin datos", "compras": 0}
 
 def generar_reporte_ventas_por_periodo(db: Session, tipo_periodo: str, fecha_inicio: datetime, fecha_fin: datetime):
-    # Determinar la función de truncamiento de fecha según el tipo de período
-    if tipo_periodo == "diario":
-        trunc_func = func.date
-    elif tipo_periodo == "semanal":
-        trunc_func = lambda x: func.date_trunc('week', x)
-    else:  # mensual
-        trunc_func = lambda x: func.date_trunc('month', x)
+    """
+    Genera un reporte de ventas agrupadas por día, semana o mes.
+    """
 
-    resultados = db.query(
+    # Determinar el motor de base de datos
+    dialect_name = db.bind.dialect.name
+
+    if dialect_name == "sqlite":
+        TRUNC_MAPPING = {
+            "diario": lambda x: func.date(x),
+            "semanal": lambda x: func.strftime('%Y-%W', x),  # Agrupar por semana
+            "mensual": lambda x: func.strftime('%Y-%m', x)  # Agrupar por mes
+        }
+    else:  # PostgreSQL u otros motores compatibles
+        TRUNC_MAPPING = {
+            "diario": lambda x: func.date(x),
+            "semanal": lambda x: func.date_trunc('week', x),
+            "mensual": lambda x: func.date_trunc('month', x)
+        }
+
+    trunc_func = TRUNC_MAPPING.get(tipo_periodo)
+
+    if not trunc_func:
+        raise ValueError("Tipo de período no válido")
+
+    # Consulta optimizada
+    query = db.query(
         trunc_func(Pedido.fecha_creacion).label("periodo"),
         func.sum(Pedido.total).label("total_ventas"),
         func.count(Pedido.id).label("cantidad_pedidos")
     ).filter(
         Pedido.fecha_creacion.between(fecha_inicio, fecha_fin),
         Pedido.estado == "ENTREGADO"
-    ).group_by("periodo").order_by("periodo").all()
+    ).group_by("periodo").order_by("periodo")
 
-    return [{
-        "periodo": str(res.periodo),
-        "total_ventas": res.total_ventas,
-        "cantidad_pedidos": res.cantidad_pedidos
-    } for res in resultados]
+    resultados = query.all()
+
+    return [
+        {
+            "periodo": res.periodo,
+            "total_ventas": res.total_ventas,
+            "cantidad_pedidos": res.cantidad_pedidos
+        }
+        for res in resultados
+    ]
+
 
 def calcular_estacionalidad_productos(db: Session, anio: int):
     subquery = db.query(
@@ -1064,31 +1089,48 @@ def calcular_costos_ganancias(db: Session, producto_id: Optional[int], categoria
         "margen_ganancia": ((res.precio - res.costo) / res.precio * 100) if res.precio > 0 else 0
     } for res in resultados]
 
-def calcular_metricas_cancelaciones(db: Session, meses_historial: int):
-    # Total general
-    total_pedidos = db.query(func.count(Pedido.id)).scalar()
-    cancelados = db.query(func.count(Pedido.id)).filter(
-        Pedido.estado == "CANCELADO"
-    ).scalar()
+def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
+    """
+    Calcula el porcentaje de pedidos cancelados y su evolución histórica en los últimos `meses_historial` meses.
+    """
+    try:
+        # Obtener el total de pedidos y cancelaciones
+        total_pedidos = db.query(func.count(Pedido.id)).scalar() or 0
+        cancelados = db.query(func.count(Pedido.id)).filter(Pedido.estado == "CANCELADO").scalar() or 0
 
-    # Historial últimos N meses
-    fecha_limite = datetime.now() - relativedelta(months=meses_historial)
-    resultados = db.query(
-        func.to_char(Pedido.fecha_creacion, 'YYYY-MM').label("mes"),
-        func.count(Pedido.id).label("total"),
-        func.sum(case((Pedido.estado == "CANCELADO", 1), else_=0)).label("cancelados")
-    ).filter(
-        Pedido.fecha_creacion >= fecha_limite
-    ).group_by("mes").order_by("mes").all()
+        # Calcular fecha límite
+        fecha_limite = datetime.utcnow() - relativedelta(months=meses_historial)
 
-    historial = {
-        res.mes: (res.cancelados / res.total * 100) if res.total > 0 else 0
-        for res in resultados
-    }
+        # Consultar historial de cancelaciones
+        resultados = (
+            db.query(
+                func.strftime('%Y-%m', Pedido.fecha_creacion).label("mes"),  # Compatible con SQLite
+                func.count(Pedido.id).label("total"),
+                func.sum(case([(Pedido.estado == "CANCELADO", 1)], else_=0)).label("cancelados")
+            )
+            .filter(Pedido.fecha_creacion >= fecha_limite)
+            .group_by("mes")
+            .order_by("mes")
+            .all()
+        )
 
-    return {
-        "total_pedidos": total_pedidos,
-        "pedidos_cancelados": cancelados,
-        "porcentaje_cancelados": (cancelados / total_pedidos * 100) if total_pedidos > 0 else 0,
-        "ultimos_3_meses": historial
-    }
+        # Formatear historial
+        historial = {
+            res.mes: round((res.cancelados / res.total * 100), 2) if res.total > 0 else 0
+            for res in resultados
+        }
+
+        return {
+            "total_pedidos": total_pedidos,
+            "pedidos_cancelados": cancelados,
+            "porcentaje_cancelados": round((cancelados / total_pedidos * 100), 2) if total_pedidos > 0 else 0,
+            "ultimos_3_meses": historial,
+        }
+    except SQLAlchemyError as e:
+        print(f"Error en calcular_metricas_cancelaciones: {e}")
+        return {
+            "total_pedidos": 0,
+            "pedidos_cancelados": 0,
+            "porcentaje_cancelados": 0,
+            "ultimos_3_meses": {}
+        }

@@ -8,8 +8,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const storedAuth = sessionStorage.getItem('isAuthenticated');
-    return storedAuth === 'true';
+    return sessionStorage.getItem('isAuthenticated') === 'true';
   });
 
   const [user, setUser] = useState(() => {
@@ -18,60 +17,63 @@ export function AuthProvider({ children }) {
   });
 
   const [userRole, setUserRole] = useState(() => {
-    const storedRole = sessionStorage.getItem('userRole');
-    return storedRole ? storedRole : null;
+    return sessionStorage.getItem('userRole') || null;
   });
 
   const [token, setToken] = useState(() => {
-    const storedToken = sessionStorage.getItem('token');
-    return storedToken ? storedToken : null;
+    return localStorage.getItem('token') || null; 
   });
 
   const [userId, setUserId] = useState(() => {
-    const storedUserId = sessionStorage.getItem('userId');
-    return storedUserId ? storedUserId : null;
+    return sessionStorage.getItem('userId') || null;
   });
 
   const [userName, setUserName] = useState(() => {
-    const storedUserName = sessionStorage.getItem('userName');
-    return storedUserName ? storedUserName : null;
+    return sessionStorage.getItem('userName') || null;
   });
 
   useEffect(() => {
-    if (isAuthenticated !== null) {
-      sessionStorage.setItem('isAuthenticated', isAuthenticated);
+    if (isAuthenticated) {
+      sessionStorage.setItem('isAuthenticated', 'true');
+    } else {
+      sessionStorage.removeItem('isAuthenticated');
     }
-    if (user !== null) {
+
+    if (user) {
       sessionStorage.setItem('user', JSON.stringify(user));
     } else {
       sessionStorage.removeItem('user');
     }
-    if (token !== null) {
-      sessionStorage.setItem('token', token);
-    } else {
-      sessionStorage.removeItem('token');
-    }
-    if (userId !== null) {
-      sessionStorage.setItem('userId', userId);
-    } else {
-      sessionStorage.removeItem('userId');
-    }
-    if (userName !== null) {
-      sessionStorage.setItem('userName', userName);
-    } else {
-      sessionStorage.removeItem('userName');
-    }
-    if (userRole !== null) {
+
+    if (userRole) {
       sessionStorage.setItem('userRole', userRole);
     } else {
       sessionStorage.removeItem('userRole');
     }
-  }, [isAuthenticated, user, token, userId, userName, userRole]);
 
-  const login = (userData, authToken, userIdValue, userNameValue, userRole) => {
+    if (userId) {
+      sessionStorage.setItem('userId', userId);
+    } else {
+      sessionStorage.removeItem('userId');
+    }
+
+    if (userName) {
+      sessionStorage.setItem('userName', userName);
+    } else {
+      sessionStorage.removeItem('userName');
+    }
+
+    if (token) {
+      localStorage.setItem('token', token);
+    } else {
+      localStorage.removeItem('token');
+    }
+  }, [isAuthenticated, user, userRole, userId, userName, token]);
+
+  const login = (userData, authToken, userIdValue, userNameValue, role) => {
     setIsAuthenticated(true);
     setUser(userData);
-    setUserRole(userRole);
+    setUserRole(role);
     setUserId(userIdValue);
     setUserName(userNameValue);
     setToken(authToken);
@@ -82,14 +84,11 @@ export function AuthProvider({ children }) {
     setUser(null);
     setUserId(null);
     setUserName(null);
+    setUserRole(null); 
     setToken(null);
 
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('userName');
-    sessionStorage.removeItem('userRole');
-    sessionStorage.removeItem('token');
+    sessionStorage.clear();
+    localStorage.removeItem('token');
   };
 
   return (

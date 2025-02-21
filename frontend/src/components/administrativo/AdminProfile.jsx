@@ -10,14 +10,13 @@ import {
   Button,
   Container,
   useToast,
+  Heading
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   FaUsersCog, 
   FaMoneyCheckAlt,
-  FaBell, 
-  FaCog,
   FaChevronRight, 
   FaTruck,
   FaChartBar
@@ -173,35 +172,35 @@ const AdminProfile = () => {
   ];
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <HStack justify="space-between" mb={6}>
-        <VStack align="flex-start" spacing={1}>
-          <Text fontSize="3xl" fontWeight="bold" color="gray.800">
-            Panel de Control
-          </Text>
-          <Text color="gray.600">Bienvenido, {userName}</Text>
-        </VStack>
-        <HStack spacing={4}>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaBell} w={5} h={5} />
-          </Button>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaCog} w={5} h={5} />
-          </Button>
-        </HStack>
-      </HStack>
-
-      <Badge 
-        colorScheme="blue" 
-        fontSize="sm" 
-        px={3} 
-        py={1} 
-        borderRadius="full"
-        mb={6}
+    <Container maxW="container.xl" bg="white" 
+    borderRadius="2xl" 
+    boxShadow="xl"
+    overflow="hidden">
+      {/* Header */}
+      <Box 
+        bg="blue.50" 
+        p={4} 
+        color="blue.600"
+        borderRadius="2xl"
+        mb={2}
       >
-        {userRole}
-      </Badge>
-
+        <Heading size="lg" mb={2}>
+          📊 Panel de Control
+        </Heading>
+        <Text fontSize="md" opacity={0.9}>
+          Bienvenido, {userName}
+        </Text>
+        <Badge 
+          colorScheme="blue" 
+          fontSize="sm" 
+          px={3} 
+          py={1} 
+          borderRadius="full"
+        >
+          {userRole}
+        </Badge>
+      </Box>
+      
       <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6} mb={6}>
         {cards.map((card) => (
           <Box

@@ -742,10 +742,15 @@ def obtener_ventas_por_periodo(
     current_user: schemas.Usuario = Depends(get_current_user)
 ):
     """
-    Genera reporte de ventas agrupado por período temporal
-    Ejemplo de uso: /reportes/ventas-periodo?tipo_periodo=diario&fecha_inicio=2023-01-01&fecha_fin=2023-12-31
+    Genera un reporte de ventas agrupado por período temporal.
     """
+    print(f"Recibido: {tipo_periodo}, {fecha_inicio}, {fecha_fin}")
+    # Validar que fecha_inicio < fecha_fin
+    if fecha_inicio >= fecha_fin:
+        raise HTTPException(status_code=400, detail="fecha_inicio debe ser menor que fecha_fin")
+
     return services.generar_reporte_ventas_por_periodo(db, tipo_periodo, fecha_inicio, fecha_fin)
+
 
 # ============================================================
 # Estacionalidad de productos

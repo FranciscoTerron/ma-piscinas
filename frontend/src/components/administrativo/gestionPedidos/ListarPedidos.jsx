@@ -28,14 +28,10 @@ const ListarPedidos = ({ pedidos }) => {
   };
 
   const handleVerUsuario = async (usuarioId) => {
-    console.log("Usuario ID recibido:", usuarioId); // 👀 Verifica si el ID es correcto
     const usuario = await obtenerUsuarioPorId(usuarioId);
-    console.log("Usuario obtenido:", usuario); // Debería mostrar los datos
     setUsuarioSeleccionado(usuario);
     onUsuarioOpen();
   };
-
-  
 
   return (
     <>

@@ -39,10 +39,11 @@ const PerfilUsuario = () => {
   const usuarioId = userId;
 
   useEffect(() => {
-    const fetchUsuario = async () => {
+
+    const fetchUsuario = async (pagina, tamanio) => {
       try {
-        const usuarios = await listarUsuarios();
-        const userData = usuarios.find((user) => Number(user.id) === Number(usuarioId));
+        const usuarios = await listarUsuarios(pagina, tamanio);
+        const userData = usuarios.usuarios.find((user) => Number(user.id) === Number(usuarioId));
         setUsuario(userData);
       } catch (error) {
         console.error("Error al obtener usuario", error);

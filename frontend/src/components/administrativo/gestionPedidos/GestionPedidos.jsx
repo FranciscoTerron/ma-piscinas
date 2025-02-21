@@ -37,10 +37,6 @@ const GestionPedidos = () => {
     setPaginaActual(prev => prev + 1);
   };
 
-  const confirmarEliminacion = (usuario) => {
-    setUsuarioAEliminar(usuario);
-    onOpen();
-  };
 
   return (
     <Container maxW="container.xl" py={8}>
