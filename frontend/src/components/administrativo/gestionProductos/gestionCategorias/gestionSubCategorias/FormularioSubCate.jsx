@@ -28,10 +28,10 @@ const FormularioSubCate = ({ isOpen, onClose, onSubmitSuccess, subcategoria }) =
 
   useEffect(() => {
     // Cargar la lista de categorías al abrir el modal
-    const fetchCategorias = async () => {
+    const fetchCategorias = async (pagina,tamanio) => {
       try {
-        const response = await listarCategorias();
-        setCategorias(response); 
+        const response = await listarCategorias(pagina,tamanio);
+        setCategorias(response.categorias); 
       } catch (error) {
         console.error("Error al obtener las categorías:", error);
         toast({

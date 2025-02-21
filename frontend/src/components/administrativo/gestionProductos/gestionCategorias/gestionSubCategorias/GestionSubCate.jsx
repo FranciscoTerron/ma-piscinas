@@ -7,6 +7,8 @@ import {
   Button,
   useToast,
   useDisclosure,
+  Box,
+  Input
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
 import { listarSubcategorias, listarCategorias } from "../../../../../services/api"; // Importa listarCategorias
@@ -18,18 +20,25 @@ const GestionSubCate = () => {
   const [subcategorias, setSubcategorias] = useState([]);
   const [categorias, setCategorias] = useState([]); // Estado para almacenar las categorías
   const [subcategoriaSeleccionada, setSubcategoriaSeleccionada] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [subcategoriasPorPagina, setSubCategoriasPorPagina] = useState(3);
+  
+  const [totalSubCategorias, setTotalSubCategorias] = useState(0);
+  const [busqueda, setBusqueda] = useState("");
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const totalPaginas = Math.ceil(totalSubCategorias / subcategoriasPorPagina);
 
   useEffect(() => {
-    cargarSubcategorias();
-    cargarCategorias(); // Cargar la lista de categorías al montar el componente
-  }, []);
+    cargarSubcategorias(paginaActual,subcategoriasPorPagina);
+    cargarCategorias(paginaActual,subcategoriasPorPagina); // Cargar la lista de categorías al montar el componente
+  }, [paginaActual,subcategoriasPorPagina]);
 
-  const cargarSubcategorias = async () => {
+  const cargarSubcategorias = async (pagina,tamanio) => {
     try {
-      const data = await listarSubcategorias();
-      setSubcategorias(data);
+      const data = await listarSubcategorias(pagina,tamanio);
+      setSubcategorias(data.subcategorias);
+      setTotalSubCategorias(data.total)
     } catch (error) {
       toast({
         title: "Error",
@@ -44,7 +53,7 @@ const GestionSubCate = () => {
   const cargarCategorias = async () => {
     try {
       const data = await listarCategorias();
-      setCategorias(data);
+      setCategorias(data.categorias);
     } catch (error) {
       toast({
         title: "Error",
@@ -61,6 +70,25 @@ const GestionSubCate = () => {
     onOpen();
   };
 
+
+  const handleSiguientePagina = () => {
+    setPaginaActual(prev => prev + 1);
+  };
+
+  const handlePaginaAnterior = () => {
+    if (paginaActual > 1) {
+      setPaginaActual(paginaActual - 1);
+    }
+  };
+
+  const subCategoriasFiltradas = (subcategorias || []).filter((subcategoria) => {
+    const textoBusqueda = busqueda.toLowerCase();
+    return (
+      subcategoria.nombre.toLowerCase().includes(textoBusqueda)
+    );
+  });
+  
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
@@ -75,7 +103,7 @@ const GestionSubCate = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {subcategorias.length} subcategorías registradas
+                {totalSubCategorias} subcategorías registradas
               </Text>
             </VStack>
           </HStack>
@@ -84,19 +112,53 @@ const GestionSubCate = () => {
           </Button>
         </HStack>
 
+        <Input
+          placeholder="Buscar por nombre o descripción..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          bg="white"
+          border="1px"
+          borderColor="gray.300"
+          _focus={{ borderColor: "blue.500" }}
+          color="black"
+           _placeholder={{ color: "gray.500" }}
+        />
+        
+
         <ListaCategorias
-          subcategorias={subcategorias}
+          subcategorias={subCategoriasFiltradas}
           categorias={categorias} 
           onEditar={handleEditarSubcategoria}
-          onEliminar={cargarSubcategorias}
+          onEliminar={() => cargarCategorias(paginaActual, subcategoriasPorPagina)}
         />
 
         <FormularioCategoria
           isOpen={isOpen}
           onClose={onClose}
           subcategoria={subcategoriaSeleccionada} 
-          onSubmitSuccess={cargarSubcategorias}
+          onSubmitSuccess={() => cargarCategorias(paginaActual, subcategoriasPorPagina)}
         />
+         <HStack spacing={2} justify="center" mt={4} color="black">
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={handlePaginaAnterior}
+              isDisabled={paginaActual === 1}
+            >
+              Anterior
+            </Button>
+            <Text>
+              Página {paginaActual} de {totalPaginas}
+            </Text>
+            <Button
+              colorScheme="blue"
+              size="sm"
+              onClick={handleSiguientePagina}
+              isDisabled={paginaActual >= totalPaginas}
+            >
+            Siguiente
+          </Button>
+        </HStack>
       </VStack>
     </Container>
   );

@@ -148,11 +148,13 @@ def crear_categoria(db: Session, categoria: schemas.CategoriaProductoBase) -> Ca
 
 
 # Listar todas las categorías
-def listar_categorias(db: Session) -> List[CategoriaProducto]:
-    categorias = db.query(CategoriaProducto).all()
-    if not categorias:
-        return []  # Devuelve una lista vacía si no hay categorías
-    return categorias
+def listar_categorias(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(CategoriaProducto).count()
+    categorias = (db.query(CategoriaProducto)
+                  .offset((pagina - 1) * tamanio)
+                  .limit(tamanio)
+                  .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "categorias": categorias}
 
 # Obtener una categoría por ID
 def obtener_categoria_por_id(db: Session, categoria_id: int) -> CategoriaProducto:
@@ -194,11 +196,13 @@ def crear_subcategoria(db: Session, subcategoria: schemas.SubCategoriaBase, cate
     return db_subcategoria
 
 # Listar todas las subcategorías
-def listar_subcategorias(db: Session) -> List[SubCategoria]:
-    subcategorias = db.query(SubCategoria).all()
-    if not subcategorias:
-        return []  # Devuelve una lista vacía si no hay subcategorías
-    return subcategorias
+def listar_subcategorias(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(SubCategoria).count()
+    subcategorias = (db.query(SubCategoria)
+                  .offset((pagina - 1) * tamanio)
+                  .limit(tamanio)
+                  .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "subcategorias": subcategorias}
 
 # Obtener una subcategoría por ID
 def obtener_subcategoria_por_id(db: Session, subcategoria_id: int) -> SubCategoria:
@@ -263,9 +267,13 @@ def crear_producto(
     return db_producto
 
 # Listar todos los productos
-def listar_productos(db: Session) -> list[schemas.Producto]:
-    return db.query(Producto).all()
-
+def listar_productos(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Producto).count()
+    productos = (db.query(Producto)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "productos": productos}
 # Obtener un producto por ID
 def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
     producto = db.query(Producto).filter(Producto.id == producto_id).first()
@@ -598,11 +606,14 @@ def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
 
 #Listar pedidos
 
-def listar_pedidos(db: Session):
-    """
-    Retorna una lista con todos los pedidos existentes.
-    """
-    return db.query(Pedido).all()
+def listar_pedidos(db: Session, pagina: int, tamanio: int) -> dict:
+    total = db.query(Pedido).count()
+    pedidos = (db.query(Pedido)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "pedidos": pedidos}
+
 
 #Obtener pedido por ID
 

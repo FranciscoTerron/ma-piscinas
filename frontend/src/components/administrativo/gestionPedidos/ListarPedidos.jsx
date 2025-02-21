@@ -40,21 +40,22 @@ const ListarPedidos = ({ pedidos }) => {
   return (
     <>
       <Box
+        p={6}
         bg="white"
         borderRadius="xl"
-        boxShadow="sm"
-        border="1px solid"
+        boxShadow="lg"
+        border="1px"
         borderColor="gray.200"
-        overflowX="auto"
+        overflow="hidden"
       >
         <Table variant="simple" minWidth="800px">
-          <Thead bg="gray.100">
+          <Thead bg="blue.50">
             <Tr>
-              <Th textAlign="center" color="gray.700" width="10%">ID</Th>
-              <Th textAlign="left" color="gray.700" width="20%">Fecha</Th>
-              <Th textAlign="right" color="gray.700" width="20%">Total</Th>
-              <Th textAlign="center" color="gray.700" width="15%">Estado</Th>
-              <Th textAlign="center" color="gray.700" width="35%">Acciones</Th>
+              <Th textAlign="center" color="blue.600" width="10%">ID</Th>
+              <Th textAlign="left" color="blue.600" width="20%">Fecha</Th>
+              <Th textAlign="right" color="blue.600" width="20%">Total</Th>
+              <Th textAlign="center" color="blue.600" width="15%">Estado</Th>
+              <Th textAlign="center" color="blue.600" width="35%">Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>

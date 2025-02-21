@@ -11,6 +11,9 @@ const AdministracionProductos = () => {
   const [subcategorias, setSubcategorias] = useState([]);
   const [productos, setProductos] = useState([]);
   const toast = useToast();
+  const[totalCategorias,setTotalCategorias] = useState(0);
+  const[totalSubCategorias,setTotalSubCategorias] = useState(0);
+  const[totalProductos,setTotalProductos] = useState(0);
 
   useEffect(() => {
     cargarProductos();
@@ -18,25 +21,28 @@ const AdministracionProductos = () => {
     cargarSubcategorias();
   }, []);
 
-  const cargarCategorias = async () => {
-    try {
-      const data = await listarCategorias();
-      setCategorias(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo cargar la lista de categorias.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
 
-  const cargarSubcategorias = async () => {
+  const cargarCategorias = async (paginaActual,categoriaPorPagina) => {
+     try {
+       const data = await listarCategorias(paginaActual,categoriaPorPagina);
+       setCategorias(data.categorias);
+       setTotalCategorias(data.total)
+     } catch (error) {
+       toast({
+         title: "Error",
+         description: "No se pudo cargar la lista de categorias.",
+         status: "error",
+         duration: 5000,
+         isClosable: true,
+       });
+     }
+   };
+
+  const cargarSubcategorias = async (paginaActual,subcategoriaPorPagina) => {
     try {
-      const data = await listarSubcategorias();
-      setSubcategorias(data);
+      const data = await listarSubcategorias(paginaActual,subcategoriaPorPagina);
+      setSubcategorias(data.subcategorias);
+      setTotalSubCategorias(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -51,7 +57,8 @@ const AdministracionProductos = () => {
   const cargarProductos = async () => {
     try {
       const data = await listarProductos();
-      setProductos(data);
+      setProductos(data.productos);
+      setTotalProductos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -70,7 +77,7 @@ const AdministracionProductos = () => {
       description: 'Administrar categorias para productos',
       route: '/administracionDeCategorias', 
       icon: FaContao,
-      stats: `${categorias.length} categorias | ${subcategorias.length} subcategorias`
+      stats: `${totalCategorias} categorias | ${totalSubCategorias} subcategorias`
     },
     { 
       id: 'product', 
@@ -78,7 +85,7 @@ const AdministracionProductos = () => {
       description: 'Inventario, precios y categorías',
       route: '/gestionProductos', 
       icon: AiFillProduct,
-      stats: `${productos.length} productos`
+      stats: `${totalProductos} productos`
     },
   ];
 

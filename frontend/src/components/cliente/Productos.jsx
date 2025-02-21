@@ -31,8 +31,8 @@ const Productos = () => {
         listarProductos(),
         listarCategorias()
       ]);
-      setProductos(productosData);
-      setCategorias(categoriasData);
+      setProductos(productosData.productos);
+      setCategorias(categoriasData.categorias);
     } catch (error) {
       toast({
         title: "Error",

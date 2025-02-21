@@ -40,7 +40,7 @@ const ListarDetallesPedido = ({ pedidoId, isOpen, onClose }) => {
   const cargarProductos = async () => {
     try {
       const data = await listarProductos();
-      setProductos(data);
+      setProductos(data.productos);
     } catch (error) {
       toast({
         title: "Error",

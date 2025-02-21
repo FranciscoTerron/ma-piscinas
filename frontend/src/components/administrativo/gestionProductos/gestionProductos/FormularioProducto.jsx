@@ -67,7 +67,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   const cargarCategorias = async () => {
     try {
       const data = await listarCategorias();
-      setCategorias(data);
+      setCategorias(data.categorias);
     } catch (error) {
       toast({
         title: "Error",

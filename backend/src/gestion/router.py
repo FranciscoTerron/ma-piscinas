@@ -145,9 +145,9 @@ def crear_categoria(categoria: schemas.CategoriaProductoBase, db: Session = Depe
 # ============================================================
 # Ruta para listar categorias
 # ============================================================
-@router.get("/categorias", response_model=list[schemas.CategoriaProducto])
-def listar_categorias(db: Session = Depends(get_db)):
-    return services.listar_categorias(db)
+@router.get("/categorias")
+def listar_categorias(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+    return services.listar_categorias(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener categoria por id
@@ -182,9 +182,9 @@ def crear_subcategoria(categoria_id: int, subcategoria: schemas.SubCategoriaBase
 # ============================================================
 # Ruta para listar subcategorías
 # ============================================================
-@router.get("/subcategorias", response_model=list[schemas.SubCategoria])
-def listar_subcategorias(db: Session = Depends(get_db)):
-    return services.listar_subcategorias(db)
+@router.get("/subcategorias")
+def listar_subcategorias(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+    return services.listar_subcategorias(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener una subcategoría por ID
@@ -240,10 +240,9 @@ def crear_producto(
 # Ruta para listar productos
 # ============================================================
 
-@router.get("/productos", response_model=List[schemas.Producto])
-def listar_productos(db: Session = Depends(get_db)):
-    return services.listar_productos(db)
-
+@router.get("/productos")
+def listar_productos(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+    return services.listar_productos(db, pagina, tamanio)
 # ============================================================
 # Ruta para obtener los productos por ID
 # ============================================================
@@ -466,12 +465,12 @@ def crear_pedido(pedido: schemas.PedidoCreate, db: Session = Depends(get_db)):
 # ============================================================
 # Ruta para listar todos los pedidos
 # ============================================================
-@router.get("/pedidos", response_model=List[schemas.Pedido])
-def listar_pedidos(db: Session = Depends(get_db)):
+@router.get("/pedidos")
+def listar_pedidos(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
     """
     Retorna la lista de todos los pedidos.
     """
-    return services.listar_pedidos(db)
+    return services.listar_pedidos(db, pagina, tamanio)
 
 # ============================================================
 # Ruta para obtener un pedido por su ID

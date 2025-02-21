@@ -95,10 +95,15 @@ export const crearProducto = async (productoData) => {
   return response.data;
 };
 
-export const listarProductos = async () => {
-  const response = await api.get("/productos");
-  return response.data;
-};
+export const listarProductos = async (paginaActual, subProductosPorPagina) => {
+    const response = await api.get("/productos", {
+      params: {
+        pagina: paginaActual,
+        tamanio: subProductosPorPagina
+      }
+    });
+    return response.data;
+  };
 
 export const obtenerProducto = async (productoId) => {
   const response = await api.get(`/productos/${productoId}`);
@@ -116,8 +121,13 @@ export const eliminarProducto = async (productoId) => {
 
 // Servicios para categoria
 //---------------------------------------------------------------------
-export const listarCategorias = async () => {
-  const response = await api.get("/categorias");
+export const listarCategorias = async (paginaActual, categoriasPorPagina) => {
+  const response = await api.get("/categorias", {
+    params: {
+      pagina: paginaActual,
+      tamanio: categoriasPorPagina
+    }
+  });
   return response.data;
 };
 
@@ -148,8 +158,13 @@ export const eliminarCategoria = async (categoriaId) => {
 //---------------------------------------------------------------------
 
 // Listar todas las subcategorías
-export const listarSubcategorias = async () => {
-  const response = await api.get("/subcategorias");
+export const listarSubcategorias = async (paginaActual, subCategoriasPorPagina) => {
+  const response = await api.get("/subcategorias", {
+    params: {
+      pagina: paginaActual,
+      tamanio: subCategoriasPorPagina
+    }
+  });
   return response.data;
 };
 
@@ -291,8 +306,13 @@ export const obtenerUsuarioMasActivo = async () => {
 
 // Servicios para Pedidos
 // ---------------------------------------------------------------------
-export const listarPedidos = async () => {
-  const response = await api.get("/pedidos");
+export const listarPedidos = async (paginaActual, pedidosPorPagina) => {
+  const response = await api.get("/pedidos", {
+    params: {
+      pagina: paginaActual,
+      tamanio: pedidosPorPagina
+    }
+  });
   return response.data;
 };
 

@@ -10,16 +10,20 @@ const AdministracionCategorias = () => {
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubCategorias] = useState([]);
   const toast = useToast();
+  const[totalCategorias,setTotalCategorias] = useState(0);
+  const[totalSubCategorias,setTotalSubCategorias] = useState(0);
+
 
   useEffect(() => {
     cargarSubCategorias();
     cargarCategorias();
   }, []);
 
-  const cargarCategorias = async () => {
+  const cargarCategorias = async (paginaActual,categoriaPorPagina) => {
     try {
-      const data = await listarCategorias();
-      setCategorias(data);
+      const data = await listarCategorias(paginaActual,categoriaPorPagina);
+      setCategorias(data.categorias);
+      setTotalCategorias(data.total)
     } catch (error) {
       toast({
         title: "Error",
@@ -31,10 +35,11 @@ const AdministracionCategorias = () => {
     }
   };
 
-  const cargarSubCategorias = async () => {
+  const cargarSubCategorias = async (paginaActual,subcategoriaPorPagina) => {
     try {
-      const data = await listarSubcategorias();
-      setSubCategorias(data);
+      const data = await listarSubcategorias(paginaActual,subcategoriaPorPagina);
+      setSubCategorias(data.subcategorias);
+      setTotalSubCategorias(data.total)
     } catch (error) {
       toast({
         title: "Error",
@@ -53,7 +58,7 @@ const AdministracionCategorias = () => {
       description: 'Administrar categorias para productos',
       route: '/gestionCategorias', 
       icon: FaContao,
-      stats: `${categorias.length} categorias`
+      stats: `${totalCategorias} categorias`
     },
     { 
       id: 'product', 
@@ -61,7 +66,7 @@ const AdministracionCategorias = () => {
       description: 'Administrar subcategorías para productos',
       route: '/gestionSubcategorias', 
       icon: AiFillProduct,
-      stats: `${subcategorias.length} subcategorias`
+      stats: `${totalSubCategorias} subcategorias`
     },
   ];
 

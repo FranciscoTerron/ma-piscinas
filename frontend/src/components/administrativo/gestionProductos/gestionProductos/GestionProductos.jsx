@@ -7,6 +7,8 @@ import {
   Button,
   useToast,
   useDisclosure,
+  Input,
+  Select
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
 import { listarProductos, listarCategorias } from "../../../../services/api";
@@ -18,18 +20,26 @@ const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [productosPorPagina, setProductosPorPagina] = useState(3);
+  const [totalProductos, setTotalProductos] = useState(0);
+  const [busqueda, setBusqueda] = useState("");
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
 
-  useEffect(() => {
-    cargarProductos();
-    cargarCategorias();
-  }, []);
+
+ useEffect(() => {
+  cargarProductos();
+  cargarCategorias();
+  }, [paginaActual, productosPorPagina]);
 
   const cargarProductos = async () => {
     try {
-      const data = await listarProductos();
-      setProductos(data);
+      const data = await listarProductos(paginaActual, productosPorPagina);
+      setProductos(data.productos);
+      setTotalProductos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -44,7 +54,7 @@ const GestionProductos = () => {
   const cargarCategorias = async () => {
     try {
       const data = await listarCategorias();
-      setCategorias(data);
+      setCategorias(data.categorias);
     } catch (error) {
       toast({
         title: "Error",
@@ -61,6 +71,37 @@ const GestionProductos = () => {
     onOpen();
   };
 
+  
+  const handleSiguientePagina = () => {
+    setPaginaActual(prev => prev + 1);
+  };
+
+  const handlePaginaAnterior = () => {
+    if (paginaActual > 1) {
+      setPaginaActual(paginaActual - 1);
+    }
+  };
+  // Manejar cambio en categoría seleccionada
+const handleCategoriaChange = (e) => {
+  setCategoriaSeleccionada(e.target.value);
+};
+
+// Manejar cambio en categoría seleccionada
+  const obtenerNombreCategoria = (categoriaId) => {
+    const categoria = categorias.find((cat) => cat.id === categoriaId);
+    return categoria ? categoria.nombre : "Sin categoría";
+  };
+  
+const productosFiltrados = productos.filter((producto) => {
+  const textoBusqueda = busqueda.toLowerCase();
+  const coincideBusqueda =producto.nombre.toLowerCase().includes(textoBusqueda) ||  producto.descripcion.toLowerCase().includes(textoBusqueda);
+  const nombreCategoria = String(producto.categoria_id);
+  const coincideNombre = categoriaSeleccionada ? nombreCategoria === categoriaSeleccionada : true; 
+
+  return coincideBusqueda && coincideNombre;
+});
+
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={6} align="stretch">
@@ -75,7 +116,7 @@ const GestionProductos = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {productos.length} productos disponibles
+                {totalProductos} productos disponibles
               </Text>
             </VStack>
           </HStack>
@@ -84,11 +125,40 @@ const GestionProductos = () => {
           </Button>
         </HStack>
 
+        <HStack spacing={4}>
+          <Input
+            placeholder="Buscar por nombre o descripción..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            color="black"
+            _placeholder={{ color: "gray.500" }}
+          />
+
+          <Select
+            placeholder="Filtrar por categoría"
+            value={categoriaSeleccionada}
+            onChange={handleCategoriaChange}
+            bg="white"
+            border="1px"
+            borderColor="gray.300"
+            color="black"
+          >
+            {categorias.map((categoria) => (
+              <option key={categoria.id} value={categoria.id}>
+                {categoria.nombre}
+              </option>
+            ))}
+          </Select>
+        </HStack>
+
         <ListaProductos
-          productos={productos}
+          productos={productosFiltrados}
           categorias={categorias} 
           onEditar={handleEditarProducto}
-          onEliminar={cargarProductos}
+          onEliminar={cargarProductos} // Eliminar parámetros
         />
 
         <FormularioProducto
@@ -96,8 +166,30 @@ const GestionProductos = () => {
           onClose={onClose}
           categorias={categorias}
           producto={productoSeleccionado}
-          onSubmitSuccess={cargarProductos}
+          onEliminar={cargarProductos} // Eliminar parámetros
         />
+         
+         <HStack spacing={2} justify="center" mt={4} color="black">
+           <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={handlePaginaAnterior}
+            isDisabled={paginaActual === 1}
+          >
+          Anterior
+          </Button>
+          <Text>
+           Página {paginaActual} de {totalPaginas}
+          </Text>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={handleSiguientePagina}
+            isDisabled={paginaActual >= totalPaginas}
+          > 
+          Siguiente
+         </Button>
+        </HStack>
       </VStack>
     </Container>
   );

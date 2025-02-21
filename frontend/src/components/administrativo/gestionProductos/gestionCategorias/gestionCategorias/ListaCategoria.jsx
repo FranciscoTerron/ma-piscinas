@@ -63,14 +63,14 @@ const ListaCategorias = ({ categorias, onEditar, onEliminar }) => {
 
   return (
     <>
-      <Box bg="white" borderRadius="xl" boxShadow="sm" border="1px solid" borderColor="gray.200" overflow="hidden">
+      <Box p={6} bg="white" borderRadius="xl" boxShadow="lg" border="1px" borderColor="gray.200" overflow="hidden">
         <Table variant="simple">
-          <Thead bg="gray.50">
+          <Thead bg="blue.50">
             <Tr>
-              <Th textAlign="center" color="gray.600">ID</Th>
-              <Th textAlign="left" color="gray.600">Nombre</Th>
-              <Th textAlign="left" color="gray.600">Descripción</Th>
-              <Th textAlign="center" color="gray.600">Acciones</Th>
+              <Th textAlign="center" color="blue.600">ID</Th>
+              <Th textAlign="left" color="blue.600">Nombre</Th>
+              <Th textAlign="left" color="blue.600">Descripción</Th>
+              <Th textAlign="center" color="blue.600">Acciones</Th>
             </Tr>
           </Thead>
           <Tbody>

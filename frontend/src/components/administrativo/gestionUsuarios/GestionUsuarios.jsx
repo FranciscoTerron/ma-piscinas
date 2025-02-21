@@ -180,7 +180,7 @@ const GestionUsuarios = () => {
                 </Text>
               </HStack>
               <Text color="gray.500" fontSize="sm">
-                {usuarios.length} usuarios registrados
+                {totalUsuarios} usuarios registrados
               </Text>
             </VStack>
           </HStack>

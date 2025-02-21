@@ -30,10 +30,10 @@ const AdminProfile = () => {
   const { userName, userRole } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [totalUsuarios, setTotalUsuarios] = useState(0);
-  const [productos, setProductos] = useState([]);
+  const [totalProductos, setProductos] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [envios, setEnvios] = useState([]);
-  const [pedidos, setPedidos] = useState([]);
+  const [totalPedidos, setTotalPedidos] = useState([]);
   const [reportes, setReportes] = useState([]);
   const toast = useToast();
 
@@ -67,7 +67,7 @@ const AdminProfile = () => {
   const cargarProductos = async () => {
     try {
       const data = await listarProductos();
-      setProductos(data);
+      setProductos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -127,7 +127,7 @@ const AdminProfile = () => {
   const cargarPedidos = async () => {
     try {
       const data = await listarPedidos();
-      setPedidos(data);
+      setTotalPedidos(data.total);
     } catch (error) {
       toast({
         title: "Error",
@@ -154,7 +154,7 @@ const AdminProfile = () => {
       description: 'Inventario, precios y categorías',
       route: '/administracionDeProductos', 
       icon: AiFillProduct,
-      stats: `${productos.length} productos`
+      stats: `${totalProductos} productos`
     },
     { 
       id: 'pagos', 
@@ -178,7 +178,7 @@ const AdminProfile = () => {
       description: 'Pedidos y sus detalles',
       route: '/pedidos', 
       icon: FaChartBar,
-      stats: `${pedidos.length} pedidos`
+      stats: `${totalPedidos} pedidos`
     },
     { 
       id: 'reportes', 
