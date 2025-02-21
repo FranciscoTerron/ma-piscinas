@@ -38,7 +38,7 @@ const Reportes = () => {
     try {
       const usuario = await obtenerUsuarioMasActivo();
       const ventasData = await obtenerVentasPorPeriodo(tipoPeriodo, fechaInicio, fechaFin);
-      const cancelacionesData = await obtenerMetricasCancelaciones(6);
+      const cancelacionesData = await obtenerMetricasCancelaciones(3);
       
       setCancelaciones(cancelacionesData);
       setUsuarioMasActivo(usuario);

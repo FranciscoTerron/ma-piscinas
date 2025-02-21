@@ -1097,7 +1097,7 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
         # Obtener el total de pedidos y cancelaciones
         total_pedidos = db.query(func.count(Pedido.id)).scalar() or 0
         cancelados = db.query(func.count(Pedido.id)).filter(Pedido.estado == "CANCELADO").scalar() or 0
-
+        
         # Calcular fecha límite
         fecha_limite = datetime.utcnow() - relativedelta(months=meses_historial)
 
@@ -1106,7 +1106,7 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
             db.query(
                 func.strftime('%Y-%m', Pedido.fecha_creacion).label("mes"),  # Compatible con SQLite
                 func.count(Pedido.id).label("total"),
-                func.sum(case([(Pedido.estado == "CANCELADO", 1)], else_=0)).label("cancelados")
+                func.sum(case((Pedido.estado == "CANCELADO", 1), else_=0)).label("cancelados")
             )
             .filter(Pedido.fecha_creacion >= fecha_limite)
             .group_by("mes")
@@ -1119,7 +1119,7 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
             res.mes: round((res.cancelados / res.total * 100), 2) if res.total > 0 else 0
             for res in resultados
         }
-
+        
         return {
             "total_pedidos": total_pedidos,
             "pedidos_cancelados": cancelados,

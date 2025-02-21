@@ -18,7 +18,6 @@ const RegistrarEnvios = () => {
   const totalPaginas = Math.ceil(total / porPagina);
   const [busqueda, setBusqueda] = useState("");
   const [filtroMetodo, setFiltroMetodo] = useState("");
-  console.log("ACA", envios);
   useEffect(() => {
     cargarEnvios();
     cargarMetodosEnvio();

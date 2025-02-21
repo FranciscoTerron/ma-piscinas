@@ -435,7 +435,7 @@ export const obtenerCostosGanancias = async (productoId = null, categoriaId = nu
 /**
  * Obtiene el porcentaje de pedidos cancelados y su evolución histórica
  */
-export const obtenerMetricasCancelaciones = async (mesesHistorial = 3) => {
+export const obtenerMetricasCancelaciones = async (mesesHistorial) => {
   try {
     const response = await api.get("/reportes/pedidos-cancelados", {
       params: { meses_historial: mesesHistorial },
