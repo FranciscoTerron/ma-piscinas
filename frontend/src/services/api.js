@@ -98,6 +98,7 @@ export const listarRoles = async () => {
 // Servicios para productos------------------------------------------------
 export const crearProducto = async (productoData) => {
   const response = await api.post("/productos", productoData);
+  console.log("ACA", response);
   return response.data;
 };
 
@@ -110,7 +111,6 @@ export const listarProductos = async (paginaActual, subProductosPorPagina) => {
     });
     return response.data;
   };
-
 export const obtenerProducto = async (productoId) => {
   const response = await api.get(`/productos/${productoId}`);
   return response.data;
@@ -125,6 +125,17 @@ export const eliminarProducto = async (productoId) => {
   await api.delete(`/productos/${productoId}`);
 };
 
+export const verificarNombreProducto = async (nombre) => {
+  try {
+    const response = await api.get("/productos/verificar-nombre", {
+      params: { nombre }
+    });
+    return response.data.existe;
+  } catch (error) {
+    console.error("Error en verificarNombreProducto:", error.response?.data || error.message);
+    throw error;
+  }
+};
 // Servicios para categoria
 //---------------------------------------------------------------------
 export const listarCategorias = async (paginaActual, categoriasPorPagina) => {
@@ -163,13 +174,14 @@ export const eliminarCategoria = async (categoriaId) => {
 // Servicios para subcategorías
 //---------------------------------------------------------------------
 
-// Listar todas las subcategorías
-export const listarSubcategorias = async (paginaActual, subCategoriasPorPagina) => {
+// Listar todas las subcategorías con filtro opcional por categoria_id
+export const listarSubcategorias = async (paginaActual, subCategoriasPorPagina, categoriaId = null) => {
   const response = await api.get("/subcategorias", {
     params: {
       pagina: paginaActual,
-      tamanio: subCategoriasPorPagina
-    }
+      tamanio: subCategoriasPorPagina,
+      categoria_id: categoriaId, // Añadimos el filtro por categoría
+    },
   });
   return response.data;
 };

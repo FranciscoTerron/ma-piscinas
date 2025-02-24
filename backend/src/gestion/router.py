@@ -197,8 +197,13 @@ def crear_subcategoria(categoria_id: int, subcategoria: schemas.SubCategoriaBase
 # Ruta para listar subcategorías
 # ============================================================
 @router.get("/subcategorias")
-def listar_subcategorias(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
-    return services.listar_subcategorias(db, pagina, tamanio)
+def listar_subcategorias(
+    pagina: int = 1,
+    tamanio: int = 10,
+    categoria_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    return services.listar_subcategorias(db, pagina, tamanio, categoria_id)
 
 # ============================================================
 # Ruta para obtener una subcategoría por ID
@@ -230,33 +235,82 @@ def eliminar_subcategoria(subcategoria_id: int, db: Session = Depends(get_db)):
 # ============================================================
 @router.post("/productos", response_model=schemas.Producto, status_code=status.HTTP_201_CREATED)
 def crear_producto(
-    nombre: str = Form(...),
-    descripcion: str = Form(...),
-    precio: float = Form(...),
-    stock: int = Form(...),
-    categoria_id: int = Form(...),
-    imagen: UploadFile = File(...),
-    usuario_id: int = Form(...),  
+    nombre: str = Form(..., description="Nombre del producto"),
+    descripcion: str = Form(..., description="Descripción del producto"),
+    precio: float = Form(..., description="Precio de venta"),
+    stock: int = Form(..., description="Stock disponible"),
+    categoria_id: int = Form(..., description="ID de la categoría"),
+    imagen: UploadFile = File(..., description="Imagen del producto"),
+    costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
+    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
+    usuario_id: int = Form(..., description="ID del usuario que crea"),
     db: Session = Depends(get_db)
 ):
-    nuevo_producto = services.crear_producto(db, nombre, descripcion, precio, stock, categoria_id, imagen)
+    print(f"Recibiendo datos para crear producto: nombre={nombre}, precio={precio}, costo_compra={costo_compra}, usuario_id={usuario_id}, subcategoria_id={subcategoria_id}, imagen.type={type(imagen)}")
+    try:
+        nuevo_producto = services.crear_producto(
+            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id  # Añadido subcategoria_id
+        )
 
-    services.registrar_actividad(db, schemas.ActividadCreate(
-        tipo_evento="CREACION_PRODUCTO",
-        descripcion=f"Se creó el producto {nombre}",
-        referencia_id=nuevo_producto.id,
-        usuario_id=usuario_id
-    ))
+        services.registrar_actividad(db, schemas.ActividadCreate(
+            tipo_evento="CREACION_PRODUCTO",
+            descripcion=f"Se creó el producto {nombre}",
+            referencia_id=nuevo_producto.id,
+            usuario_id=usuario_id
+        ))
 
-    return nuevo_producto
+        return nuevo_producto
+    except Exception as e:
+        print.error(f"Error al procesar la creación: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+
+# ============================================================
+# Ruta para actualizar producto
+# ============================================================
+@router.put("/productos/{producto_id}", response_model=schemas.Producto)
+def actualizar_producto(
+    producto_id: int,
+    nombre: str = Form(..., description="Nombre del producto"),
+    descripcion: str = Form(..., description="Descripción del producto"),
+    precio: float = Form(..., description="Precio de venta"),
+    stock: int = Form(..., description="Stock disponible"),
+    categoria_id: int = Form(..., description="ID de la categoría"),
+    imagen: Optional[UploadFile] = File(None, description="Nueva imagen del producto"),
+    costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
+    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
+    usuario_id: int = Form(..., description="ID del usuario que actualiza"),
+    db: Session = Depends(get_db),
+):
+    print(f"Recibiendo datos para actualizar producto {producto_id}: nombre={nombre}, precio={precio}, costo_compra={costo_compra}, usuario_id={usuario_id}, subcategoria_id={subcategoria_id}, imagen.type={type(imagen) if imagen else None}")
+    try:
+        return services.actualizar_producto(
+            db, producto_id, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id  # Añadido subcategoria_id
+        )
+    except Exception as e:
+        print.error(f"Error al procesar la actualización: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 # ============================================================
 # Ruta para listar productos
 # ============================================================
 
 @router.get("/productos")
-def listar_productos(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
-    return services.listar_productos(db, pagina, tamanio)
+def listar_productos(pagina: int = 1, tamanio: int = 10, categoria_id:Optional[int] = None, db: Session = Depends(get_db)):
+    return services.listar_productos(db, pagina, tamanio, categoria_id)
+
+
+# ============================================================
+# Ruta para verificar si un nombre de producto ya existe
+# ============================================================
+@router.get("/productos/verificar-nombre")
+def verificar_nombre_producto(
+    nombre: str = Query(..., description="Nombre del producto a verificar"),
+    db: Session = Depends(get_db)
+):
+    existe = services.verificar_nombre_producto(db, nombre)
+    return {"existe": existe}
 # ============================================================
 # Ruta para obtener los productos por ID
 # ============================================================
@@ -266,29 +320,13 @@ def obtener_producto(producto_id: int, db: Session = Depends(get_db)):
     return services.obtener_producto_por_id(db, producto_id)
 
 # ============================================================
-# Ruta para actualizar productos
-# ============================================================
-@router.put("/productos/{producto_id}", response_model=schemas.Producto)
-def actualizar_producto(
-    producto_id: int,
-    nombre: str = Form(...),
-    descripcion: str = Form(...),
-    precio: float = Form(...),
-    stock: int = Form(...),
-    categoria_id: int = Form(...),
-    imagen: Optional[UploadFile] = File(None),
-    usuario_id: int = Form(...),
-    db: Session = Depends(get_db),
-):
-    return services.actualizar_producto(db, producto_id, nombre, descripcion, precio, stock, categoria_id, imagen)
-
-# ============================================================
 # Ruta para eliminar productos
 # ============================================================
 @router.delete("/productos/{producto_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_producto(producto_id: int, db: Session = Depends(get_db)):
     services.eliminar_producto(db, producto_id)
     return None
+
 
 
 # RUTAS PARA ENVIO

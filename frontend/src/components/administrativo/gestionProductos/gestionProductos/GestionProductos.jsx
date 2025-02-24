@@ -11,7 +11,7 @@ import {
   Select
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
-import { listarProductos, listarCategorias } from "../../../../services/api";
+import { listarProductos, listarCategorias, listarSubcategorias } from "../../../../services/api";
 import GoBackButton from "../../../GoBackButton";
 import FormularioProducto from "./FormularioProducto";
 import ListaProductos from "./ListaProductos";
@@ -19,7 +19,8 @@ import ListaProductos from "./ListaProductos";
 const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [subcategorias, setSubcategorias] = useState([]);  
+    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const [productosPorPagina, setProductosPorPagina] = useState(3);
   const [totalProductos, setTotalProductos] = useState(0);
@@ -28,13 +29,29 @@ const GestionProductos = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const totalPaginas = Math.ceil(totalProductos / productosPorPagina);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("");
+  const [subcategoriaSeleccionada, setSubCategoriaSeleccionada] = useState("");
 
 
  useEffect(() => {
   cargarProductos();
   cargarCategorias();
+
   }, [paginaActual, productosPorPagina]);
 
+// Nuevo efecto para cargar subcategorías cuando cambia la categoría seleccionada
+useEffect(() => {
+  const cargarSubcategorias = async () => {
+    if (categoriaSeleccionada) {
+      try {
+        const data = await listarSubcategorias(1, 100, categoriaSeleccionada);
+        setSubcategorias(data.subcategorias || []);
+      } catch (error) {
+        console.error("Error al cargar subcategorías:", error);
+      }
+    }
+  };
+  cargarSubcategorias();
+}, [categoriaSeleccionada]);
   const cargarProductos = async () => {
     try {
       const data = await listarProductos(paginaActual, productosPorPagina);
@@ -93,7 +110,11 @@ const productosFiltrados = productos.filter((producto) => {
   const nombreCategoria = String(producto.categoria_id);
   const coincideNombre = categoriaSeleccionada ? nombreCategoria === categoriaSeleccionada : true; 
 
-  return coincideBusqueda && coincideNombre;
+  const coincideSubcategoria = subcategoriaSeleccionada 
+    ? producto.subcategoria_id === subcategoriaSeleccionada
+    : true;
+    
+  return coincideBusqueda && coincideNombre && coincideSubcategoria;
 });
 
 
@@ -162,18 +183,14 @@ const productosFiltrados = productos.filter((producto) => {
           onEliminar={cargarProductos} // Eliminar parámetros
         />
 
-        <FormularioProducto
-          isOpen={isOpen}
-          onClose={onClose}
-          onSubmitSuccess={() => {
-            cargarProductos(); // Recargar productos después de agregar o actualizar
-          }}
-        
-          categorias={categorias}
-          producto={productoSeleccionado}
-          onEliminar={cargarProductos} // Eliminar parámetros
-          
-        />
+          <FormularioProducto
+            isOpen={isOpen}
+            onClose={onClose}
+            onSubmitSuccess={cargarProductos}
+            categorias={categorias}
+            subcategorias={subcategorias} // Pasar subcategorías al formulario
+            producto={productoSeleccionado}
+          />
          
          <HStack spacing={2} justify="center" mt={4} color="black">
            <Button

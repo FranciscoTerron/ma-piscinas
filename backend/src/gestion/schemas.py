@@ -140,30 +140,26 @@ class Token(BaseModel):
 
 # ============================================================
 # Esquema base para Producto
-# ============================================================
+# ============================================================# En tu archivo de schemas.py
 class ProductoBase(BaseModel):
     nombre: str = Field(..., example="Laptop Gamer")
     descripcion: str = Field(..., example="Laptop con procesador i7 y 16GB RAM")
     precio: float = Field(..., example=1200.50)
     stock: int = Field(..., example=10)
     imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
+    costo_compra: Optional[float] = Field(None, example=800.00)  # Nuevo campo
+    subcategoria_id: Optional[int] = Field(None, example=1)  # Nuevo campo opcional
 
-# ============================================================
-# Esquema para crear un producto
-# ============================================================
 class ProductoCreate(ProductoBase):
     categoria_id: int = Field(..., example=1)
 
-# ============================================================
-# Esquema para producto base
-# ============================================================
 class Producto(ProductoBase):
     id: int = Field(..., example=1)
+    codigo: str = Field(..., example="PROD-001")
     categoria_id: int
 
     class Config:
         from_attributes = True
-
 #Categoria
 #-------------------------------------------------------------------------------------
 # ============================================================

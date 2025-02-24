@@ -241,13 +241,13 @@ def crear_subcategoria(db: Session, subcategoria: schemas.SubCategoriaBase, cate
     db.refresh(db_subcategoria)
     return db_subcategoria
 
-# Listar todas las subcategorías
-def listar_subcategorias(db: Session, pagina: int, tamanio: int) -> dict:
-    total = db.query(SubCategoria).count()
-    subcategorias = (db.query(SubCategoria)
-                  .offset((pagina - 1) * tamanio)
-                  .limit(tamanio)
-                  .all())
+# Lista subcategorias 
+def listar_subcategorias(db: Session, pagina: int, tamanio: int, categoria_id: Optional[int] = None) -> dict:
+    query = db.query(SubCategoria)
+    if categoria_id:
+        query = query.filter(SubCategoria.categoria_id == categoria_id)
+    total = query.count()
+    subcategorias = query.offset((pagina - 1) * tamanio).limit(tamanio).all()
     return {"total": total, "pagina": pagina, "tamanio": tamanio, "subcategorias": subcategorias}
 
 # Obtener una subcategoría por ID
@@ -281,12 +281,20 @@ def crear_producto(
     precio: float,
     stock: int,
     categoria_id: int,
-    imagen: UploadFile
+    costo_compra: Optional[float],
+    imagen: UploadFile,
+    subcategoria_id: Optional[int] = None  # Asegúrate de que esté aquí
 ) -> Producto:
     # Verificar que la categoría exista
     categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
+
+    # Verificar que la subcategoría exista y pertenezca a la categoría, si se proporciona
+    if subcategoria_id:
+        subcategoria = db.query(SubCategoria).filter(SubCategoria.id == subcategoria_id).first()
+        if not subcategoria or subcategoria.categoria_id != categoria_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subcategoría no encontrada o no pertenece a la categoría")
 
     # Subir la imagen a Cloudinary
     try:
@@ -295,39 +303,34 @@ def crear_producto(
         if not image_url:
             raise Exception("No se obtuvo URL de la imagen")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
-    
-    # Crear el producto utilizando la URL de la imagen
-    db_producto = Producto(
-        nombre=nombre,
-        descripcion=descripcion,
-        precio=precio,
-        stock=stock,
-        imagen=image_url,  # Aquí se almacena la URL que devuelve Cloudinary
-        categoria_id=categoria_id
-    )
-    db.add(db_producto)
-    db.commit()
-    db.refresh(db_producto)
-    return db_producto
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
 
-# Listar todos los productos
-def listar_productos(db: Session, pagina: int, tamanio: int) -> dict:
-    total = db.query(Producto).count()
-    productos = (db.query(Producto)
-                .offset((pagina - 1) * tamanio)
-                .limit(tamanio)
-                .all())
-    return {"total": total, "pagina": pagina, "tamanio": tamanio, "productos": productos}
-# Obtener un producto por ID
-def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
-    producto = db.query(Producto).filter(Producto.id == producto_id).first()
-    if not producto:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
-    return producto
+    # Generar un código único
+    ultimo_producto = db.query(Producto).order_by(Producto.id.desc()).first()
+    nuevo_numero = (ultimo_producto.id + 1) if ultimo_producto else 1
+    codigo = f"PROD-{nuevo_numero:03d}"
 
-# Actualizar un producto
+    # Crear el producto
+    try:
+        db_producto = Producto(
+            codigo=codigo,
+            nombre=nombre,
+            descripcion=descripcion,
+            precio=precio,
+            stock=stock,
+            imagen=image_url,
+            categoria_id=categoria_id,
+            subcategoria_id=subcategoria_id,  # Asegúrate de que esté aquí
+            costo_compra=costo_compra
+        )
+        db.add(db_producto)
+        db.commit()
+        db.refresh(db_producto)
+        print(f"Producto creado con ID: {db_producto.id}, Subcategoría ID: {db_producto.subcategoria_id}")  # Agrega esto para depurar
+        return db_producto
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al guardar el producto: {str(e)}")
 def actualizar_producto(
     db: Session,
     producto_id: int,
@@ -336,41 +339,63 @@ def actualizar_producto(
     precio: float,
     stock: int,
     categoria_id: int,
-    imagen: Optional[UploadFile] = None
+    costo_compra: Optional[float],
+    imagen: Optional[UploadFile] = None,
+    subcategoria_id: Optional[int] = None  # Nuevo parámetro opcional
 ) -> Producto:
-    # Obtener el producto existente
     producto = obtener_producto_por_id(db, producto_id)
     
-    # Actualizar los campos de texto
-    producto.nombre = nombre
-    producto.descripcion = descripcion
-    producto.precio = precio
-    producto.stock = stock
-    producto.categoria_id = categoria_id
+    try:
+        producto.nombre = nombre
+        producto.descripcion = descripcion
+        producto.precio = precio
+        producto.stock = stock
+        producto.categoria_id = categoria_id
+        producto.subcategoria_id = subcategoria_id  # Actualizar subcategoria_id
+        producto.costo_compra = costo_compra
 
-    # Si se envió un nuevo archivo de imagen, subirlo a Cloudinary
-    if imagen:
-        try:
+        if imagen:
             upload_result = cloudinary.uploader.upload(imagen.file, folder="productos")
             image_url = upload_result.get("secure_url")
             if not image_url:
                 raise Exception("No se obtuvo URL de la imagen")
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error al subir la imagen a Cloudinary: {str(e)}"
-            )
-        producto.imagen = image_url
+            producto.imagen = image_url
 
-    db.commit()
-    db.refresh(producto)
+        db.commit()
+        db.refresh(producto)
+        return producto
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al actualizar el producto: {str(e)}")
+def listar_productos(db: Session, pagina: int, tamanio: int, categoria_id: Optional[int] = None):
+    query = db.query(Producto)
+    if categoria_id:
+        query = query.filter(Producto.categoria_id == categoria_id)
+    total = query.count()
+    productos = query.offset((pagina - 1) * tamanio).limit(tamanio).all()
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "productos": productos}
+
+# Obtener un producto por ID
+def obtener_producto_por_id(db: Session, producto_id: int) -> Producto:
+    producto = db.query(Producto).filter(Producto.id == producto_id).first()
+    if not producto:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado")
     return producto
+
 
 # Eliminar un producto
 def eliminar_producto(db: Session, producto_id: int):
     producto = obtener_producto_por_id(db, producto_id)
     db.delete(producto)
     db.commit()
+    
+# Verifica nombre del producto
+def verificar_nombre_producto(db: Session, nombre: str) -> bool:
+    if not nombre or nombre.strip() == "":
+        return False
+    nombre = nombre.strip()
+    producto = db.query(Producto).filter(Producto.nombre == nombre).first()
+    return producto is not None
     
    
 #ENVIO

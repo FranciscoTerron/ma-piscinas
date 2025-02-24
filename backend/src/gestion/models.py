@@ -105,19 +105,21 @@ class Producto(BaseModel):
     __tablename__ = "productos"
 
     id = Column(Integer, primary_key=True, index=True)
+    codigo = Column(String, unique=True, index=True, nullable=False)  # Nuevo campo único
     nombre: Mapped[str] = mapped_column(String, index=True)
     descripcion: Mapped[str] = mapped_column(String, index=True)
     precio: Mapped[float] = mapped_column(Float, index=True)
     stock: Mapped[int] = mapped_column(Integer, index=True)
     imagen: Mapped[str] = mapped_column(String, index=True)
+    costo_compra: Mapped[float] = mapped_column(Float, nullable=True, default=None)  # Nuevo campo
+    subcategoria_id = Column(Integer, ForeignKey("subcategorias.id"), nullable=True)  # Añadimos esto
 
     carritoDetalle = relationship("CarritoDetalle", back_populates="producto")
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
     categoria = relationship("CategoriaProducto", back_populates="productos")
     pedidoDetalle = relationship("PedidoDetalle", back_populates="producto")
-    
     descuentos = relationship("Descuento", back_populates="producto")
-    
+    subcategoria = relationship("SubCategoria", back_populates="productos")  # Relación bidireccional    
 class CategoriaProducto(BaseModel):
     __tablename__ = "categorias"
 
@@ -137,6 +139,7 @@ class SubCategoria(BaseModel):
     nombre: Mapped[str] = mapped_column(String, index=True)
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
     categoria = relationship("CategoriaProducto", back_populates="subcategorias")
+    productos = relationship("Producto", back_populates="subcategoria")  # Relación inversa
 
 # MODELO EMPRESA
 class Empresa(BaseModel):
