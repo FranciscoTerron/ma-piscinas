@@ -1141,6 +1141,7 @@ def calcular_costos_ganancias(db: Session, producto_id: Optional[int], categoria
         Producto.id,
         Producto.nombre,
         Producto.precio,
+        Producto.costo_compra,
         func.sum(PedidoDetalle.cantidad).label("unidades_vendidas")
     ).join(PedidoDetalle).join(Pedido).filter(
         Pedido.estado == "ENTREGADO"
@@ -1156,9 +1157,9 @@ def calcular_costos_ganancias(db: Session, producto_id: Optional[int], categoria
     return [{
         "producto_id": res.id,
         "nombre": res.nombre,
-        "costo_total": res.precio * res.unidades_vendidas,
-        "ganancia_total": (res.precio - res.precio) * res.unidades_vendidas,
-        "margen_ganancia": ((res.precio - res.precio) / res.precio * 100) if res.precio > 0 else 0
+        "costo_total": res.costo_compra * res.unidades_vendidas,
+        "ganancia_total": (res.precio - res.costo_compra) * res.unidades_vendidas,
+        "margen_ganancia": ((res.precio - res.costo_compra) / res.precio * 100) if res.precio > 0 else 0
     } for res in resultados]
 
 def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):

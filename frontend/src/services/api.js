@@ -6,7 +6,6 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-let isRedirecting = false;
 
 // Interceptores para manejar tokens de autenticación
 api.interceptors.request.use((config) => {
@@ -21,17 +20,34 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      if (!isRedirecting) {
-        isRedirecting = true; 
-        localStorage.removeItem('token');
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      // Intenta refrescar el token
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${API_URL}/refresh-token`, { refreshToken });
+          const { token } = response.data;
+          localStorage.setItem('token', token);
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        } catch (error) {
+          // Si el refresh token falla, redirige al login
+          localStorage.clear();
+          window.location.href = '/login';
+        }
+      } else {
+        localStorage.clear();
         window.location.href = '/login';
       }
     }
     return Promise.reject(error);
   }
 );
+
 
 // Servicios para Usuarios-------------------------------------------
 export const registrar = async (userData) => {

@@ -8,16 +8,16 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('isAuthenticated') === 'true';
+    return localStorage.getItem('isAuthenticated') === 'true';
   });
 
   const [user, setUser] = useState(() => {
-    const storedUser = sessionStorage.getItem('user');
+    const storedUser = localStorage.getItem('user');
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
   const [userRole, setUserRole] = useState(() => {
-    return sessionStorage.getItem('userRole') || null;
+    return localStorage.getItem('userRole') || null;
   });
 
   const [token, setToken] = useState(() => {
@@ -25,42 +25,42 @@ export function AuthProvider({ children }) {
   });
 
   const [userId, setUserId] = useState(() => {
-    return sessionStorage.getItem('userId') || null;
+    return localStorage.getItem('userId') || null;
   });
 
   const [userName, setUserName] = useState(() => {
-    return sessionStorage.getItem('userName') || null;
+    return localStorage.getItem('userName') || null;
   });
 
   useEffect(() => {
     if (isAuthenticated) {
-      sessionStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('isAuthenticated', 'true');
     } else {
-      sessionStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('isAuthenticated');
     }
 
     if (user) {
-      sessionStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify(user));
     } else {
-      sessionStorage.removeItem('user');
+      localStorage.removeItem('user');
     }
 
     if (userRole) {
-      sessionStorage.setItem('userRole', userRole);
+      localStorage.setItem('userRole', userRole);
     } else {
-      sessionStorage.removeItem('userRole');
+      localStorage.removeItem('userRole');
     }
 
     if (userId) {
-      sessionStorage.setItem('userId', userId);
+      localStorage.setItem('userId', userId);
     } else {
-      sessionStorage.removeItem('userId');
+      localStorage.removeItem('userId');
     }
 
     if (userName) {
-      sessionStorage.setItem('userName', userName);
+      localStorage.setItem('userName', userName);
     } else {
-      sessionStorage.removeItem('userName');
+      localStorage.removeItem('userName');
     }
 
     if (token) {
@@ -87,8 +87,7 @@ export function AuthProvider({ children }) {
     setUserRole(null); 
     setToken(null);
 
-    sessionStorage.clear();
-    localStorage.removeItem('token');
+    localStorage.clear();
   };
 
   return (

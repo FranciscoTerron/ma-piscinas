@@ -117,7 +117,7 @@ const Reportes = () => {
             ) : (
               <Grid 
                 templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} 
-                gap={8}
+                gap={4}
               >
                 <GridItem>
                   {/* Filtros Card */}
@@ -127,6 +127,7 @@ const Reportes = () => {
                     borderRadius="xl"
                     borderWidth="1px"
                     borderColor="gray.100"
+                    mb={12} 
                   >
                     <CardBody>
                       <Flex align="center" mb={4}>
@@ -162,7 +163,7 @@ const Reportes = () => {
 
                         <HStack spacing={4}>
                           <Box flex={1}>
-                            <Text mb={2} fontSize="sm" color="gray.600">
+                            <Text mb={3} fontSize="sm" color="gray.600">
                               Fecha Inicio
                             </Text>
                             <Input 
@@ -176,7 +177,7 @@ const Reportes = () => {
                             />
                           </Box>
                           <Box flex={1}>
-                            <Text mb={2} fontSize="sm" color="gray.600">
+                            <Text mb={4} fontSize="sm" color="gray.600">
                               Fecha Fin
                             </Text>
                             <Input 
@@ -199,6 +200,7 @@ const Reportes = () => {
                           loadingText="Actualizando..."
                           _hover={{ transform: 'translateY(-1px)' }}
                           transition="all 0.2s"
+                          mb={12}
                         >
                           🔍 Actualizar Reportes
                         </Button>
@@ -209,9 +211,8 @@ const Reportes = () => {
                     <ReporteVentas data={ventas} />
                   </Card>
                 </GridItem>
-                
-                {/* Reporte Cancelaciones */}
                 <GridItem>
+                  {/* Usuario Más Activo */}
                   <Card 
                     bg="white" 
                     shadow="lg" 
@@ -221,18 +222,18 @@ const Reportes = () => {
                     mb={6}
                   >
                     <CardBody color={"black"}>
-                        <Flex align="center" mb={6}>
-                          <Text fontSize="xl" fontWeight="bold" color="gray.700">
-                            ❌ Cancelaciones
-                          </Text>
-                          <Badge ml={3} colorScheme="green">
-                            Cancelado
-                          </Badge>
-                        </Flex>
-                        <ReporteCancelaciones data={cancelaciones} />
-                      </CardBody>
+                      <Flex align="center" mb={6}>
+                        <Text fontSize="xl" fontWeight="bold" color="gray.700">
+                          🏆 Top 5 Usuarios Más Activo
+                        </Text>
+                        <Badge ml={3} colorScheme="green">
+                          Destacado
+                        </Badge>
+                      </Flex>
+                      <ReporteUsuariosMasActivos data={usuariosMasActivos} />
+                    </CardBody>
                   </Card>
-
+                  {/* Reporte Estacionalidad */}
                   <Card 
                     bg="white" 
                     shadow="lg" 
@@ -255,32 +256,8 @@ const Reportes = () => {
                   </Card>
                 </GridItem>
 
-                {/* Usuario Más Activo */}
                 <GridItem>
-                  <Card 
-                    bg="white" 
-                    shadow="lg" 
-                    borderRadius="xl"
-                    borderWidth="1px"
-                    borderColor="gray.100"
-                    mb={6}
-                  >
-                    <CardBody color={"black"}>
-                      <Flex align="center" mb={6}>
-                        <Text fontSize="xl" fontWeight="bold" color="gray.700">
-                          🏆 Top 5 Usuarios Más Activo
-                        </Text>
-                        <Badge ml={3} colorScheme="green">
-                          Destacado
-                        </Badge>
-                      </Flex>
-                      <ReporteUsuariosMasActivos data={usuariosMasActivos} />
-                    </CardBody>
-                  </Card>
-                </GridItem>
-
-                {/* Costo vs Ganancia */}
-                <GridItem>
+                  {/* Costo vs Ganancia */}
                   <Card 
                     bg="white" 
                     shadow="lg" 
@@ -300,6 +277,29 @@ const Reportes = () => {
                       </Flex>
                       <ReporteCostosGanancias data={costosGanancias} />
                     </CardBody>
+                  </Card>
+                </GridItem>
+                <GridItem>
+                  {/* Reporte Cancelaciones */}
+                  <Card 
+                    bg="white" 
+                    shadow="lg" 
+                    borderRadius="xl"
+                    borderWidth="1px"
+                    borderColor="gray.100"
+                    mb={6}
+                  >
+                    <CardBody color={"black"}>
+                        <Flex align="center" mb={6}>
+                          <Text fontSize="xl" fontWeight="bold" color="gray.700">
+                            ❌ Cancelaciones
+                          </Text>
+                          <Badge ml={3} colorScheme="green">
+                            Cancelado
+                          </Badge>
+                        </Flex>
+                        <ReporteCancelaciones data={cancelaciones} />
+                      </CardBody>
                   </Card>
                 </GridItem>
               </Grid>
