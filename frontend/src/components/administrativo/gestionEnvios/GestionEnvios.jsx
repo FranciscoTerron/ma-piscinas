@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Grid, VStack, HStack, Text, Icon, Button, Container, useToast } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { FaTruck, FaClipboardList, FaBell, FaCog, FaChevronRight } from "react-icons/fa";
+import { FaTruck, FaClipboardList,  FaChevronRight } from "react-icons/fa";
 import GoBackButton from "../../GoBackButton";
 import { listarEnvios, listarMetodosEnvio } from "../../../services/api";
 
@@ -77,14 +77,6 @@ const GestionEnvios = () => {
               Administra los envíos y métodos de envío
             </Text>
           </VStack>
-        </HStack>
-        <HStack spacing={4}>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaBell} w={5} h={5} />
-          </Button>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaCog} w={5} h={5} />
-          </Button>
         </HStack>
       </HStack>
 

@@ -242,7 +242,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     if (formData.costoCompra !== "") {
       formDataToSend.append("costo_compra", parseFloat(formData.costoCompra));
     }
-    if (formData.subcategoriaId) {  // Aseguramos que se envíe subcategoria_id
+    if (formData.subcategoriaId) {  
       formDataToSend.append("subcategoria_id", parseInt(formData.subcategoriaId));
     }
     if (formData.imagen && formData.imagen instanceof File) {

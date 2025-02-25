@@ -178,7 +178,8 @@ const productosFiltrados = productos.filter((producto) => {
 
         <ListaProductos
           productos={productosFiltrados}
-          categorias={categorias} 
+          categorias={categorias}
+          subcategorias={subcategorias} 
           onEditar={handleEditarProducto}
           onEliminar={cargarProductos} // Eliminar parámetros
         />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Grid, VStack, HStack, Text, Icon, Button, Container, useToast,} from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
-import {  FaContao ,  FaBell,  FaCog,  FaChevronRight } from "react-icons/fa";
+import {  FaContao ,  FaCog,  FaChevronRight } from "react-icons/fa";
 import { AiFillProduct,} from "react-icons/ai";
 import { listarSubcategorias, listarCategorias } from "../../../../services/api";
 import GoBackButton from "../../../GoBackButton";
@@ -85,14 +85,6 @@ const AdministracionCategorias = () => {
               </Text>
             </VStack>
           </HStack>
-        </HStack>
-        <HStack spacing={4}>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaBell} w={5} h={5} />
-          </Button>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaCog} w={5} h={5} />
-          </Button>
         </HStack>
       </HStack>
 

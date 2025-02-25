@@ -70,8 +70,10 @@ const FormularioSubCate = ({ isOpen, onClose, onSubmitSuccess, subcategoria }) =
 
   const handleSubmit = async () => {
     try {
+      let nuevaSubcategoria;
       if (subcategoria) {
         await actualizarSubcategoria(subcategoria.id, formData);
+        nuevaSubcategoria = { ...subcategoria, ...formData }; // Combinar datos existentes con los actualizados
         toast({
           title: "Éxito",
           description: "Subcategoría actualizada correctamente.",
@@ -80,7 +82,7 @@ const FormularioSubCate = ({ isOpen, onClose, onSubmitSuccess, subcategoria }) =
           isClosable: true,
         });
       } else {
-        await crearSubcategoria(formData);
+        nuevaSubcategoria = await crearSubcategoria(formData); // Suponiendo que crearSubcategoria devuelve la subcategoría creada
         toast({
           title: "Éxito",
           description: "Subcategoría agregada correctamente.",
@@ -89,7 +91,7 @@ const FormularioSubCate = ({ isOpen, onClose, onSubmitSuccess, subcategoria }) =
           isClosable: true,
         });
       }
-      onSubmitSuccess();
+      onSubmitSuccess(nuevaSubcategoria); // Pasar la subcategoría al callback
       onClose();
       setFormData(initialSubcategoriaState);
     } catch (error) {

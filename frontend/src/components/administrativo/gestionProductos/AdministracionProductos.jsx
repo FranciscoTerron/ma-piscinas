@@ -105,14 +105,6 @@ const AdministracionProductos = () => {
             </VStack>
           </HStack>
         </HStack>
-        <HStack spacing={4}>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaBell} w={5} h={5} />
-          </Button>
-          <Button variant="ghost" rounded="full" size="sm" colorScheme="gray">
-            <Icon as={FaCog} w={5} h={5} />
-          </Button>
-        </HStack>
       </HStack>
 
       <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6} mb={6}>
