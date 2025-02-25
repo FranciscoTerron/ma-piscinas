@@ -20,7 +20,7 @@ const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);  
-    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const [productosPorPagina, setProductosPorPagina] = useState(3);
   const [totalProductos, setTotalProductos] = useState(0);
@@ -35,28 +35,43 @@ const GestionProductos = () => {
  useEffect(() => {
   cargarProductos();
   cargarCategorias();
-
+  cargarSubcategorias();
   }, [paginaActual, productosPorPagina]);
 
 // Nuevo efecto para cargar subcategorías cuando cambia la categoría seleccionada
-useEffect(() => {
-  const cargarSubcategorias = async () => {
-    if (categoriaSeleccionada) {
-      try {
-        const data = await listarSubcategorias(1, 100, categoriaSeleccionada);
-        setSubcategorias(data.subcategorias || []);
-      } catch (error) {
-        console.error("Error al cargar subcategorías:", error);
+  useEffect(() => {
+    const cargarSubcategorias = async () => {
+      if (categoriaSeleccionada) {
+        try {
+          const data = await listarSubcategorias(1, 100, categoriaSeleccionada);
+          setSubcategorias(data.subcategorias || []);
+        } catch (error) {
+          console.error("Error al cargar subcategorías:", error);
+        }
       }
-    }
-  };
-  cargarSubcategorias();
-}, [categoriaSeleccionada]);
+    };
+    cargarSubcategorias();
+  }, [categoriaSeleccionada]);
   const cargarProductos = async () => {
     try {
       const data = await listarProductos(paginaActual, productosPorPagina);
       setProductos(data.productos);
       setTotalProductos(data.total);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de productos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarSubcategorias = async () => {
+    try {
+      const data = await listarSubcategorias(1, 100);
+      setSubcategorias(data.subcategorias || []);
     } catch (error) {
       toast({
         title: "Error",

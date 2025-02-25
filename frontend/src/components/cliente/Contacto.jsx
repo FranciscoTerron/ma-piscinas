@@ -9,12 +9,13 @@ import {
   Button,
   HStack,
   Link,
+  useToast
 } from '@chakra-ui/react';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
 import emailjs from "emailjs-com";
 
 const Contacto = () => {
-
+  const toast = useToast();
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -38,11 +39,21 @@ const Contacto = () => {
       )
       .then(
         (response) => {
-          alert("Correo enviado con éxito!");
+          toast({
+            title: "¡Correo enviado!",
+            description: `Correo enviado correctamente.`,
+            status: "success",
+            duration: 2000,
+          });
           setFormData({ nombre: "", email: "", telefono: "", mensaje: "" });
         },
         (error) => {
-          alert("Error al enviar el correo.");
+          toast({
+            title: "Error",
+            description: "No se pudo enviar el correo",
+            status: "error",
+            duration: 2000,
+          });
         }
       );
   };
@@ -106,7 +117,7 @@ const Contacto = () => {
                   📞 Lorem ipsum dolor
                 </Text>
                 <Text fontSize="md" color="#00008B" _hover={{ transform: "translateX(5px)", transition: "0.3s ease" }}>
-                  📧 Lorem ipsum dolor sit amet.
+                  📧 ma.piscinas.pagina@gmail.com
                 </Text>
                 <Text fontSize="md" color="#00008B" _hover={{ transform: "translateX(5px)", transition: "0.3s ease" }}>
                   📍 Lorem, ipsum dolor.

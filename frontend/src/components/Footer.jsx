@@ -43,7 +43,7 @@ const ContactSection = () => (
   <VStack align="flex-start" spacing={3}>
     <Text fontWeight="bold">CONTACTANOS</Text>
     <Text>📞 Lorem ipsum dolor</Text>
-    <Text>📧 Lorem ipsum dolor sit amet.</Text>
+    <Text>📧 ma.piscinas.pagina@gmail.com</Text>
     <Text>📍 Lorem, ipsum dolor.</Text>
   </VStack>
 );

@@ -27,17 +27,17 @@
   import { FaTrash, FaEdit } from "react-icons/fa";
   import { eliminarProducto } from "../../../../services/api";
 
-  const ListaProductos = ({ productos, categorias, subcategorias, onEditar, onEliminar }) => { // Añadimos subcategorias como prop
+  const ListaProductos = ({ productos, categorias, subcategorias, onEditar, onEliminar }) => {
     const obtenerNombreCategoria = (categoriaId) => {
       const categoria = (categorias || []).find((cat) => cat.id === categoriaId);
       return categoria ? categoria.nombre : "Sin categoría";
     };
     
-  // En ListaProductos
-  const obtenerNombreSubcategoria = (subcategoriaId) => {
-    const subcategoria = (subcategorias || []).find((sub) => sub.id === subcategoriaId);
-    return subcategoria ? subcategoria.nombre : "Subcategoría no encontrada";
-  };
+    console.log("ACA", subcategorias);
+    const obtenerNombreSubcategoria = (subcategoriaId) => {
+      const subcategoria = (subcategorias || []).find((sub) => sub.id === subcategoriaId);
+      return subcategoria ? subcategoria.nombre : "Subcategoría no encontrada";
+    };
     
     const [productoAEliminar, setProductoAEliminar] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
