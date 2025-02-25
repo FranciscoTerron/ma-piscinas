@@ -114,7 +114,6 @@ export const listarRoles = async () => {
 // Servicios para productos------------------------------------------------
 export const crearProducto = async (productoData) => {
   const response = await api.post("/productos", productoData);
-  console.log("ACA", response);
   return response.data;
 };
 
@@ -481,7 +480,7 @@ export const obtenerMetricasCancelaciones = async (mesesHistorial) => {
 };
 // Crear un descuento
 export const crearDescuento = async (descuentoData) => {
-  const response = await api.post("/descuentos", descuentoData);
+  const response = await api.post("/descuentos/", descuentoData);
   return response.data;
 };
 

@@ -1210,7 +1210,7 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
 
 #DESCUENTO
 #----------------------------------------------------------------------------------
-# Crear un nuevo descuento# Crear un nuevo descuento (VERSIÓN COMPLETA)
+# Crear un nuevo descuento
 def crear_descuento(
     db: Session,
     nombre: str,
@@ -1219,10 +1219,24 @@ def crear_descuento(
     fecha_inicio: datetime,
     fecha_fin: Optional[datetime] = None,
     descripcion: Optional[str] = None,
+    condiciones: Optional[str] = None,
     activo: bool = True,
     producto_id: Optional[int] = None,
+    metodo_pago_id: Optional[int] = None
 ) -> Descuento:
     try:
+        print("Datos recibidos:", {
+            "nombre": nombre,
+            "tipo": tipo,
+            "valor": valor,
+            "fecha_inicio": fecha_inicio,
+            "fecha_fin": fecha_fin,
+            "condiciones": condiciones,
+            "activo": activo,
+            "producto_id": producto_id,
+            "metodo_pago_id": metodo_pago_id
+        })  # Depuración
+
         # Validación básica
         if valor <= 0:
             raise ValueError("El valor del descuento debe ser mayor a 0")
@@ -1236,6 +1250,11 @@ def crear_descuento(
             if not producto:
                 raise HTTPException(status_code=404, detail="Producto no encontrado")
 
+        if metodo_pago_id:
+            metodo_pago = db.query(MetodoPago).filter(MetodoPago.id == metodo_pago_id).first()
+            if not metodo_pago:
+                raise HTTPException(status_code=404, detail="Método de pago no encontrado")
+
         # Crear el descuento
         nuevo_descuento = Descuento(
             nombre=nombre,
@@ -1244,8 +1263,10 @@ def crear_descuento(
             valor=valor,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
+            condiciones=condiciones,
             activo=activo,
             producto_id=producto_id,
+            metodo_pago_id=metodo_pago_id
         )
 
         db.add(nuevo_descuento)

@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Enum as SQLAlchemyEnum,DateTime, func
+from sqlalchemy import Column, Integer, Boolean, String, DateTime, Float, ForeignKey, Enum as SQLAlchemyEnum,DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime, UTC
 from src.models import BaseModel
@@ -223,6 +223,7 @@ class MetodoPago(BaseModel):
     imagen: Mapped[str] = mapped_column(String, index=True)
 
     pago = relationship("Pago", back_populates="metodoPago")
+    descuentos = relationship("Descuento", back_populates="metodo_pago") 
     
 class Actividad(BaseModel):
     __tablename__ = "actividades"
@@ -241,12 +242,17 @@ class Descuento(BaseModel):
     __tablename__ = "descuentos"
 
     id = Column(Integer, primary_key=True, index=True)
+    nombre: Mapped[str] = mapped_column(String, nullable=False) 
+    descripcion: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     tipo: Mapped[TipoDescuento] = mapped_column(SQLAlchemyEnum(TipoDescuento), default=TipoDescuento.PORCENTAJE)
     valor: Mapped[float] = mapped_column(Float, nullable=False)
     fecha_inicio: Mapped[datetime] = mapped_column(DateTime, default=now)
-    fecha_fin: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    fecha_fin: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     condiciones: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    activo: Mapped[bool] = mapped_column(Boolean, default=True) 
 
     # Relaciones
     producto_id = Column(Integer, ForeignKey("productos.id"), nullable=True)
     producto = relationship("Producto", back_populates="descuentos")
+    metodo_pago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=True)
+    metodo_pago = relationship("MetodoPago", back_populates="descuentos")

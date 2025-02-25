@@ -478,8 +478,10 @@ class Descuento(BaseModel):
     valor: float
     fecha_inicio: datetime
     fecha_fin: Optional[datetime] = None
+    condiciones: Optional[str] = None
     activo: bool = True
     producto_id: Optional[int] = None
+    metodo_pago_id: Optional[int] = None
 
 class DescuentoCreate(Descuento):
     pass

@@ -840,20 +840,19 @@ def obtener_metricas_cancelaciones(
 
 # ============================================================
 # Crear Descuento
-# ============================================================# ============================================================
-# Ruta para crear descuento (ACTUALIZADA)
 # ============================================================
 @router.post("/descuentos/")
 def crear_descuento(
     nombre: str = Form(...),
-    descripcion: str = Form(None),
+    descripcion: Optional[str] = Form(None),
     tipo: schemas.TipoDescuentoEnum = Form(...),
     valor: float = Form(...),
     fecha_inicio: datetime = Form(...),
-    fecha_fin: datetime = Form(None),
+    fecha_fin: Optional[datetime] = Form(None),
+    condiciones: Optional[str] = Form(None),
     activo: bool = Form(True),
     producto_id: Optional[int] = Form(None),
-    metodo_pago_id: Optional[int] = Form(None),
+    metodo_pago_id: Optional[int] = Form(None), 
     db: Session = Depends(get_db)
 ):
     try:
@@ -865,6 +864,7 @@ def crear_descuento(
             valor=valor,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
+            condiciones=condiciones,
             activo=activo,
             producto_id=producto_id,
             metodo_pago_id=metodo_pago_id
@@ -872,6 +872,7 @@ def crear_descuento(
         return nuevo_descuento
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
 # ============================================================
 # Listar Descuentos
 # ============================================================
