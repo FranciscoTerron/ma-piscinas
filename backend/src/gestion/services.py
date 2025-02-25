@@ -1210,20 +1210,55 @@ def calcular_metricas_cancelaciones(db: Session, meses_historial: int = 3):
 
 #DESCUENTO
 #----------------------------------------------------------------------------------
-# Crear un nuevo descuento
-def crear_descuento(db: Session, descuento: schemas.DescuentoCreate) -> Descuento:
-    nuevo_descuento = Descuento(
-        nombre=descuento.nombre,
-        tipo=descuento.tipo,  # Porcentaje, monto fijo, etc.
-        valor=descuento.valor,
-        fecha_inicio=descuento.fecha_inicio,
-        fecha_fin=descuento.fecha_fin,
-        activo=descuento.activo
-    )
-    db.add(nuevo_descuento)
-    db.commit()
-    db.refresh(nuevo_descuento)
-    return nuevo_descuento
+# Crear un nuevo descuento# Crear un nuevo descuento (VERSIÓN COMPLETA)
+def crear_descuento(
+    db: Session,
+    nombre: str,
+    tipo: schemas.TipoDescuentoEnum,
+    valor: float,
+    fecha_inicio: datetime,
+    fecha_fin: Optional[datetime] = None,
+    descripcion: Optional[str] = None,
+    activo: bool = True,
+    producto_id: Optional[int] = None,
+) -> Descuento:
+    try:
+        # Validación básica
+        if valor <= 0:
+            raise ValueError("El valor del descuento debe ser mayor a 0")
+            
+        if fecha_fin and fecha_fin < fecha_inicio:
+            raise ValueError("La fecha de fin no puede ser anterior a la de inicio")
+
+        # Verificar relaciones si existen
+        if producto_id:
+            producto = db.query(Producto).filter(Producto.id == producto_id).first()
+            if not producto:
+                raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        # Crear el descuento
+        nuevo_descuento = Descuento(
+            nombre=nombre,
+            descripcion=descripcion,
+            tipo=tipo,
+            valor=valor,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activo=activo,
+            producto_id=producto_id,
+        )
+
+        db.add(nuevo_descuento)
+        db.commit()
+        db.refresh(nuevo_descuento)
+        return nuevo_descuento
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 # Listar descuentos con paginación
 def listar_descuentos(db: Session, pagina: int, tamanio: int) -> dict:
@@ -1253,53 +1288,5 @@ def eliminar_descuento(db: Session, descuento_id: int):
     db.delete(descuento)
     db.commit()
 
-# Aplicar descuento a un pedido
-def aplicar_descuento_pedido(db: Session, pedido_id: int, descuento_id: int) -> Pedido:
-    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
-    descuento = obtener_descuento_por_id(db, descuento_id)
 
-    if not pedido:
-        raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    
-    if not descuento.activo or descuento.fecha_inicio > datetime.utcnow() or descuento.fecha_fin < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Descuento no válido")
-
-    # Aplicar descuento según tipo
-    if descuento.tipo == "porcentaje":
-        pedido.descuento_aplicado = pedido.total * (descuento.valor / 100)
-    elif descuento.tipo == "monto_fijo":
-        pedido.descuento_aplicado = min(descuento.valor, pedido.total)
-
-    pedido.total -= pedido.descuento_aplicado
-    db.commit()
-    db.refresh(pedido)
-    return pedido
-
-
-# Modificar la función para aplicar descuentos a productos
-def aplicar_descuento_producto(db: Session, pedido_id: int, descuento_id: int) -> Pedido:
-    pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
-    descuento = obtener_descuento_por_id(db, descuento_id)
-
-    if not pedido:
-        raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    
-    if not descuento.activo or descuento.fecha_inicio > datetime.utcnow() or descuento.fecha_fin < datetime.utcnow():
-        raise HTTPException(status_code=400, detail="Descuento no válido")
-
-    # Aplicar descuento a cada producto en el pedido
-    for producto in pedido.productos:  # Asegúrate de tener los productos en el pedido
-        if descuento.tipo == "porcentaje":
-            descuento_producto = producto.precio * (descuento.valor / 100)
-        elif descuento.tipo == "monto_fijo":
-            descuento_producto = min(descuento.valor, producto.precio)
-
-        producto.descuento_aplicado = descuento_producto  # Guarda el descuento aplicado en el producto
-        producto.precio -= descuento_producto  # Descuento en el precio del producto
-
-    # Recalcular el total del pedido después de aplicar los descuentos
-    pedido.total = sum(producto.precio for producto in pedido.productos)
-    db.commit()
-    db.refresh(pedido)
-    return pedido
 

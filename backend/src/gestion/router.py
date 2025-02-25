@@ -840,17 +840,46 @@ def obtener_metricas_cancelaciones(
 
 # ============================================================
 # Crear Descuento
+# ============================================================# ============================================================
+# Ruta para crear descuento (ACTUALIZADA)
 # ============================================================
-@router.post("/descuentos/", response_model=schemas.Descuento)
-def crear_descuento(descuento: schemas.DescuentoCreate, db: Session = Depends(get_db)):
-    return services.crear_descuento(db=db, descuento=descuento)
-
+@router.post("/descuentos/")
+def crear_descuento(
+    nombre: str = Form(...),
+    descripcion: str = Form(None),
+    tipo: schemas.TipoDescuentoEnum = Form(...),
+    valor: float = Form(...),
+    fecha_inicio: datetime = Form(...),
+    fecha_fin: datetime = Form(None),
+    activo: bool = Form(True),
+    producto_id: Optional[int] = Form(None),
+    metodo_pago_id: Optional[int] = Form(None),
+    db: Session = Depends(get_db)
+):
+    try:
+        nuevo_descuento = services.crear_descuento(
+            db=db,
+            nombre=nombre,
+            descripcion=descripcion,
+            tipo=tipo,
+            valor=valor,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            activo=activo,
+            producto_id=producto_id,
+            metodo_pago_id=metodo_pago_id
+        )
+        return nuevo_descuento
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 # ============================================================
 # Listar Descuentos
 # ============================================================
-@router.get("/descuentos/", response_model=schemas.Descuento)
+@router.get("/descuentos")
 def listar_descuentos(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
     return services.listar_descuentos(db=db, pagina=pagina, tamanio=tamanio)
+
+
 
 # ============================================================
 # Obtener descuento por ID
@@ -877,18 +906,4 @@ def eliminar_descuento(descuento_id: int, db: Session = Depends(get_db)):
     services.eliminar_descuento(db=db, descuento_id=descuento_id)
     return {"message": "Descuento eliminado con éxito"}
 
-# ============================================================
-# Aplicar Descuento pedido
-# ============================================================
 
-@router.post("/pedidos/{pedido_id}/descuentos/{descuento_id}", response_model=schemas.Pedido)
-def aplicar_descuento_pedido(pedido_id: int, descuento_id: int, db: Session = Depends(get_db)):
-    return services.aplicar_descuento_pedido(db=db, pedido_id=pedido_id, descuento_id=descuento_id)
-
-# ============================================================
-# Aplicar Descuento producto
-# ============================================================
-
-@router.post("/pedidos/{pedido_id}/descuento-producto/{descuento_id}", response_model=schemas.Pedido)
-def aplicar_descuento_producto(pedido_id: int, descuento_id: int, db: Session = Depends(get_db)):
-    return services.aplicar_descuento_producto(db=db, pedido_id=pedido_id, descuento_id=descuento_id)

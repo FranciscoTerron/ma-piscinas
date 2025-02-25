@@ -28,6 +28,8 @@ import MetodosEnvios from '../src/components/administrativo/gestionEnvios/gestio
 import Registrar from '../src/components/Registrar';
 import Reportes from './components/administrativo/reportes/Reportes';
 import Producto from '../src/components/cliente/Producto';
+import GestionDescuentos from '../src/components/administrativo/gestionProductos/gestionDescuentos/GestionDescuentos'
+
 
 const AppRoutes = () => {
   return (
@@ -155,6 +157,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={["administrador"]}>
             <GestionEnvios />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/gestionDescuentos"
+        element={
+          <PrivateRoute allowedRoles={["administrador"]}>
+            <GestionDescuentos />
           </PrivateRoute>
         }
       />

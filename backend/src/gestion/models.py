@@ -183,7 +183,6 @@ class Pedido(BaseModel):
     envio = relationship("Envio", back_populates="pedido" )
     pago = relationship("Pago", back_populates="pedido" )
     pedidoDetalle = relationship("PedidoDetalle", back_populates="pedido")
-    descuentos = relationship("Descuento", back_populates="pedido")
     
 class PedidoDetalle(BaseModel): 
     __tablename__ = "pedidodetalles"
@@ -224,7 +223,6 @@ class MetodoPago(BaseModel):
     imagen: Mapped[str] = mapped_column(String, index=True)
 
     pago = relationship("Pago", back_populates="metodoPago")
-    descuentos = relationship("Descuento", back_populates="metodo_pago")
     
 class Actividad(BaseModel):
     __tablename__ = "actividades"
@@ -252,9 +250,3 @@ class Descuento(BaseModel):
     # Relaciones
     producto_id = Column(Integer, ForeignKey("productos.id"), nullable=True)
     producto = relationship("Producto", back_populates="descuentos")
-
-    pedido_id = Column(Integer, ForeignKey("pedidos.id"), nullable=True)
-    pedido = relationship("Pedido", back_populates="descuentos")
-
-    metodo_pago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=True)
-    metodo_pago = relationship("MetodoPago", back_populates="descuentos")

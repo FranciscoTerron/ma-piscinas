@@ -3,23 +3,44 @@ import { Box, Grid, VStack, HStack, Text, Icon, Button, Container, useToast,} fr
 import { Link as RouterLink } from 'react-router-dom';
 import {  FaContao ,  FaBell,  FaCog,  FaChevronRight } from "react-icons/fa";
 import { AiFillProduct,} from "react-icons/ai";
-import { listarProductos, listarCategorias, listarSubcategorias } from "../../../services/api";
+import { listarProductos, listarCategorias, listarSubcategorias, listarDescuentos } from "../../../services/api";
 import GoBackButton from "../../GoBackButton";
 
 const AdministracionProductos = () => {
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
   const [productos, setProductos] = useState([]);
+  const [descuentos, setDescuentos] = useState([]);
   const toast = useToast();
   const[totalCategorias,setTotalCategorias] = useState(0);
   const[totalSubCategorias,setTotalSubCategorias] = useState(0);
   const[totalProductos,setTotalProductos] = useState(0);
+  const[totalDescuentos,setTotalDescuentos] = useState(0);
+
 
   useEffect(() => {
     cargarProductos();
     cargarCategorias();
     cargarSubcategorias();
+    cargarDescuentos();
   }, []);
+
+
+  const cargarDescuentos = async (paginaActual,descuentoPorPagina) => {
+    try {
+      const data = await listarDescuentos(paginaActual,descuentoPorPagina);
+      setDescuentos(data.categorias);
+      setTotalDescuentos(data.total)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de descuentos",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
 
 
   const cargarCategorias = async (paginaActual,categoriaPorPagina) => {
@@ -86,6 +107,14 @@ const AdministracionProductos = () => {
       route: '/gestionProductos', 
       icon: AiFillProduct,
       stats: `${totalProductos} productos`
+    },
+     { 
+      id: 'descuentos', 
+      title: 'Gestión de Descuentos',
+      description: 'Descuentos',
+      route: '/gestionDescuentos', 
+      icon: AiFillProduct,
+      stats: `${totalDescuentos} descuentos`
     },
   ];
 

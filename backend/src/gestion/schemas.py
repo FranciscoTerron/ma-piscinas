@@ -471,38 +471,25 @@ class TipoDescuentoEnum(str, Enum):
 # ============================================================
 # Esquema base para Descuento
 # ============================================================
-class DescuentoBase(BaseModel):
-    nombre: str = Field(..., example="Descuento de Verano")
-    descripcion: Optional[str] = Field(None, example="Descuento especial de verano")
-    tipo: TipoDescuentoEnum = Field(..., example="PORCENTAJE")
-    valor: float = Field(..., example=10.0)  # Puede ser un porcentaje (10%) o un monto fijo (100.0)
-    fecha_inicio: date = Field(..., example="2024-06-01")
-    fecha_fin: date = Field(..., example="2024-06-30")
-    activo: bool = Field(default=True, example=True)
+class Descuento(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+    tipo: TipoDescuentoEnum
+    valor: float
+    fecha_inicio: datetime
+    fecha_fin: Optional[datetime] = None
+    activo: bool = True
+    producto_id: Optional[int] = None
 
-# ============================================================
-# Esquema para crear un Descuento
-# ============================================================
-class DescuentoCreate(DescuentoBase):
-    pass  # No requiere cambios adicionales
+class DescuentoCreate(Descuento):
+    pass
 
-# ============================================================
-# Esquema para actualizar un Descuento
-# ============================================================
 class DescuentoUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     tipo: Optional[TipoDescuentoEnum] = None
     valor: Optional[float] = None
-    fecha_inicio: Optional[date] = None
-    fecha_fin: Optional[date] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
     activo: Optional[bool] = None
-
-# ============================================================
-# Esquema para devolver un Descuento (respuesta API)
-# ============================================================
-class Descuento(DescuentoBase):
-    id: int
-
-    class Config:
-        from_attributes = True
+    producto_id: Optional[int] = None
