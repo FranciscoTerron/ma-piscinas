@@ -9,10 +9,12 @@ const PaymentMethodsSection = ({ methods }) => (
     <HStack spacing={4}>
       {methods.map((method) => (
         <Image 
-          key={method.id} // Usamos el ID como clave única
-          src={method.imagen} // Usamos la URL de la imagen de Cloudinary
-          alt={method.nombre} // Usamos el nombre como texto alternativo
-          boxSize="50px" 
+          key={method.id} 
+          src={method.imagen} 
+          alt={method.nombre} 
+          width="50px"
+          height="30px" 
+          objectFit="contain" 
         />
       ))}
     </HStack>
@@ -28,7 +30,9 @@ const ShippingMethodsSection = ({ methods }) => (
           key={method.id} // Usamos el ID como clave única
           src={method.imagen} // Usamos la URL de la imagen de Cloudinary
           alt={method.nombre} // Usamos el nombre como texto alternativo
-          boxSize="50px" 
+          width="60px"
+          height="30px" 
+          objectFit="contain" 
         />
       ))}
     </HStack>

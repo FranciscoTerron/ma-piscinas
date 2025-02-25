@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Flex,
@@ -11,8 +11,42 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { FaInstagram, FaFacebook } from 'react-icons/fa';
+import emailjs from "emailjs-com";
 
 const Contacto = () => {
+
+  const [formData, setFormData] = useState({
+    nombre: "",
+    email: "",
+    telefono: "",
+    mensaje: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    emailjs
+      .send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        formData,
+        import.meta.env.VITE_EMAILJS_USER_ID
+      )
+      .then(
+        (response) => {
+          alert("Correo enviado con éxito!");
+          setFormData({ nombre: "", email: "", telefono: "", mensaje: "" });
+        },
+        (error) => {
+          alert("Error al enviar el correo.");
+        }
+      );
+  };
+
   return (
     <Box 
       width="100%" 
@@ -113,55 +147,65 @@ const Contacto = () => {
           </Box>
 
           {/* Formulario de contacto (lado derecho) */}
-          <Box 
-            width={{ base: "100%", md: "50%" }} 
-            pl={{ md: 8 }}
-          >
-            <Box 
-                p={6} 
-                borderRadius="lg" 
-                width="full"
-                bg="#F8FBFD"
-                border="1px solid"
-                borderColor="#87CEEB"
-                _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
-                transition="all 0.3s ease"
-              >
-
+          <Box width={{ base: "100%", md: "50%" }} pl={{ md: 8 }}>
+            <Box
+              as="form"
+              onSubmit={handleSubmit}
+              p={6}
+              borderRadius="lg"
+              width="full"
+              bg="#F8FBFD"
+              border="1px solid"
+              borderColor="#87CEEB"
+              _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+              transition="all 0.3s ease"
+            >
               <VStack spacing={3} align="stretch">
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   NOMBRE
                 </Text>
-                <Input 
-                  placeholder="Nombre" 
-                  bg="white" 
-                  color="black" 
+                <Input
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  placeholder="Nombre"
+                  bg="white"
+                  color="black"
                   borderRadius="md"
                   borderColor="gray.200"
                   _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
                   transition="all 0.3s ease"
+                  required
                 />
 
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   EMAIL
                 </Text>
-                <Input 
-                    placeholder="Email" 
-                    bg="white" 
-                    color="black" 
-                    borderRadius="md"
-                    borderColor="gray.200"
-                    _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
-                    transition="all 0.3s ease"
-                  />
+                <Input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  bg="white"
+                  color="black"
+                  borderRadius="md"
+                  borderColor="gray.200"
+                  _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                  transition="all 0.3s ease"
+                  required
+                />
 
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   TELÉFONO (OPCIONAL)
                 </Text>
-                <Input 
-                  placeholder="Telefono" 
-                  bg="white" 
-                  color="black" 
+                <Input
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  placeholder="Teléfono"
+                  bg="white"
+                  color="black"
                   borderRadius="md"
                   borderColor="gray.200"
                   _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
@@ -171,19 +215,23 @@ const Contacto = () => {
                 <Text fontSize="md" color="#00008B" fontWeight="bold">
                   MENSAJE (OPCIONAL)
                 </Text>
-                <Textarea 
-                    placeholder="Nombre" 
-                    bg="white" 
-                    color="black" 
-                    borderRadius="md"
-                    borderColor="gray.200"
-                    _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
-                    transition="all 0.3s ease"
-                  />
+                <Textarea
+                  name="mensaje"
+                  value={formData.mensaje}
+                  onChange={handleChange}
+                  placeholder="Escribe tu mensaje aquí..."
+                  bg="white"
+                  color="black"
+                  borderRadius="md"
+                  borderColor="gray.200"
+                  _focus={{ borderColor: "#00CED1", boxShadow: "0 0 8px rgba(0, 206, 209, 0.5)" }}
+                  transition="all 0.3s ease"
+                />
 
-                <Button 
-                  bg="#00CED1" 
-                  color="white" 
+                <Button
+                  type="submit"
+                  bg="#00CED1"
+                  color="white"
                   _hover={{ bg: "#008B8B", boxShadow: "lg", transform: "scale(1.05)" }}
                   transition="all 0.3s ease"
                   size="lg"
