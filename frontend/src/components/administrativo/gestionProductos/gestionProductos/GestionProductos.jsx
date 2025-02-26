@@ -11,7 +11,7 @@ import {
   Select
 } from "@chakra-ui/react";
 import { FaEdit } from "react-icons/fa";
-import { listarProductos, listarCategorias, listarSubcategorias } from "../../../../services/api";
+import { listarProductos, listarCategorias, listarSubcategorias, listarDescuentos } from "../../../../services/api";
 import GoBackButton from "../../../GoBackButton";
 import FormularioProducto from "./FormularioProducto";
 import ListaProductos from "./ListaProductos";
@@ -20,6 +20,7 @@ const GestionProductos = () => {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);  
+  const [descuentos, setDescuentos] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
   const [productosPorPagina, setProductosPorPagina] = useState(3);
@@ -36,6 +37,7 @@ const GestionProductos = () => {
   cargarProductos();
   cargarCategorias();
   cargarSubcategorias();
+  cargarDescuentos();
   }, [paginaActual, productosPorPagina]);
 
 // Nuevo efecto para cargar subcategorías cuando cambia la categoría seleccionada
@@ -61,6 +63,22 @@ const GestionProductos = () => {
       toast({
         title: "Error",
         description: "No se pudo cargar la lista de productos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarDescuentos = async () => {
+    try {
+      const data = await listarDescuentos();
+      console.log("ACAAAA",data);
+      setDescuentos(data.descuentos || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de descuentos.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -194,7 +212,7 @@ const productosFiltrados = productos.filter((producto) => {
         <ListaProductos
           productos={productosFiltrados}
           categorias={categorias}
-          subcategorias={subcategorias} 
+          descuentos={descuentos}
           onEditar={handleEditarProducto}
           onEliminar={cargarProductos} // Eliminar parámetros
         />
@@ -204,6 +222,7 @@ const productosFiltrados = productos.filter((producto) => {
             onClose={onClose}
             onSubmitSuccess={cargarProductos}
             categorias={categorias}
+            descuentos={descuentos}
             subcategorias={subcategorias} // Pasar subcategorías al formulario
             producto={productoSeleccionado}
           />

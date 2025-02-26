@@ -283,18 +283,25 @@ def crear_producto(
     categoria_id: int,
     costo_compra: Optional[float],
     imagen: UploadFile,
-    subcategoria_id: Optional[int] = None  # Asegúrate de que esté aquí
+    subcategoria_id: Optional[int] = None,
+    descuento_id: Optional[int] = None
 ) -> Producto:
     # Verificar que la categoría exista
     categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
     if not categoria:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Categoría no encontrada")
 
-    # Verificar que la subcategoría exista y pertenezca a la categoría, si se proporciona
+    # Verificar la subcategoría, si se proporcionó
     if subcategoria_id:
         subcategoria = db.query(SubCategoria).filter(SubCategoria.id == subcategoria_id).first()
         if not subcategoria or subcategoria.categoria_id != categoria_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subcategoría no encontrada o no pertenece a la categoría")
+
+    # Verificar que el descuento exista, si se proporciona
+    if descuento_id:
+        descuento = db.query(Descuento).filter(Descuento.id == descuento_id).first()
+        if not descuento:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Descuento no encontrado")
 
     # Subir la imagen a Cloudinary
     try:
@@ -303,14 +310,15 @@ def crear_producto(
         if not image_url:
             raise Exception("No se obtuvo URL de la imagen")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error al subir la imagen a Cloudinary: {str(e)}")
 
     # Generar un código único
     ultimo_producto = db.query(Producto).order_by(Producto.id.desc()).first()
     nuevo_numero = (ultimo_producto.id + 1) if ultimo_producto else 1
     codigo = f"PROD-{nuevo_numero:03d}"
 
-    # Crear el producto
+    # Crear el producto con el descuento opcional
     try:
         db_producto = Producto(
             codigo=codigo,
@@ -320,17 +328,19 @@ def crear_producto(
             stock=stock,
             imagen=image_url,
             categoria_id=categoria_id,
-            subcategoria_id=subcategoria_id,  # Asegúrate de que esté aquí
-            costo_compra=costo_compra
+            subcategoria_id=subcategoria_id,
+            costo_compra=costo_compra,
+            descuento_id=descuento_id  # Asigna el descuento si se envió
         )
         db.add(db_producto)
         db.commit()
         db.refresh(db_producto)
-        print(f"Producto creado con ID: {db_producto.id}, Subcategoría ID: {db_producto.subcategoria_id}")  # Agrega esto para depurar
+        print(f"Producto creado con ID: {db_producto.id} y descuento_id: {db_producto.descuento_id}")
         return db_producto
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al guardar el producto: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Error al guardar el producto: {str(e)}")
 def actualizar_producto(
     db: Session,
     producto_id: int,
@@ -341,7 +351,8 @@ def actualizar_producto(
     categoria_id: int,
     costo_compra: Optional[float],
     imagen: Optional[UploadFile] = None,
-    subcategoria_id: Optional[int] = None  # Nuevo parámetro opcional
+    subcategoria_id: Optional[int] = None,  # Nuevo parámetro opcional
+    descuento_id: Optional[int] = None
 ) -> Producto:
     producto = obtener_producto_por_id(db, producto_id)
     
@@ -353,6 +364,7 @@ def actualizar_producto(
         producto.categoria_id = categoria_id
         producto.subcategoria_id = subcategoria_id  # Actualizar subcategoria_id
         producto.costo_compra = costo_compra
+        producto.descuento_id = descuento_id
 
         if imagen:
             upload_result = cloudinary.uploader.upload(imagen.file, folder="productos")
@@ -1236,6 +1248,7 @@ def crear_descuento(
             "producto_id": producto_id,
             "metodo_pago_id": metodo_pago_id
         })  # Depuración
+        
 
         # Validación básica
         if valor <= 0:
@@ -1243,6 +1256,13 @@ def crear_descuento(
             
         if fecha_fin and fecha_fin < fecha_inicio:
             raise ValueError("La fecha de fin no puede ser anterior a la de inicio")
+
+        # Corregir año si es menor a 1000
+        if fecha_inicio.year < 1000:
+            fecha_inicio = fecha_inicio.replace(year=fecha_inicio.year + 2000)
+        
+        print(f"Fecha corregida: {fecha_inicio}")  # Depuración
+
 
         # Verificar relaciones si existen
         if producto_id:

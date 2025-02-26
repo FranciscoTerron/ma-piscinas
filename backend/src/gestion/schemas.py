@@ -152,6 +152,8 @@ class ProductoBase(BaseModel):
 
 class ProductoCreate(ProductoBase):
     categoria_id: int = Field(..., example=1)
+    descuento_id: Optional[int] = Field(None, example=2, description="ID del descuento a aplicar, opcional")
+
 
 class Producto(ProductoBase):
     id: int = Field(..., example=1)

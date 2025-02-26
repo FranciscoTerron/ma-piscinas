@@ -20,7 +20,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { crearProducto, actualizarProducto, listarCategorias, listarSubcategorias, verificarNombreProducto } from "../../../../services/api"; // Añadimos listarSubcategorias
+import { crearProducto, actualizarProducto, listarCategorias, listarSubcategorias, listarDescuentos, verificarNombreProducto } from "../../../../services/api"; // Añadimos listarSubcategorias
 import { useAuth } from "../../../../context/AuthContext";
 
 const initialProductoState = {
@@ -30,14 +30,17 @@ const initialProductoState = {
   stock: "",
   imagen: null,
   categoriaId: "",
-  subcategoriaId: "", // Aseguramos que esté incluido
+  subcategoriaId: "", // ya existente
   costoCompra: "",
+  descuentoId: "", // NUEVO campo para seleccionar descuento
 };
+
 
 const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   const [formData, setFormData] = useState(initialProductoState);
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
+  const [descuentos, setDescuentos] = useState([]);
   const [imagenPreview, setImagenPreview] = useState(null);
   const toast = useToast();
   const { userId } = useAuth();
@@ -53,6 +56,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         categoriaId: producto.categoria_id,
         subcategoriaId: producto.subcategoria_id || "", // Aseguramos que esté incluido
         costoCompra: producto.costo_compra || "",
+        descuentoId: producto.descuento_id ? String(producto.descuento_id) : "", // Asegurar que sea un string
       });
       if (producto.imagen && typeof producto.imagen === "string" && producto.imagen.startsWith("http")) {
         setImagenPreview(producto.imagen);
@@ -72,6 +76,9 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
       cargarSubcategorias(formData.categoriaId);
     }
   }, [formData.categoriaId]);
+    useEffect(() => {
+    cargarDescuentos();
+  }, []);
 
   const cargarCategorias = async () => {
     try {
@@ -81,6 +88,22 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
       toast({
         title: "Error",
         description: "No se pudo cargar la lista de categorías.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarDescuentos = async () => {
+    try {
+      const data = await listarDescuentos();
+      console.log("ACA", data);
+      setDescuentos(data.descuentos || []);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de descuentos.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -244,6 +267,10 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     }
     if (formData.subcategoriaId) {  
       formDataToSend.append("subcategoria_id", parseInt(formData.subcategoriaId));
+    }
+    console.log("DESCUENTO", formData.descuentoId);
+    if (formData.descuentoId) {
+      formDataToSend.append("descuento_id", parseInt(formData.descuentoId));
     }
     if (formData.imagen && formData.imagen instanceof File) {
       formDataToSend.append("imagen", formData.imagen);
@@ -490,6 +517,31 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
                 </Select>
               </FormControl>
             )}
+            <FormControl>
+              <FormLabel>Descuento (Opcional)</FormLabel>
+              <Select
+                name="descuentoId"
+                value={formData.descuentoId}
+                onChange={handleInputChange}
+                placeholder="Seleccione un descuento (opcional)"
+                bg="white"
+                border="1px"
+                borderColor="gray.200"
+                _hover={{ borderColor: "gray.300" }}
+                sx={{
+                  "& option": {
+                    backgroundColor: "white !important",
+                    color: "gray.600",
+                  },
+                }}
+              >
+                {descuentos.map((descuento) => (
+                  <option key={descuento.id} value={descuento.id}>
+                    {descuento.nombre} {descuento.valor ? `- ${descuento.valor}%` : ""}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
           </VStack>
         </ModalBody>
         <ModalFooter borderTop="1px" borderColor="gray.100" bg="gray.50">

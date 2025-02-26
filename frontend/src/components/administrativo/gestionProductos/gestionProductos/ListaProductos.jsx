@@ -27,17 +27,19 @@
   import { FaTrash, FaEdit } from "react-icons/fa";
   import { eliminarProducto } from "../../../../services/api";
 
-  const ListaProductos = ({ productos, categorias, subcategorias, onEditar, onEliminar }) => {
+  const ListaProductos = ({ productos, categorias, descuentos, onEditar, onEliminar }) => {
     const obtenerNombreCategoria = (categoriaId) => {
       const categoria = (categorias || []).find((cat) => cat.id === categoriaId);
       return categoria ? categoria.nombre : "Sin categoría";
     };
     
-    console.log("ACA", subcategorias);
-    const obtenerNombreSubcategoria = (subcategoriaId) => {
-      const subcategoria = (subcategorias || []).find((sub) => sub.id === subcategoriaId);
-      return subcategoria ? subcategoria.nombre : "Subcategoría no encontrada";
+    const obtenerNombreDescuento = (descuentoId) => {
+      console.log("Descuento ID recibido:", descuentoId);
+      const descuento = (descuentos || []).find((desc) => desc.id === descuentoId);
+      console.log("Descuento encontrado:", descuento);
+      return descuento ? descuento.nombre : "Sin descuento";
     };
+    
     
     const [productoAEliminar, setProductoAEliminar] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -94,28 +96,26 @@
           border="1px"
           borderColor="gray.200"
           overflow="hidden"
+          maxWidth="100%"
         >
-          <Table variant="simple">
+        <Box overflowX="auto">
+          <Table  variant="simple" tableLayout="fixed" width="100%" >
             <Thead bg="blue.50">
-              <Tr>
-                <Th textAlign="center" color="blue.600">ID</Th>
-                <Th textAlign="left" color="blue.600">Código</Th>
-                <Th textAlign="left" color="blue.600">Producto</Th>
-                <Th textAlign="left" color="blue.600">Categoría</Th>
-                <Th textAlign="left" color="blue.600">Subcategoría</Th> {/* Nueva columna */}
-                <Th textAlign="left" color="blue.600">Descripción</Th>
-                <Th textAlign="right" color="blue.600">Precio</Th>
-                <Th textAlign="right" color="blue.600">Costo Compra</Th>
-                <Th textAlign="center" color="blue.600">Stock</Th>
-                <Th textAlign="center" color="blue.600">Acciones</Th>
-              </Tr>
+            <Tr>
+              <Th textAlign="left" color="blue.600" fontSize="sm">Código</Th>
+              <Th textAlign="left" color="blue.600" fontSize="sm">Imagen</Th>
+              <Th textAlign="left" color="blue.600" fontSize="sm">Categoría</Th>
+              <Th textAlign="left" color="blue.600" fontSize="sm">Descripción</Th>
+              <Th textAlign="right" color="blue.600" fontSize="sm">Precio</Th>
+              <Th textAlign="right" color="blue.600" fontSize="sm">Costo Compra</Th>
+              <Th textAlign="center" color="blue.600" fontSize="sm">Stock</Th>
+              <Th textAlign="center" color="blue.600" fontSize="sm">Descuento</Th>
+              <Th textAlign="center" color="blue.600" fontSize="sm">Acciones</Th>
+            </Tr>
             </Thead>
             <Tbody>
               {productos.map((producto) => (
                 <Tr key={producto.id} _hover={{ bg: "gray.50" }} transition="all 0.2s">
-                  <Td textAlign="center" fontSize="sm" color="gray.500">
-                    #{producto.id}
-                  </Td>
                   <Td textAlign="left" fontSize="sm" color="gray.500">
                     {producto.codigo}
                   </Td>
@@ -133,12 +133,12 @@
                     </Flex>
                   </Td>
                   <Td color="gray.600">{obtenerNombreCategoria(producto.categoria_id)}</Td>
-                  <Td color="gray.600">{obtenerNombreSubcategoria(producto.subcategoria_id)}</Td>
-                  <Td color="gray.600">
+                  <Td color="gray.600" maxW="250px">
                     <Tooltip label={producto.descripcion} hasArrow>
                       <Text noOfLines={2}>{producto.descripcion}</Text>
                     </Tooltip>
                   </Td>
+                 
                   <Td textAlign="right" fontWeight="medium" color="gray.700">
                     ${producto.precio.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                   </Td>
@@ -148,6 +148,27 @@
                       : "-"}
                   </Td>
                   <Td textAlign="center">{getStockBadge(producto.stock)}</Td>
+                  <Td textAlign="center">
+                  {producto.descuento_id ? (
+                    <Badge
+                      colorScheme="purple"
+                      variant="solid"
+                      maxW="150px"
+                      isTruncated
+                      p={2}
+                      fontSize="sm"
+                    >
+                      {obtenerNombreDescuento(producto.descuento_id)}{" "}
+                      {producto.descuento_id.tipo === "PORCENTAJE"
+                        ? `- ${producto.descuento_id.valor}%`
+                        : `$${producto.descuento_id.valor}`}
+                    </Badge>
+                  ) : (
+                    <Badge colorScheme="gray" variant="subtle" maxW="150px" isTruncated p={2} fontSize="sm">
+                      Sin descuento
+                    </Badge>
+                  )}
+                </Td>
                   <Td>
                     <Flex justify="center" gap={2}>
                       <Tooltip label="Editar producto" hasArrow>
@@ -220,7 +241,9 @@
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
+        </Box>
       </>
+      
     );
   };
 

@@ -113,12 +113,17 @@ class Producto(BaseModel):
     imagen: Mapped[str] = mapped_column(String, index=True)
     costo_compra: Mapped[float] = mapped_column(Float, nullable=True, default=None)  # Nuevo campo
     subcategoria_id = Column(Integer, ForeignKey("subcategorias.id"), nullable=True)  # Añadimos esto
+    descuento_id = Column(Integer, ForeignKey("descuentos.id"), nullable=True)
 
     carritoDetalle = relationship("CarritoDetalle", back_populates="producto")
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
     categoria = relationship("CategoriaProducto", back_populates="productos")
     pedidoDetalle = relationship("PedidoDetalle", back_populates="producto")
-    descuentos = relationship("Descuento", back_populates="producto")
+    descuento = relationship(
+        "Descuento",
+        foreign_keys=[descuento_id],
+        back_populates="productos"
+    )
     subcategoria = relationship("SubCategoria", back_populates="productos")  # Relación bidireccional    
 class CategoriaProducto(BaseModel):
     __tablename__ = "categorias"
@@ -253,6 +258,10 @@ class Descuento(BaseModel):
 
     # Relaciones
     producto_id = Column(Integer, ForeignKey("productos.id"), nullable=True)
-    producto = relationship("Producto", back_populates="descuentos")
+    productos = relationship(
+        "Producto",
+        foreign_keys="[Producto.descuento_id]",
+        back_populates="descuento"
+    )
     metodo_pago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=True)
     metodo_pago = relationship("MetodoPago", back_populates="descuentos")
