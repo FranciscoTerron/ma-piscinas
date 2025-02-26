@@ -98,7 +98,6 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   const cargarDescuentos = async () => {
     try {
       const data = await listarDescuentos();
-      console.log("ACA", data);
       setDescuentos(data.descuentos || []);
     } catch (error) {
       toast({

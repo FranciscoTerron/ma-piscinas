@@ -19,11 +19,12 @@ import {
   FaMoneyCheckAlt,
   FaChevronRight, 
   FaTruck,
-  FaChartBar
+  FaChartBar,
+  FaBox 
 } from "react-icons/fa";
 import { AiFillProduct } from "react-icons/ai";
 import { listarUsuarios, listarProductos, listarPagos, listarEnvios, listarPedidos } from "../../services/api";
-import ActividadesRecientes from "./actividadesRecientes/actividadesRecientes";
+import ActividadesRecientes from "../administrativo/actividadesRecientes/ActividadesRecientes";
 
 const AdminProfile = () => {
   const { userName, userRole } = useAuth();
@@ -89,9 +90,9 @@ const AdminProfile = () => {
     }
   };
 
-  const cargarEnvios = async () => {
+  const cargarEnvios = async (paginaActual, usuariosPorPagina) => {
     try {
-      const data = await listarEnvios();
+      const data = await listarEnvios(paginaActual, usuariosPorPagina);
       setTotalEnvios(data.total);
     } catch (error) {
       toast({
@@ -158,7 +159,7 @@ const AdminProfile = () => {
       title: 'Gestión de Pedidos',
       description: 'Pedidos y sus detalles',
       route: '/pedidos', 
-      icon: FaChartBar,
+      icon: FaBox ,
       stats: `${totalPedidos} pedidos`
     },
     { 

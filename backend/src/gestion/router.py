@@ -59,7 +59,7 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
 # ============================================================
 
 @router.get("/usuarios")
-def listar_usuarios(pagina: int = 1, tamanio: int = 3, db: Session = Depends(get_db)):
+def listar_usuarios(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
     return services.listar_usuarios(db, pagina, tamanio)
 
 # ============================================================
@@ -242,15 +242,13 @@ def crear_producto(
     categoria_id: int = Form(..., description="ID de la categoría"),
     imagen: UploadFile = File(..., description="Imagen del producto"),
     costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
-    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),
-    descuento_id: Optional[int] = Form(None, description="ID del descuento a aplicar, opcional"),
+    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
     usuario_id: int = Form(..., description="ID del usuario que crea"),
     db: Session = Depends(get_db)
 ):
-    print(f"Recibiendo datos para crear producto: nombre={nombre}, precio={precio}, descuento_id={descuento_id}")
     try:
         nuevo_producto = services.crear_producto(
-            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id, descuento_id
+            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id  # Añadido subcategoria_id
         )
 
         services.registrar_actividad(db, schemas.ActividadCreate(
@@ -264,9 +262,6 @@ def crear_producto(
     except Exception as e:
         print.error(f"Error al procesar la creación: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
-
-
 
 # ============================================================
 # Ruta para actualizar producto
@@ -339,8 +334,17 @@ def eliminar_producto(producto_id: int, db: Session = Depends(get_db)):
 # Ruta para crear envio
 # ============================================================
 @router.post("/envios", response_model=schemas.Envio, status_code=status.HTTP_201_CREATED)
-def crear_envio(envio: schemas.EnvioCreate, db: Session = Depends(get_db)):
-    return services.crear_envio(db, envio)
+def crear_envio(usuario_id: int, envio: schemas.EnvioCreate, db: Session = Depends(get_db)):
+    nuevo_envio = services.crear_envio(db, envio)
+
+    services.registrar_actividad(db, schemas.ActividadCreate(
+        tipo_evento="CREACION_ENVIO",
+        descripcion=f"Se registro envio con direccion: {nuevo_envio.direccion}",
+        referencia_id=nuevo_envio.id,
+        usuario_id=usuario_id
+    ))
+
+    return nuevo_envio
 
 # ============================================================
 # Ruta para listar envios
@@ -428,8 +432,17 @@ def eliminar_empresa(empresa_id: int, db: Session = Depends(get_db)):
 # Ruta para crear un pago
 # ============================================================
 @router.post("/pagos", response_model=schemas.Pago, status_code=status.HTTP_201_CREATED)
-def crear_pago(pago: schemas.PagoBase, db: Session = Depends(get_db)):
-    return services.crear_pago(db, pago)
+def crear_pago(usuario_id: int ,pago: schemas.PagoBase, db: Session = Depends(get_db)):
+    nuevo_pago = services.crear_pago(db, pago)
+
+    services.registrar_actividad(db, schemas.ActividadCreate(
+        tipo_evento="CREACION_PAGO",
+        descripcion=f"Se registro pago asociado al pedido identificado con el numero: {nuevo_pago.pedido_id}",
+        referencia_id=nuevo_pago.id,
+        usuario_id=usuario_id
+    ))
+
+    return nuevo_pago
 
 # ============================================================
 # Ruta para listar todos los pagos
@@ -512,11 +525,17 @@ def actualizar_metodo_pago(
 # Ruta para crear pedido
 # ============================================================
 @router.post("/pedidos", response_model=schemas.Pedido, status_code=status.HTTP_201_CREATED)
-def crear_pedido(pedido: schemas.PedidoCreate, db: Session = Depends(get_db)):
-    """
-    Crea un nuevo pedido y lo guarda en la base de datos.
-    """
-    return services.crear_pedido(db, pedido)
+def crear_pedido(usuario_id: int, pedido: schemas.PedidoCreate, db: Session = Depends(get_db)):
+    nuevo_pedido = services.crear_pedido(db, pedido)
+
+    services.registrar_actividad(db, schemas.ActividadCreate(
+        tipo_evento="CREACION_PEDIDO",
+        descripcion=f"Se registro pedido asociado al usuari identificado con el numero: {nuevo_pedido.usuario_id}",
+        referencia_id=nuevo_pedido.id,
+        usuario_id=usuario_id
+    ))
+
+    return nuevo_pedido
 
 # ============================================================
 # Ruta para listar todos los pedidos
@@ -764,9 +783,9 @@ def registrar_actividad_api(
 # ============================================================
 # Obtener actividades recientes
 # ============================================================
-@router.get("/actividades", response_model=List[schemas.Actividad])
-def listar_actividades(db: Session = Depends(get_db)):
-    return services.listar_actividades(db)
+@router.get("/actividades")
+def listar_actividades(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.listar_actividades(db, pagina, tamanio)
 
 # ============================================================
 # Obtener Reportes

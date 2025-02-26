@@ -29,7 +29,7 @@ import Registrar from '../src/components/Registrar';
 import Reportes from './components/administrativo/reportes/Reportes';
 import Producto from '../src/components/cliente/Producto';
 import GestionDescuentos from '../src/components/administrativo/gestionProductos/gestionDescuentos/GestionDescuentos'
-
+import ListaActividades from '../src/components/administrativo/actividadesRecientes/ListaActividades';
 
 const AppRoutes = () => {
   return (
@@ -200,6 +200,15 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={["administrador"]}>
             <GestionPedidos />
+          </PrivateRoute>
+        } 
+      />
+
+      <Route 
+        path="/historialDeActividades" 
+        element={
+          <PrivateRoute allowedRoles={["administrador"]}>
+            <ListaActividades/>
           </PrivateRoute>
         } 
       />

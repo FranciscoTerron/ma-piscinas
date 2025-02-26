@@ -1039,8 +1039,13 @@ def vaciar_carrito(db: Session, carrito_id: int):
 
 #ACTIVIDADES
 #------------------------------------------------------------------------------------------------------------
-def listar_actividades(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(Actividad).order_by(Actividad.fecha.desc()).offset(skip).limit(limit).all()
+def listar_actividades(db: Session, pagina: int, tamanio: int):
+    total = db.query(Actividad).count()
+    actividades = (db.query(Actividad)
+                .offset((pagina - 1) * tamanio)
+                .limit(tamanio)
+                .all())
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "actividades": actividades}
 
 def registrar_actividad(db: Session, actividad_data: schemas.ActividadCreate):
     nueva_actividad = Actividad(

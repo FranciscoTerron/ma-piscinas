@@ -8,20 +8,20 @@ const CarritoIcono = ({ onClick }) => {
     return (
       <Box position="relative">
         <IconButton
-            aria-label="Carrito"
-            icon={<FiShoppingCart />}
-            onClick={onClick}
-            variant="outline"
-            color="#00008B"
-            _hover={{
-                bg: "#87CEEB",
-                transform: 'scale(1.05)',
-                transition: 'all 0.2s ease-in-out'
-            }}
-            _active={{
-                bg: "#4169E1",
-                transform: 'scale(0.95)'
-            }}
+          aria-label="Carrito"
+          icon={<FiShoppingCart />}
+          onClick={onClick}
+          variant="outline"
+          color="#00008B"
+          _hover={{
+              bg: "#87CEEB",
+              transform: 'scale(1.05)',
+              transition: 'all 0.2s ease-in-out'
+          }}
+          _active={{
+              bg: "#4169E1",
+              transform: 'scale(0.95)'
+          }}
         />
         <Badge
           position="absolute"

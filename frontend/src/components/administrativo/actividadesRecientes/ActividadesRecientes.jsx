@@ -1,14 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Icon,
-  Spinner,
-  useToast,
-} from '@chakra-ui/react';
+import { Box, VStack, HStack, Text, Icon, Spinner, useToast, IconButton} from '@chakra-ui/react';
 import { AiOutlineClockCircle } from 'react-icons/ai';
+import { Link as RouterLink } from 'react-router-dom';
+import { RxActivityLog } from "react-icons/rx";
 import { listarActividadesRecientes } from '../../../services/api';
 
 const ActividadesRecientes = () => {
@@ -17,13 +11,14 @@ const ActividadesRecientes = () => {
   const toast = useToast();
 
   useEffect(() => {
-    const obtenerActividades = async () => {
+    const obtenerActividades = async (pagina, tamanio) => {
       try {
-        const data = await listarActividadesRecientes();
-        if (Array.isArray(data)) {
+        const data = await listarActividadesRecientes(pagina, tamanio);
+ 
+        if (Array.isArray(data.actividades)) {
           // Obtener solo la última actividad de cada tipo de evento
           const ultimasActividades = Object.values(
-            data.reduce((acc, actividad) => {
+            data.actividades.reduce((acc, actividad) => {
               const { tipo_evento, fecha } = actividad;
               // Si no existe en el acumulador o esta es más reciente, la reemplazamos
               if (!acc[tipo_evento] || new Date(actividad.fecha) > new Date(acc[tipo_evento].fecha)) {
@@ -65,9 +60,31 @@ const ActividadesRecientes = () => {
       p={6}
       border="1px solid #E2E8F0"
     >
-      <Text fontSize="xl" fontWeight="bold" mb={4} color="gray.700">
-        Actividades Recientes
-      </Text>
+      <HStack spacing={4}>
+        <IconButton
+          title='Actividades'
+          aria-label="Actividades"
+          icon={<RxActivityLog />}
+          as={RouterLink}
+          to={"/historialDeActividades"}
+          variant="outline"
+          color="blue.500"
+          _hover={{
+            bg: "#87CEEB",
+            transform: 'scale(1.05)',
+            transition: 'all 0.2s ease-in-out'
+          }}
+          _active={{
+              bg: "#4169E1",
+              transform: 'scale(0.95)'
+          }}
+          position="relative" 
+          top="-6px"
+        />
+        <Text fontSize="xl" fontWeight="bold" mb={4} color="gray.700">
+          Actividades Recientes
+        </Text>
+      </HStack>
       <VStack spacing={3} align="stretch">
         {actividades.length === 0 ? (
           <Text color="gray.500">No hay actividades recientes.</Text>

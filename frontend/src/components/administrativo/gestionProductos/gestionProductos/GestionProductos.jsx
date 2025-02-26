@@ -73,7 +73,6 @@ const GestionProductos = () => {
   const cargarDescuentos = async () => {
     try {
       const data = await listarDescuentos();
-      console.log("ACAAAA",data);
       setDescuentos(data.descuentos || []);
     } catch (error) {
       toast({

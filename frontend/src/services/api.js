@@ -337,9 +337,14 @@ export const listarMetodosEnvios = async () => {
   return response.data;
 };
 
-export const listarActividadesRecientes = async () => {
-  const response = await api.get("/actividades");
-  return response.data; 
+export const listarActividadesRecientes = async (paginaActual, actividadesPorPagina) => {
+  const response = await api.get("/actividades", {
+    params: {
+      pagina: paginaActual,
+      tamanio: actividadesPorPagina
+    }
+  });
+  return response.data;
 };
 
 export const obtenerTopUsuariosMasActivos = async () => {

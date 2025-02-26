@@ -49,7 +49,9 @@ class MetodoPagoEnum(str, Enum):
 class TipoActividadEnum(str, Enum):
     CREACION_USUARIO = "CREACION_USUARIO"
     CREACION_PRODUCTO = "CREACION_PRODUCTO"
-    CREACION_EMPRESA = "CREACION_EMPRESA"
+    CREACION_ENVIO = "CREACION_ENVIO"
+    CREACION_PAGO = "CREACION_PAGO"
+    CREACION_PEDIDO = "CREACION_PEDIDO"
     
 # ============================================================
 # Esquema base para evitar repetir codigo
@@ -308,7 +310,7 @@ class PedidoDetalle(PedidoDetalleBase):
 # ============================================================
 class EnvioBase(BaseModel):
     direccion: str = Field(..., example="Avenida Siempre Viva 123")
-    empresa: str = Field(..., example="DHL")
+    empresa_id: int = Field(..., example="DHL")
     codigoSeguimiento: str = Field(..., example="ABC123XYZ")
     estado: EstadoEnvioEnum = Field(default=EstadoEnvioEnum.PREPARADO)
 
