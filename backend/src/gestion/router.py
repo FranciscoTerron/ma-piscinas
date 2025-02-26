@@ -890,13 +890,53 @@ def listar_descuentos(pagina: int = 1, tamanio: int = 10, db: Session = Depends(
 def obtener_descuento_por_id(descuento_id: int, db: Session = Depends(get_db)):
     return services.obtener_descuento_por_id(db=db, descuento_id=descuento_id)
 
-# ============================================================
-# Actualizar Descuento
-# ============================================================
+def convertir_fecha(fecha_str: Optional[str]) -> Optional[datetime]:
+    """Convierte una fecha en string a datetime, si es válida."""
+    if not fecha_str:
+        return None  # Evita errores si la fecha es None
+
+    try:
+        return datetime.fromisoformat(fecha_str.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Formato de fecha inválido: {fecha_str}. Se espera ISO 8601.")
 
 @router.put("/descuentos/{descuento_id}", response_model=schemas.Descuento)
-def actualizar_descuento(descuento_id: int, descuento_update: schemas.DescuentoUpdate, db: Session = Depends(get_db)):
-    return services.actualizar_descuento(db=db, descuento_id=descuento_id, descuento_update=descuento_update)
+def actualizar_descuento(
+    descuento_id: int,
+    nombre: str = Form(...),
+    descripcion: Optional[str] = Form(None),
+    tipo: str = Form(...),
+    valor: float = Form(...),
+    fecha_inicio: str = Form(...),
+    fecha_fin: Optional[str] = Form(None),
+    condiciones: Optional[str] = Form(None),
+    activo: bool = Form(...),
+    producto_id: Optional[int] = Form(None),
+    metodo_pago_id: Optional[int] = Form(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Ruta que recibe los datos como FormData para actualizar un descuento.
+    """
+
+    # 🔹 Convertimos las fechas a datetime
+    fecha_inicio_dt = convertir_fecha(fecha_inicio)
+    fecha_fin_dt = convertir_fecha(fecha_fin)
+
+    return services.actualizar_descuento(
+        db=db,
+        descuento_id=descuento_id,
+        nombre=nombre,
+        descripcion=descripcion,
+        tipo=tipo,
+        valor=valor,
+        fecha_inicio=fecha_inicio_dt,  # Pasamos el datetime en lugar del string
+        fecha_fin=fecha_fin_dt,        # Lo mismo aquí
+        condiciones=condiciones,
+        activo=activo,
+        producto_id=producto_id,
+        metodo_pago_id=metodo_pago_id,
+    )
 
 # ============================================================
 # Eliminar Descuento

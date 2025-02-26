@@ -1294,14 +1294,38 @@ def obtener_descuento_por_id(db: Session, descuento_id: int) -> Descuento:
         raise HTTPException(status_code=404, detail="Descuento no encontrado")
     return descuento
 
-# Actualizar un descuento
-def actualizar_descuento(db: Session, descuento_id: int, descuento_update: schemas.DescuentoUpdate) -> Descuento:
+def actualizar_descuento(
+    db: Session,
+    descuento_id: int,
+    nombre: str,
+    descripcion: Optional[str],
+    tipo: str,
+    valor: float,
+    fecha_inicio: datetime,  # 🟢 Ya es datetime, no string
+    fecha_fin: Optional[datetime],  # 🟢 Ya es datetime, no string
+    condiciones: Optional[str],
+    activo: bool,
+    producto_id: Optional[int],
+    metodo_pago_id: Optional[int],
+) -> Descuento:
     descuento = obtener_descuento_por_id(db, descuento_id)
-    for key, value in descuento_update.dict(exclude_unset=True).items():
-        setattr(descuento, key, value)
+
+    descuento.nombre = nombre
+    descuento.descripcion = descripcion
+    descuento.tipo = tipo
+    descuento.valor = valor
+    descuento.fecha_inicio = fecha_inicio  # ⬅️ No convertir, ya es datetime
+    descuento.fecha_fin = fecha_fin  # ⬅️ No convertir, ya es datetime
+    descuento.condiciones = condiciones
+    descuento.activo = activo
+    descuento.producto_id = producto_id
+    descuento.metodo_pago_id = metodo_pago_id
+
     db.commit()
     db.refresh(descuento)
     return descuento
+
+
 
 # Eliminar un descuento
 def eliminar_descuento(db: Session, descuento_id: int):

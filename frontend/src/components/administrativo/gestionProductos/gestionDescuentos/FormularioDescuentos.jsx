@@ -94,7 +94,6 @@ const FormularioDescuento = ({ isOpen, onClose, onSubmitSuccess, descuento }) =>
       activo: e.target.checked,
     }));
   };
-
   // Validar y enviar el formulario
   const handleSubmit = async () => {
     try {
@@ -109,7 +108,7 @@ const FormularioDescuento = ({ isOpen, onClose, onSubmitSuccess, descuento }) =>
         });
         return;
       }
-  
+
       if (formData.valor <= 0) {
         toast({
           title: "Error",
@@ -120,7 +119,7 @@ const FormularioDescuento = ({ isOpen, onClose, onSubmitSuccess, descuento }) =>
         });
         return;
       }
-  
+
       if (!formData.fecha_inicio) {
         toast({
           title: "Error",
@@ -131,31 +130,43 @@ const FormularioDescuento = ({ isOpen, onClose, onSubmitSuccess, descuento }) =>
         });
         return;
       }
-  
-      // Crear un objeto FormData
+
+      // Crear el objeto FormData
       const formDataToSend = new FormData();
-  
-      // Agregar campos al FormData
+
+      // Campos obligatorios
       formDataToSend.append("nombre", formData.nombre);
-      formDataToSend.append("descripcion", formData.descripcion || "");
       formDataToSend.append("tipo", formData.tipo);
       formDataToSend.append("valor", parseFloat(formData.valor));
-      formDataToSend.append("fecha_inicio", new Date(formData.fecha_inicio + "T00:00:00").toISOString());
+      formDataToSend.append(
+        "fecha_inicio",
+        new Date(formData.fecha_inicio + "T00:00:00").toISOString()
+      );
+
+      // Campos opcionales
+      formDataToSend.append("descripcion", formData.descripcion || "");
       if (formData.fecha_fin) {
-        formDataToSend.append("fecha_fin", new Date(formData.fecha_fin + "T23:59:59").toISOString());
+        formDataToSend.append(
+          "fecha_fin",
+          new Date(formData.fecha_fin + "T23:59:59").toISOString()
+        );
       }
       if (formData.condiciones) {
         formDataToSend.append("condiciones", formData.condiciones);
       }
+
+      // El booleano 'activo' se manda como "true"/"false" en FormData
       formDataToSend.append("activo", formData.activo ? "true" : "false");
+
+      // Relaciones opcionales
       if (formData.producto_id) {
-        formDataToSend.append("producto_id", formData.producto_id);
+        formDataToSend.append("producto_id", String(formData.producto_id));
       }
       if (formData.metodo_pago_id) {
-        formDataToSend.append("metodo_pago_id", formData.metodo_pago_id);
+        formDataToSend.append("metodo_pago_id", String(formData.metodo_pago_id));
       }
-  
-      // Enviar la solicitud
+
+      // Llamar al servicio de API (actualizar o crear)
       let response;
       if (descuento) {
         response = await actualizarDescuento(descuento.id, formDataToSend);
@@ -164,25 +175,29 @@ const FormularioDescuento = ({ isOpen, onClose, onSubmitSuccess, descuento }) =>
         response = await crearDescuento(formDataToSend);
         toast({ title: "Descuento creado", status: "success" });
       }
-  
-      console.log("Respuesta del servidor:", response); 
-  
+
+      console.log("Respuesta del servidor:", response);
       onSubmitSuccess();
       onClose();
+
     } catch (error) {
       console.error("Error al guardar el descuento:", error.response?.data);
-  
+
       let errorMessage = "Error al guardar el descuento.";
       if (error.response?.data?.detail) {
         if (typeof error.response.data.detail === "string") {
           errorMessage = error.response.data.detail;
         } else if (Array.isArray(error.response.data.detail)) {
-          errorMessage = error.response.data.detail.map((err) => err.msg).join(", ");
+          errorMessage = error.response.data.detail
+            .map((err) => err.msg)
+            .join(", ");
         } else if (typeof error.response.data.detail === "object") {
-          errorMessage = error.response.data.detail.msg || JSON.stringify(error.response.data.detail);
+          errorMessage =
+            error.response.data.detail.msg ||
+            JSON.stringify(error.response.data.detail);
         }
       }
-  
+
       toast({
         title: "Error",
         description: errorMessage,
