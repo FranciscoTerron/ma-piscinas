@@ -499,3 +499,37 @@ class DescuentoUpdate(BaseModel):
     fecha_fin: Optional[datetime] = None
     activo: Optional[bool] = None
     producto_id: Optional[int] = None
+
+# ============================================================
+# Esquema base para DireccionEnvio
+# ============================================================
+class DireccionEnvioBase(BaseModel):
+    ciudad: str = Field(..., example="Buenos Aires")
+    codigo_postal: str = Field(..., example="1234")
+    provincia: str = Field(..., example="Buenos Aires")
+
+# ============================================================
+# Esquema para crear una dirección de envío
+# ============================================================
+class DireccionEnvioCreate(DireccionEnvioBase):
+    usuario_id: int = Field(..., example=1)
+
+# ============================================================
+# Esquema para actualizar una dirección de envío
+# ============================================================
+class DireccionEnvioUpdate(BaseModel):
+    ciudad: Optional[str] = Field(None, example="Córdoba")
+    codigo_postal: Optional[str] = Field(None, example="5000")
+    provincia: Optional[str] = Field(None, example="Córdoba")
+
+# ============================================================
+# Esquema para devolver una dirección de envío (respuesta)
+# ============================================================
+class DireccionEnvio(DireccionEnvioBase):
+    id: int = Field(..., example=1)
+    usuario_id: int = Field(..., example=1)
+    fecha_creacion: datetime = Field(..., example="2023-10-01T12:00:00Z")
+
+    class Config:
+        from_attributes = True  
+        

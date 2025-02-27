@@ -971,3 +971,60 @@ def eliminar_descuento(descuento_id: int, db: Session = Depends(get_db)):
     return {"message": "Descuento eliminado con éxito"}
 
 
+
+# ============================================================
+# Ruta para crear una dirección de envío
+# ============================================================
+@router.post("/direcciones-envio", response_model=schemas.DireccionEnvio, status_code=status.HTTP_201_CREATED)
+def crear_direccion(
+    ciudad: str = Form(...),
+    codigo_postal: str = Form(...),
+    provincia: str = Form(...),
+    usuario_id: int = Form(...),
+    db: Session = Depends(get_db)
+):
+    return services.crear_direccion_envio(db, schemas.DireccionEnvioCreate(
+        ciudad=ciudad,
+        codigo_postal=codigo_postal,
+        provincia=provincia,
+        usuario_id=usuario_id
+    ))
+
+# ============================================================
+# Ruta para obtener todas las direcciones de envío de un usuario
+# ============================================================
+@router.get("/direcciones-envio/usuario/{usuario_id}", response_model=list[schemas.DireccionEnvio])
+def listar_direcciones_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    return services.obtener_direcciones_usuario(db, usuario_id)
+
+# ============================================================
+# Ruta para obtener una dirección de envío por ID
+# ============================================================
+@router.get("/direcciones-envio/{direccion_id}", response_model=schemas.DireccionEnvio)
+def obtener_direccion(direccion_id: int, db: Session = Depends(get_db)):
+    return services.obtener_direccion_por_id(db, direccion_id)
+
+# ============================================================
+# Ruta para actualizar una dirección de envío
+# ============================================================
+@router.put("/direcciones-envio/{direccion_id}", response_model=schemas.DireccionEnvio)
+def actualizar_direccion(
+    direccion_id: int,
+    ciudad: str = Form(None),
+    codigo_postal: str = Form(None),
+    provincia: str = Form(None),
+    db: Session = Depends(get_db)
+):
+    return services.actualizar_direccion_envio(db, direccion_id, schemas.DireccionEnvioUpdate(
+        ciudad=ciudad,
+        codigo_postal=codigo_postal,
+        provincia=provincia
+    ))
+
+# ============================================================
+# Ruta para eliminar una dirección de envío
+# ============================================================
+@router.delete("/direcciones-envio/{direccion_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_direccion(direccion_id: int, db: Session = Depends(get_db)):
+    services.eliminar_direccion_envio(db, direccion_id)
+    return {"message": "Dirección de envío eliminada correctamente"}

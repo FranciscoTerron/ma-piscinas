@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, case
 from sqlalchemy.exc import SQLAlchemyError
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -134,8 +134,6 @@ def actualizar_rol_usuario(db: Session, usuario_id: int, nuevo_rol_id: int):
     db.refresh(usuario)
     return usuario
 
-
-
 #CATEGORIAS
 #------------------------------------------------------------------------------------------------
 # Crear una nueva categoría
@@ -166,7 +164,6 @@ def crear_categoria( db: Session,
     db.commit()
     db.refresh(nueva_categoria)
     return nueva_categoria
-
 
 # Listar todas las categorías
 def listar_categorias(db: Session, pagina: int, tamanio: int) -> dict:
@@ -215,9 +212,6 @@ def actualizar_categoria(db: Session,
     
     return categoria
     
-
-
-
 # Eliminar una categoría
 def eliminar_categoria(db: Session, categoria_id: int):
     categoria = obtener_categoria_por_id(db, categoria_id)
@@ -379,6 +373,7 @@ def actualizar_producto(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error al actualizar el producto: {str(e)}")
+
 def listar_productos(db: Session, pagina: int, tamanio: int, categoria_id: Optional[int] = None):
     query = db.query(Producto)
     if categoria_id:
@@ -408,7 +403,6 @@ def verificar_nombre_producto(db: Session, nombre: str) -> bool:
     nombre = nombre.strip()
     producto = db.query(Producto).filter(Producto.nombre == nombre).first()
     return producto is not None
-    
    
 #ENVIO
 #---------------------------------------------------------------------------------------------------------
@@ -678,15 +672,12 @@ def eliminar_metodo_pago(db: Session, metodo_pago_id: int):
     db.commit()
     return None
 
-
 #Obtener metodo de pago por id
 def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
     metodo_pago = db.query(MetodoPago).filter(MetodoPago.id == metodo_pago_id).first()
     if not metodo_pago:
         raise HTTPException(status_code=404, detail="metodo pago no encontrado")
     return metodo_pago
-
-
 
 #PEDIDO
 #--------------------------------------------------------------------------------------
@@ -729,7 +720,6 @@ def obtener_pedido_por_id(db: Session, pedido_id: int) -> Pedido:
     return pedido
 
 #Actualizar pedido
-
 def actualizar_pedido(db: Session, pedido_id: int, pedido_update: schemas.PedidoUpdate) -> Pedido:
     """
     Actualiza los datos de un pedido existente.
@@ -744,7 +734,6 @@ def actualizar_pedido(db: Session, pedido_id: int, pedido_update: schemas.Pedido
     return pedido
 
 #Eliminar pedido
-
 def eliminar_pedido(db: Session, pedido_id: int) -> None:
     """
     Elimina un pedido de la base de datos.
@@ -754,7 +743,6 @@ def eliminar_pedido(db: Session, pedido_id: int) -> None:
     db.commit()
     
 #Obtener pedidos de un usuario
-
 def obtener_pedidos_por_usuario(db: Session, usuario_id: int):
     """
     Retorna todos los pedidos asociados a un usuario.
@@ -762,7 +750,6 @@ def obtener_pedidos_por_usuario(db: Session, usuario_id: int):
     return db.query(Pedido).filter(Pedido.usuario_id == usuario_id).all()
 
 #Actualizar el estado de un pedido
-
 def actualizar_estado_pedido(db: Session, pedido_id: int, nuevo_estado: schemas.EstadoPedidoEnum) -> Pedido:
     """
     Actualiza únicamente el estado de un pedido.
@@ -777,7 +764,6 @@ def actualizar_estado_pedido(db: Session, pedido_id: int, nuevo_estado: schemas.
     return pedido
 
 # Cancelar pedido
-
 def cancelar_pedido(db: Session, pedido_id: int) -> Pedido:
     """
     Cambia el estado de un pedido a 'cancelado'.
@@ -816,7 +802,6 @@ def crear_pedido_detalle(db: Session, detalle: schemas.PedidoDetalleCreate) -> P
     return nuevo_detalle
 
 # Listar detalles 
-
 def listar_pedido_detalles(db: Session):
     """
     Retorna una lista con todos los detalles de pedido existentes.
@@ -824,7 +809,6 @@ def listar_pedido_detalles(db: Session):
     return db.query(PedidoDetalle).all()
 
 # Obtener detalle pedido por ID
-
 def obtener_pedido_detalle_por_id(db: Session, detalle_id: int) -> PedidoDetalle:
     """
     Retorna el detalle de pedido correspondiente al ID proporcionado.
@@ -836,7 +820,6 @@ def obtener_pedido_detalle_por_id(db: Session, detalle_id: int) -> PedidoDetalle
     return detalle
 
 # Actualizar detalle del pedido
-
 def actualizar_pedido_detalle(db: Session, detalle_id: int, detalle_update: schemas.PedidoDetalleBase) -> PedidoDetalle:
     """
     Actualiza los datos de un detalle de pedido existente.
@@ -851,7 +834,6 @@ def actualizar_pedido_detalle(db: Session, detalle_id: int, detalle_update: sche
     return detalle
 
 # Eliminar detalle del pedido
-
 def eliminar_pedido_detalle(db: Session, detalle_id: int) -> None:
     """
     Elimina el detalle de pedido de la base de datos.
@@ -861,7 +843,6 @@ def eliminar_pedido_detalle(db: Session, detalle_id: int) -> None:
     db.commit()
     
 # Obtener detalles de un pedido
-
 def obtener_detalles_por_pedido(db: Session, pedido_id: int):
     """
     Retorna todos los detalles asociados a un pedido específico.
@@ -1358,5 +1339,51 @@ def eliminar_descuento(db: Session, descuento_id: int):
     db.delete(descuento)
     db.commit()
 
+# ============================================================
+# Crear una nueva dirección de envío
+# ============================================================
+def crear_direccion_envio(db: Session, direccion_envio: schemas.DireccionEnvioCreate) -> DireccionEnvio:
+    db_direccion_envio = DireccionEnvio(
+        ciudad=direccion_envio.ciudad,
+        codigo_postal=direccion_envio.codigo_postal,
+        provincia=direccion_envio.provincia,
+        usuario_id=direccion_envio.usuario_id
+    )
+    db.add(db_direccion_envio)
+    db.commit()
+    db.refresh(db_direccion_envio)
+    return db_direccion_envio
 
+# ============================================================
+# Obtener todas las direcciones de envío de un usuario
+# ============================================================
+def obtener_direcciones_usuario(db: Session, usuario_id: int) -> list[DireccionEnvio]:
+    return db.query(DireccionEnvio).filter(DireccionEnvio.usuario_id == usuario_id).all()
 
+# ============================================================
+# Obtener una dirección de envío por ID
+# ============================================================
+def obtener_direccion_por_id(db: Session, direccion_id: int) -> DireccionEnvio:
+    direccion = db.query(DireccionEnvio).filter(DireccionEnvio.id == direccion_id).first()
+    if not direccion:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dirección de envío no encontrada")
+    return direccion
+
+# ============================================================
+# Actualizar una dirección de envío
+# ============================================================
+def actualizar_direccion_envio(db: Session, direccion_id: int, direccion_envio: schemas.DireccionEnvioUpdate) -> DireccionEnvio:
+    db_direccion_envio = obtener_direccion_por_id(db, direccion_id)
+    for key, value in direccion_envio.dict(exclude_unset=True).items():
+        setattr(db_direccion_envio, key, value)
+    db.commit()
+    db.refresh(db_direccion_envio)
+    return db_direccion_envio
+
+# ============================================================
+# Eliminar una dirección de envío
+# ============================================================
+def eliminar_direccion_envio(db: Session, direccion_id: int):
+    db_direccion_envio = obtener_direccion_por_id(db, direccion_id)
+    db.delete(db_direccion_envio)
+    db.commit()

@@ -517,3 +517,52 @@ export const actualizarDescuento = async (descuentoId, descuentoData) => {
 export const eliminarDescuento = async (descuentoId) => {
   await api.delete(`/descuentos/${descuentoId}`);
 };
+
+// Crear una dirección de envío
+export const crearDireccionEnvio = async (direccionData) => {
+  const formData = new FormData();
+  formData.append("ciudad", direccionData.ciudad);
+  formData.append("codigo_postal", direccionData.codigo_postal);
+  formData.append("provincia", direccionData.provincia);
+  formData.append("usuario_id", direccionData.usuario_id);
+
+  const response = await api.post("/direcciones-envio", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data", 
+    },
+  });
+  return response.data;
+};
+
+// Obtener todas las direcciones de envío de un usuario
+export const obtenerDireccionesEnvioUsuario = async (usuarioId) => {
+  const response = await api.get(`/direcciones-envio/usuario/${usuarioId}`);
+  return response.data;
+};
+
+// Actualizar una dirección de envío
+export const actualizarDireccionEnvio = async (direccionId, direccionData) => {
+  const formData = new FormData();
+  formData.append("ciudad", direccionData.ciudad);
+  formData.append("codigo_postal", direccionData.codigo_postal);
+  formData.append("provincia", direccionData.provincia);
+  formData.append("usuario_id", direccionData.usuario_id);
+
+  const response = await api.put(`/direcciones-envio/${direccionId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data", 
+    },
+  });
+  return response.data;
+};
+
+// Eliminar una dirección de envío
+export const eliminarDireccionEnvio = async (direccionId) => {
+  await api.delete(`/direcciones-envio/${direccionId}`);
+};
+
+// Obtener una dirección de envío por ID
+export const obtenerDireccionEnvioPorId = async (direccionId) => {
+  const response = await api.get(`/direcciones-envio/${direccionId}`);
+  return response.data;
+};

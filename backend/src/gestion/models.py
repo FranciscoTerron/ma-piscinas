@@ -64,12 +64,24 @@ class Usuario(BaseModel):
     pedido = relationship("Pedido", back_populates="usuario" )
     # Relación inversa
     actividades = relationship("Actividad", back_populates="usuario")
+    direcciones_envio = relationship("DireccionEnvio", back_populates="usuario")
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)
 
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.hashed_password)
+
+class DireccionEnvio(BaseModel):
+    __tablename__ = "direcciones_envio"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    ciudad: Mapped[str] = mapped_column(String)
+    codigo_postal: Mapped[str] = mapped_column(String)
+    provincia: Mapped[str] = mapped_column(String)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("Usuario", back_populates="direcciones_envio")
 
 class Rol(BaseModel):
     __tablename__ = "roles"

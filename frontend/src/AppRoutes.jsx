@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from '../src/components/PrivateRoute';  
 import Error403 from '../src/components/Error403';
 import Login from '../src/components/Login';
-import PerfilUsuario from '../src/components/perfilPersonal/PerfilUsuario';
+import PerfilUsuario from '../src/components/perfilPersonal/PerfilCompleto';
 import ClienteProfile from '../src/components/cliente/ClienteProfile';
 import AdminProfile from '../src/components/administrativo/AdminProfile';
 import GestionUsuarios from '../src/components/administrativo/gestionUsuarios/GestionUsuarios';
