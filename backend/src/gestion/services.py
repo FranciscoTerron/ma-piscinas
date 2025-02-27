@@ -41,7 +41,6 @@ def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
         nombre=usuario.nombre,
         email=usuario.email,
         telefono=usuario.telefono,
-        direccion=usuario.direccion,
         rol_id=rol_cliente.id  # Asignar el rol de "cliente", cuando recien se registra
     )
     nuevo_usuario.set_password(usuario.password)
@@ -378,6 +377,14 @@ def listar_productos(db: Session, pagina: int, tamanio: int, categoria_id: Optio
     query = db.query(Producto)
     if categoria_id:
         query = query.filter(Producto.categoria_id == categoria_id)
+    total = query.count()
+    productos = query.offset((pagina - 1) * tamanio).limit(tamanio).all()
+    return {"total": total, "pagina": pagina, "tamanio": tamanio, "productos": productos}
+
+
+def obtener_productos_descuento(db: Session, pagina: int, tamanio: int):
+    # Filtra productos cuyo descuento_id no sea None
+    query = db.query(Producto).filter(Producto.descuento_id != None)
     total = query.count()
     productos = query.offset((pagina - 1) * tamanio).limit(tamanio).all()
     return {"total": total, "pagina": pagina, "tamanio": tamanio, "productos": productos}
@@ -1347,7 +1354,8 @@ def crear_direccion_envio(db: Session, direccion_envio: schemas.DireccionEnvioCr
         ciudad=direccion_envio.ciudad,
         codigo_postal=direccion_envio.codigo_postal,
         provincia=direccion_envio.provincia,
-        usuario_id=direccion_envio.usuario_id
+        usuario_id=direccion_envio.usuario_id,
+        direccion=direccion_envio.direccion,
     )
     db.add(db_direccion_envio)
     db.commit()

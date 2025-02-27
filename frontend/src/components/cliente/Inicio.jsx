@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { listarProductos, listarCategorias } from "../../services/api";
+import { obtenerProductosDescuento, listarCategorias } from "../../services/api";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Carousel } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
 const Inicio = () => {
-  const [productos, setProductos] = useState([]);
+  const [productos, setProductos] = useState([]); // Productos con descuento
   const [categorias, setCategorias] = useState([]);
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -13,12 +13,13 @@ const Inicio = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const [productosData, categoriasData] = await Promise.all([
-          listarProductos(pagina, 10),
+        // Llamada al endpoint que trae solo los productos con descuento
+        const [descuentoData, categoriasData] = await Promise.all([
+          obtenerProductosDescuento(pagina, 10),
           listarCategorias(),
         ]);
-        setProductos(productosData.productos);
-        setTotalPaginas(Math.ceil(productosData.total / 10));
+        setProductos(descuentoData.productos);
+        setTotalPaginas(Math.ceil(descuentoData.total / 10));
         setCategorias(categoriasData.categorias);
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -45,10 +46,15 @@ const Inicio = () => {
           }
           .carousel-control-prev, .carousel-control-next { width: 5%; opacity: 0.8; }
           .carousel-control-prev:hover, .carousel-control-next:hover { opacity: 1; }
+          /* Estilos para el badge de descuento */
+          .discount-badge {
+            font-size: 0.85rem;
+            font-weight: bold;
+          }
         `}
       </style>
 
-      {/* Sección de Banner con Carousel */}
+      {/* Banner con Carousel */}
       <div className="container mt-4">
         <Carousel>
           {[1, 2, 3].map((index) => (
@@ -94,7 +100,7 @@ const Inicio = () => {
         </div>
       </div>
 
-      {/* Sección de Ofertas Especiales con Carousel */}
+      {/* Sección de Ofertas Especiales con Carousel usando solo productos con descuento */}
       <div className="container mt-5">
         <h2 className="text-center mb-4 fw-bold text-dark">Ofertas Especiales</h2>
         <Carousel interval={5000} pause="hover" controls={true} indicators={false}>
@@ -103,7 +109,17 @@ const Inicio = () => {
               <div className="row g-4 justify-content-center">
                 {productos.slice(slideIndex * 3, (slideIndex + 1) * 3).map((item) => (
                   <div className="col-md-4" key={item.id}>
-                    <div className="card product-card border-0 rounded-3 overflow-hidden">
+                    <div className="card product-card border-0 rounded-3 overflow-hidden position-relative">
+                      {/* Badge de descuento basado en la entidad Descuento */}
+                      {item.descuento && (
+                        <div className="discount-badge   position-absolute top-0 start-0 m-2 bg-danger text-white px-2 py-1 rounded">
+                          {item.descuento.tipo === "PORCENTAJE" 
+                            ? `${item.descuento.valor}% OFF` 
+                            : item.descuento.tipo === "CUOTAS_SIN_INTERES" 
+                              ? `${item.descuento.valor} Cuotas sin Interés` 
+                              : ""}
+                        </div>
+                      )}
                       <img
                         src={item.imagen || 'https://placehold.co/300x200/eee/333?text=Producto'}
                         className="card-img-top"
@@ -111,10 +127,23 @@ const Inicio = () => {
                       />
                       <div className="card-body text-center">
                         <h5 className="card-title fw-semibold">{item.nombre}</h5>
-                        <p className="text-muted mb-2">
-                          <del>${(item.precio + 200).toLocaleString()}</del>{' '}
-                          <span className="text-danger fw-bold">${item.precio.toLocaleString()}</span>
-                        </p>
+                        {item.descuento && item.descuento.tipo === "PORCENTAJE" ? (
+                          <p className="text-muted mb-2">
+                            <del>${item.precio.toLocaleString()}</del>{' '}
+                            <span className="text-danger fw-bold">
+                              ${ (item.precio * (1 - item.descuento.valor / 100)).toLocaleString() }
+                            </span>
+                          </p>
+                        ) : (
+                          <p className="text-muted mb-2">
+                            ${item.precio.toLocaleString()}
+                          </p>
+                        )}
+                        {item.descuento && item.descuento.tipo === "CUOTAS_SIN_INTERES" && (
+                          <p className="text-success fw-bold">
+                            {item.descuento.valor} cuotas sin interés
+                          </p>
+                        )}
                         <button className="btn btn-custom text-white">Agregar al Carrito</button>
                       </div>
                     </div>

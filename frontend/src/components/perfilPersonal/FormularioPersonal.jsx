@@ -8,7 +8,6 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
     nombre: "",
     email: "",
     telefono: "",
-    direccion: "",
   });
 
   useEffect(() => {
@@ -17,7 +16,6 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
         nombre: user.nombre || "",
         email: user.email || "",
         telefono: user.telefono || "",
-        direccion: user.direccion || "",
       });
     }
   }, [user]);
@@ -65,10 +63,6 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
           <FormControl>
             <FormLabel>Teléfono</FormLabel>
             <Input bg="white" border="1px" borderColor="gray.200" _hover={{ borderColor: "gray.300" }} name="telefono" type="number" value={formData.telefono} onChange={handleChange} placeholder="Teléfono" />
-          </FormControl>
-          <FormControl>
-            <FormLabel>Dirección</FormLabel>
-            <Input bg="white" border="1px" borderColor="gray.200" _hover={{ borderColor: "gray.300" }} name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Dirección" />
           </FormControl>
           <Button type="submit" colorScheme="teal" width="full">Actualizar Datos</Button>
         </VStack>

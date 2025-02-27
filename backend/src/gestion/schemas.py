@@ -95,7 +95,6 @@ class UsuarioBase(BaseModel):
     nombre: str = Field(..., example="Juan Pérez")
     email: EmailStr = Field(..., example="juan.perez@example.com")
     telefono: int = Field(..., example=123456789)
-    direccion: str = Field(..., example="Calle Falsa 123")
 
 # ============================================================
 # Esquema para crear un usuario 
@@ -507,6 +506,8 @@ class DireccionEnvioBase(BaseModel):
     ciudad: str = Field(..., example="Buenos Aires")
     codigo_postal: str = Field(..., example="1234")
     provincia: str = Field(..., example="Buenos Aires")
+    direccion: str = Field(..., example="Calle Falsa 123")
+
 
 # ============================================================
 # Esquema para crear una dirección de envío
@@ -521,6 +522,7 @@ class DireccionEnvioUpdate(BaseModel):
     ciudad: Optional[str] = Field(None, example="Córdoba")
     codigo_postal: Optional[str] = Field(None, example="5000")
     provincia: Optional[str] = Field(None, example="Córdoba")
+    direccion: Optional[str] = Field(None, example="direccion Falsa")
 
 # ============================================================
 # Esquema para devolver una dirección de envío (respuesta)

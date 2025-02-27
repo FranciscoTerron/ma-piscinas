@@ -126,6 +126,18 @@ export const listarProductos = async (paginaActual, subProductosPorPagina) => {
     });
     return response.data;
   };
+
+
+export const obtenerProductosDescuento = async (paginaActual, productosPorPagina) => {
+    const response = await api.get("/productos/descuento", {
+      params: {
+        pagina: paginaActual,
+        tamanio: productosPorPagina
+      }
+    });
+    return response.data;
+};
+
 export const obtenerProducto = async (productoId) => {
   const response = await api.get(`/productos/${productoId}`);
   return response.data;
@@ -524,6 +536,7 @@ export const crearDireccionEnvio = async (direccionData) => {
   formData.append("ciudad", direccionData.ciudad);
   formData.append("codigo_postal", direccionData.codigo_postal);
   formData.append("provincia", direccionData.provincia);
+  formData.append("direccion", direccionData.direccionUsuario);
   formData.append("usuario_id", direccionData.usuario_id);
 
   const response = await api.post("/direcciones-envio", formData, {
@@ -546,6 +559,7 @@ export const actualizarDireccionEnvio = async (direccionId, direccionData) => {
   formData.append("ciudad", direccionData.ciudad);
   formData.append("codigo_postal", direccionData.codigo_postal);
   formData.append("provincia", direccionData.provincia);
+  formData.append("direccion", direccionData.direccionUsuario);
   formData.append("usuario_id", direccionData.usuario_id);
 
   const response = await api.put(`/direcciones-envio/${direccionId}`, formData, {

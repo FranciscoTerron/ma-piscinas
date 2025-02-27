@@ -300,6 +300,13 @@ def listar_productos(pagina: int = 1, tamanio: int = 10, categoria_id:Optional[i
 
 
 # ============================================================
+# Ruta para listar productos con descuento
+# ============================================================
+@router.get("/productos/descuento")
+def obtener_productos_descuento(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    return services.obtener_productos_descuento(db, pagina, tamanio)
+
+# ============================================================
 # Ruta para verificar si un nombre de producto ya existe
 # ============================================================
 @router.get("/productos/verificar-nombre")
@@ -981,13 +988,15 @@ def crear_direccion(
     codigo_postal: str = Form(...),
     provincia: str = Form(...),
     usuario_id: int = Form(...),
+    direccion: str = Form(...),
     db: Session = Depends(get_db)
 ):
     return services.crear_direccion_envio(db, schemas.DireccionEnvioCreate(
         ciudad=ciudad,
         codigo_postal=codigo_postal,
         provincia=provincia,
-        usuario_id=usuario_id
+        usuario_id=usuario_id,
+        direccion = direccion,
     ))
 
 # ============================================================
@@ -1013,12 +1022,14 @@ def actualizar_direccion(
     ciudad: str = Form(None),
     codigo_postal: str = Form(None),
     provincia: str = Form(None),
-    db: Session = Depends(get_db)
+    direccion: str = Form(None),
+    db: Session = Depends(get_db),
 ):
     return services.actualizar_direccion_envio(db, direccion_id, schemas.DireccionEnvioUpdate(
         ciudad=ciudad,
         codigo_postal=codigo_postal,
-        provincia=provincia
+        provincia=provincia,
+        direccion= direccion,
     ))
 
 # ============================================================

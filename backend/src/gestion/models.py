@@ -56,7 +56,6 @@ class Usuario(BaseModel):
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
     telefono: Mapped[int] = mapped_column(Integer)
-    direccion: Mapped[str] = mapped_column(String)
     fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
     rol_id = Column(Integer, ForeignKey("roles.id"))
     rol = relationship("Rol", backref="usuarios")
@@ -82,6 +81,8 @@ class DireccionEnvio(BaseModel):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
     usuario = relationship("Usuario", back_populates="direcciones_envio")
+    direccion: Mapped[str] = mapped_column(String)
+
 
 class Rol(BaseModel):
     __tablename__ = "roles"

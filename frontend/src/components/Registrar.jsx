@@ -22,7 +22,6 @@ const Registrar = () => {
     nombre: '',
     email: '',
     telefono: '',
-    direccion: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -106,17 +105,6 @@ const Registrar = () => {
                   Solo se permiten números enteros positivos.
                 </Text>
               )}
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel color="#00008B">Dirección</FormLabel>
-              <Input
-                type="text"
-                onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                borderColor="#00CED1"
-                color="#000000"
-                _hover={{ borderColor: "#4169E1" }}
-                _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
-              />
             </FormControl>
             <FormControl isRequired>
               <FormLabel color="#00008B">Contraseña</FormLabel>

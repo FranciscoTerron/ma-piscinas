@@ -64,7 +64,6 @@ const PerfilUsuario = () => {
           <Text fontWeight="bold">Nombre: <Text as="span" fontWeight="normal">{usuario.nombre}</Text></Text>
           <Text fontWeight="bold">Email: <Text as="span" fontWeight="normal">{usuario.email}</Text></Text>
           <Text fontWeight="bold">Teléfono: <Text as="span" fontWeight="normal">{usuario.telefono || "No registrado"}</Text></Text>
-          <Text fontWeight="bold">Dirección: <Text as="span" fontWeight="normal">{usuario.direccion || "No registrada"}</Text></Text>
         </Box>
         <Flex gap={4}>
           <Button leftIcon={<Icon as={FaUserEdit} />} colorScheme="teal" onClick={onOpenPersonal}>Editar Datos</Button>
