@@ -136,6 +136,44 @@ class Token(BaseModel):
     access_token: str = Field(..., example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     token_type: str = Field(default="bearer", example="bearer")
 
+
+
+# ============================================================
+# Tipo de Descuento
+# ============================================================
+class TipoDescuentoEnum(str, Enum):
+    PORCENTAJE = "PORCENTAJE"
+    MONTO_FIJO = "MONTO_FIJO"
+    CUOTAS_SIN_INTERES = "CUOTAS_SIN_INTERES"
+
+# ============================================================
+# Esquema base para Descuento
+# ============================================================
+class Descuento(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+    tipo: TipoDescuentoEnum
+    valor: float
+    fecha_inicio: datetime
+    fecha_fin: Optional[datetime] = None
+    condiciones: Optional[str] = None
+    activo: bool = True
+    producto_id: Optional[int] = None
+    metodo_pago_id: Optional[int] = None
+
+class DescuentoCreate(Descuento):
+    pass
+
+class DescuentoUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    tipo: Optional[TipoDescuentoEnum] = None
+    valor: Optional[float] = None
+    fecha_inicio: Optional[datetime] = None
+    fecha_fin: Optional[datetime] = None
+    activo: Optional[bool] = None
+    producto_id: Optional[int] = None
+    
 #PRODUCTO
 #----------------------------------------------------------------------------------------------------
 
@@ -150,6 +188,7 @@ class ProductoBase(BaseModel):
     imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
     costo_compra: Optional[float] = Field(None, example=800.00)  # Nuevo campo
     subcategoria_id: Optional[int] = Field(None, example=1)  # Nuevo campo opcional
+    
 
 class ProductoCreate(ProductoBase):
     categoria_id: int = Field(..., example=1)
@@ -163,6 +202,23 @@ class Producto(ProductoBase):
 
     class Config:
         from_attributes = True
+        
+# ============================================================
+# Esquema de salida para Producto que incluye el descuento
+# ============================================================
+class ProductoOut(Producto):
+    descuento: Optional[Descuento] = None
+
+    class Config:
+        orm_mode = True
+        
+# ============================================================
+# Esquema para respuesta con paginación (lista de productos)
+# ============================================================
+class ProductoListResponse(BaseModel):
+    total: int
+    productos: List[ProductoOut]
+    
 #Categoria
 #-------------------------------------------------------------------------------------
 # ============================================================
@@ -463,41 +519,7 @@ class PedidosCanceladosResponse(BaseModel):
     ultimos_3_meses: Dict[str, float]  # {"2023-10": 15.2, ...}
     
 
-# ============================================================
-# Tipo de Descuento
-# ============================================================
-class TipoDescuentoEnum(str, Enum):
-    PORCENTAJE = "PORCENTAJE"
-    MONTO_FIJO = "MONTO_FIJO"
-    CUOTAS_SIN_INTERES = "CUOTAS_SIN_INTERES"
 
-# ============================================================
-# Esquema base para Descuento
-# ============================================================
-class Descuento(BaseModel):
-    nombre: str
-    descripcion: Optional[str] = None
-    tipo: TipoDescuentoEnum
-    valor: float
-    fecha_inicio: datetime
-    fecha_fin: Optional[datetime] = None
-    condiciones: Optional[str] = None
-    activo: bool = True
-    producto_id: Optional[int] = None
-    metodo_pago_id: Optional[int] = None
-
-class DescuentoCreate(Descuento):
-    pass
-
-class DescuentoUpdate(BaseModel):
-    nombre: Optional[str] = None
-    descripcion: Optional[str] = None
-    tipo: Optional[TipoDescuentoEnum] = None
-    valor: Optional[float] = None
-    fecha_inicio: Optional[datetime] = None
-    fecha_fin: Optional[datetime] = None
-    activo: Optional[bool] = None
-    producto_id: Optional[int] = None
 
 # ============================================================
 # Esquema base para DireccionEnvio

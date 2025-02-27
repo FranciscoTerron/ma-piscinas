@@ -30,6 +30,7 @@ import Reportes from './components/administrativo/reportes/Reportes';
 import Producto from '../src/components/cliente/Producto';
 import GestionDescuentos from '../src/components/administrativo/gestionProductos/gestionDescuentos/GestionDescuentos'
 import ListaActividades from '../src/components/administrativo/actividadesRecientes/ListaActividades';
+import FormularioEnvio from './components/carrito/FormularioEnvio';
 
 const AppRoutes = () => {
   return (
@@ -68,6 +69,15 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={["cliente", "administrador"]}>
             <ClienteProfile />
+          </PrivateRoute>
+        } 
+      />
+
+      <Route 
+        path="/FormularioEnvio" 
+        element={
+          <PrivateRoute allowedRoles={["cliente", "administrador"]}>
+            <FormularioEnvio />
           </PrivateRoute>
         } 
       />

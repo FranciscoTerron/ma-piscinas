@@ -32,6 +32,9 @@ import {
   actualizarCantidadProducto,
   listarProductos
 } from "../../services/api";
+import { useNavigate } from "react-router-dom";
+import { useDisclosure } from "@chakra-ui/react";
+
 
 const Carrito = () => {
   const [carrito, setCarrito] = useState(null);
@@ -42,6 +45,8 @@ const Carrito = () => {
   const [productoToDelete, setProductoToDelete] = useState(null);
   const [isClearAlertOpen, setIsClearAlertOpen] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     cargarCarrito();
@@ -128,6 +133,11 @@ const Carrito = () => {
       setIsDeleteAlertOpen(false);
       setProductoToDelete(null);
     }
+  };
+
+  const handleContinuarCompra = () => {
+    onClose(); // Cierra cualquier modal si está abierto
+    navigate("/FormularioEnvio"); // Redirige a la página de formulario de envío
   };
 
   const handleVaciarCarrito = async () => {
@@ -262,7 +272,7 @@ const Carrito = () => {
                 colorScheme="blue" 
                 size="sm"
                 px={6}
-                onClick={() => toast({ title: 'Redirigiendo a checkout...', status: 'info' })}
+                onClick={handleContinuarCompra}
               >
                 Continuar Compra
               </Button>

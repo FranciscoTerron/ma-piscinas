@@ -128,6 +128,7 @@ export const listarProductos = async (paginaActual, subProductosPorPagina) => {
   };
 
 
+
 export const obtenerProductosDescuento = async (paginaActual, productosPorPagina) => {
     const response = await api.get("/productos/descuento", {
       params: {
@@ -136,7 +137,8 @@ export const obtenerProductosDescuento = async (paginaActual, productosPorPagina
       }
     });
     return response.data;
-};
+  };
+  
 
 export const obtenerProducto = async (productoId) => {
   const response = await api.get(`/productos/${productoId}`);

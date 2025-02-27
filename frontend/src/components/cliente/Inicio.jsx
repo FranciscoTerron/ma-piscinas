@@ -13,11 +13,11 @@ const Inicio = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        // Llamada al endpoint que trae solo los productos con descuento
         const [descuentoData, categoriasData] = await Promise.all([
           obtenerProductosDescuento(pagina, 10),
           listarCategorias(),
         ]);
+        console.log("Productos descuento:", descuentoData.productos);
         setProductos(descuentoData.productos);
         setTotalPaginas(Math.ceil(descuentoData.total / 10));
         setCategorias(categoriasData.categorias);
@@ -112,7 +112,7 @@ const Inicio = () => {
                     <div className="card product-card border-0 rounded-3 overflow-hidden position-relative">
                       {/* Badge de descuento basado en la entidad Descuento */}
                       {item.descuento && (
-                        <div className="discount-badge   position-absolute top-0 start-0 m-2 bg-danger text-white px-2 py-1 rounded">
+                        <div className="discount-badge position-absolute top-0 start-0 m-2 bg-danger text-white px-2 py-1 rounded">
                           {item.descuento.tipo === "PORCENTAJE" 
                             ? `${item.descuento.valor}% OFF` 
                             : item.descuento.tipo === "CUOTAS_SIN_INTERES" 
@@ -139,9 +139,9 @@ const Inicio = () => {
                             ${item.precio.toLocaleString()}
                           </p>
                         )}
-                        {item.descuento && item.descuento.tipo === "CUOTAS_SIN_INTERES" && (
+                       {item.descuento && item.descuento.tipo === "CUOTAS_SIN_INTERES" && (
                           <p className="text-success fw-bold">
-                            {item.descuento.valor} cuotas sin interés
+                            {item.descuento.valor} cuotas sin interés de ${ (item.precio / item.descuento.valor).toLocaleString() }
                           </p>
                         )}
                         <button className="btn btn-custom text-white">Agregar al Carrito</button>

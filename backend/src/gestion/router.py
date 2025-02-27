@@ -979,6 +979,13 @@ def eliminar_descuento(descuento_id: int, db: Session = Depends(get_db)):
 
 
 
+@router.get("/productos/descuento", response_model=schemas.ProductoListResponse)
+def get_productos_descuento(pagina: int = 1, tamanio: int = 10, db: Session = Depends(get_db)):
+    """
+    Obtiene los productos que tienen descuento, incluyendo la información completa del descuento.
+    """
+    return services.obtener_productos_descuento(db=db, pagina=pagina, tamanio=tamanio)
+
 # ============================================================
 # Ruta para crear una dirección de envío
 # ============================================================

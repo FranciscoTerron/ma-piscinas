@@ -1,5 +1,5 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import func, extract, case
 from sqlalchemy.exc import SQLAlchemyError
 from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio
@@ -11,6 +11,7 @@ from fastapi import HTTPException, status, UploadFile
 import cloudinary.uploader
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -1345,6 +1346,15 @@ def eliminar_descuento(db: Session, descuento_id: int):
     descuento = obtener_descuento_por_id(db, descuento_id)
     db.delete(descuento)
     db.commit()
+
+
+def obtener_productos_descuento(db: Session, pagina: int, tamanio: int) -> dict:
+    offset = (pagina - 1) * tamanio
+    # Hacemos eager load de la relación "descuento"
+    query = db.query(Producto).options(joinedload(Producto.descuento)).filter(Producto.descuento_id.isnot(None))
+    total = query.count()
+    productos = query.offset(offset).limit(tamanio).all()
+    return {"total": total, "productos": productos}
 
 # ============================================================
 # Crear una nueva dirección de envío
