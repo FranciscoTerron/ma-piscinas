@@ -99,7 +99,7 @@ const DireccionesEnvio = () => {
   return (
     <Box
       w="100%"
-      p={6}
+      p={2}
       borderRadius="lg"
       boxShadow="xl"
       bg="white"

@@ -104,9 +104,6 @@ const PerfilCompleto = () => {
         borderWidth="1px"
         borderColor={borderColor}
       >
-        <Heading size="md" mb={6}>
-          {menuOptions.find((option) => option.id === selectedOption)?.label}
-        </Heading>
         {selectedOption === "perfil" ? (
           <PerfilUsuario />
         ) : selectedOption === "direcciones" ? (

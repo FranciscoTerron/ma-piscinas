@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Box, Button, Heading, Text, FormControl, FormLabel, Input, Divider, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
 } from "@chakra-ui/react";
-import { FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio } from "../../services/api";
 import { useAuth } from '../../context/AuthContext';
@@ -23,7 +22,6 @@ const FormularioEnvio = () => {
   const [metodoEnvio, setMetodoEnvio] = useState("domicilio");
   const toast = useToast();
   const navigate = useNavigate();
-  const [usuario, setUsuario] = useState(null);
   const [direcciones, setDirecciones] = useState(null);
   // Estado para la dirección seleccionada (por índice) y para mostrar el formulario de dirección
   const [selectedDireccionIndex, setSelectedDireccionIndex] = useState(0);
@@ -101,7 +99,6 @@ const FormularioEnvio = () => {
   const cargarUsuario = async () => {
     try {
       const data = await obtenerUsuarioPorId(userId);
-      setUsuario(data);
       setFormData((prev) => ({
         ...prev,
         nombre: data.nombre || "",
@@ -150,7 +147,7 @@ const FormularioEnvio = () => {
         codigo_postal: nuevaDireccion.codigo_postal,
         provincia: nuevaDireccion.provincia,
         ciudad: nuevaDireccion.ciudad,
-        direccion: nuevaDireccion.direccion, // O nuevaDireccion.direccionUsuario según corresponda
+        direccion: nuevaDireccion.direccion, 
       });
       console.log("Direccion creada:", direccionCreada);
       
@@ -160,7 +157,7 @@ const FormularioEnvio = () => {
         codigoPostal: direccionCreada?.codigo_postal || nuevaDireccion.codigo_postal,
         provincia: direccionCreada?.provincia || nuevaDireccion.provincia,
         ciudad: direccionCreada?.ciudad || nuevaDireccion.ciudad,
-        direccion: direccionCreada?.direccion || direccionCreada?.direccionUsuario || nuevaDireccion.direccion,
+        direccion: direccionCreada?.direccion || direccionCreada?.direccion || nuevaDireccion.direccion,
       }));
 
       

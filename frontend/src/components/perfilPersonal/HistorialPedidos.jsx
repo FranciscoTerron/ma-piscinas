@@ -1,13 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Box, VStack, Text, Heading, Spinner, Alert, AlertIcon, Flex, Divider,} from "@chakra-ui/react";
-import { obtenerPedidosUsuario } from "../../services/api";
+import {
+  Box,
+  VStack,
+  Text,
+  Heading,
+  Spinner,
+  Alert,
+  AlertIcon,
+  Flex,
+  Divider,
+  Button,
+  useDisclosure,
+  useToast,
+} from "@chakra-ui/react";
+import { obtenerPedidosUsuario, cancelarPedido } from "../../services/api"; // Asegúrate de importar cancelarPedido
 import { useAuth } from "../../context/AuthContext";
+import { FaEye, FaTimes } from "react-icons/fa"; // Agrega FaTimes para el ícono de cancelar
+import ListarDetallesPedido from "../administrativo/gestionPedidos/ListarDetallesPedido";
 
 const HistorialPedidos = () => {
   const [pedidos, setPedidos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { userId } = useAuth();
+  const { isOpen: isDetallesOpen, onOpen: onDetallesOpen, onClose: onDetallesClose } = useDisclosure();
+  const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
+  const [pedidoACancelar, setPedidoACancelar] = useState(null); // Estado para el pedido a cancelar
+  const toast = useToast();
 
   // Obtener pedidos del usuario
   useEffect(() => {
@@ -24,10 +43,45 @@ const HistorialPedidos = () => {
     fetchPedidos();
   }, [userId]);
 
+  const handleVerDetalles = (pedidoId) => {
+    setPedidoSeleccionado(pedidoId);
+    onDetallesOpen();
+  };
+
+  // Función para manejar la cancelación del pedido
+  const handleCancelarPedido = async () => {
+    try {
+      await cancelarPedido(pedidoACancelar); // Llama a la API para cancelar el pedido
+      // Actualiza el estado del pedido en la lista local
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((pedido) =>
+          pedido.id === pedidoACancelar ? { ...pedido, estado: "CANCELADO" } : pedido
+        )
+      );
+      toast({
+        title: "Pedido cancelado",
+        description: "El pedido ha sido cancelado correctamente.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cancelar el pedido.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setPedidoACancelar(null); // Limpia el estado del pedido a cancelar
+    }
+  };
+
   return (
     <Box
       w="100%"
-      p={6}
+      p={2}
       borderRadius="lg"
       boxShadow="xl"
       bg="white"
@@ -51,7 +105,7 @@ const HistorialPedidos = () => {
           <Text color="gray.600">No hay pedidos registrados.</Text>
         ) : (
           pedidos.map((pedido) => (
-            <Box key={pedido.id} w="100%" p={4} borderWidth="1px" borderRadius="lg">
+            <Box key={pedido.id} w="100%" p={2} borderWidth="1px" borderRadius="lg">
               <Flex align="center" justify="space-between">
                 {/* Información del pedido */}
                 <Flex align="center" flex="1" wrap="wrap" gap={4}>
@@ -82,12 +136,84 @@ const HistorialPedidos = () => {
                       ${pedido.total.toFixed(2)}
                     </Text>
                   </Flex>
+
+                  <Flex align="center">
+                    <Button
+                      leftIcon={<FaEye />}
+                      size="sm"
+                      colorScheme="blue"
+                      variant="outline"
+                      onClick={() => handleVerDetalles(pedido.id)}
+                      top="-6px"
+                    >
+                      Ver Detalles
+                    </Button>
+                    {pedido.estado === "PENDIENTE" && (
+                      <Button
+                        leftIcon={<FaTimes />}
+                        size="sm"
+                        colorScheme="red"
+                        variant="outline"
+                        ml={2}
+                        onClick={() => setPedidoACancelar(pedido.id)}
+                        top="-6px"
+                      >
+                        Cancelar Pedido
+                      </Button>
+                    )}
+                  </Flex>
                 </Flex>
               </Flex>
             </Box>
           ))
         )}
       </VStack>
+
+      {/* Modal de confirmación para cancelar el pedido */}
+      {pedidoACancelar && (
+        <Box
+          position="fixed"
+          top="0"
+          left="0"
+          right="0"
+          bottom="0"
+          bg="rgba(0, 0, 0, 0.5)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex="9999"
+        >
+          <Box bg="white" p={6} borderRadius="lg" boxShadow="xl">
+            <Text fontWeight="bold" mb={4}>
+              ¿Estás seguro de que deseas cancelar este pedido?
+            </Text>
+            <Text mb={4}>Esta acción es irreversible.</Text>
+            <Flex justify="flex-end" gap={2}>
+              <Button
+                colorScheme="gray"
+                onClick={() => setPedidoACancelar(null)} 
+              >
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleCancelarPedido} 
+              >
+                Sí, cancelar
+              </Button>
+            </Flex>
+          </Box>
+        </Box>
+      )}
+
+      {/* Modal para ver detalles del pedido */}
+      {pedidoSeleccionado && (
+        <ListarDetallesPedido
+          pedidoId={pedidoSeleccionado}
+          isOpen={isDetallesOpen}
+          onClose={onDetallesClose}
+        />
+      )}
     </Box>
   );
 };

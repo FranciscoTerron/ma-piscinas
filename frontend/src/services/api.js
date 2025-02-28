@@ -393,6 +393,10 @@ export const obtenerPedidosUsuario = async (usuarioId) => {
   return response.data;
 }
 
+export const cancelarPedido = async (pedidoId) => {
+  await api.put(`/pedidos/${pedidoId}/cancelar`);
+};
+
 // Servicios para Carrito
 //---------------------------------------------------------------------
 // Obtener el carrito del usuario autenticado (o crearlo si no existe)
