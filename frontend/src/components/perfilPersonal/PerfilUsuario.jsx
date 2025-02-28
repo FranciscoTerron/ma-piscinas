@@ -55,7 +55,7 @@ const PerfilUsuario = () => {
   if (!usuario) return <Text textAlign="center" mt={10} fontSize="lg" fontWeight="bold">Cargando perfil...</Text>;
 
   return (
-    <Box maxW="lg" mx="auto" p={6} borderRadius="lg" boxShadow="xl" bg="white" border="2px solid" borderColor="#00CED1">
+    <Box w="100%" mx="auto" p={6} borderRadius="lg" boxShadow="xl" bg="white" border="2px solid" borderColor="#00CED1">
       <VStack spacing={6} align="center">
         <Avatar name={usuario.nombre} size="xl" bg="#00CED1" />
         <Heading size="lg" color="teal.600">Perfil de Usuario</Heading>

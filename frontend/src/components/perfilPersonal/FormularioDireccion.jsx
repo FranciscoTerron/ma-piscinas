@@ -69,7 +69,7 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
       provincia: selectedProvince ? selectedProvince.nombre : provincia,
       ciudad: selectedCity ? selectedCity.nombre : ciudad,
       codigo_postal: codigoPostal,
-      direccionUsuario,
+      direccion: direccionUsuario,
     });
   };
 

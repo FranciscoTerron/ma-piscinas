@@ -388,6 +388,11 @@ export const listarPedidoDetalles = async (pedidoId) => {
   return response.data;
 };
 
+export const obtenerPedidosUsuario = async (usuarioId) => {
+  const response = await api.get(`/pedidos/usuario/${usuarioId}`);
+  return response.data;
+}
+
 // Servicios para Carrito
 //---------------------------------------------------------------------
 // Obtener el carrito del usuario autenticado (o crearlo si no existe)
@@ -538,7 +543,7 @@ export const crearDireccionEnvio = async (direccionData) => {
   formData.append("ciudad", direccionData.ciudad);
   formData.append("codigo_postal", direccionData.codigo_postal);
   formData.append("provincia", direccionData.provincia);
-  formData.append("direccion", direccionData.direccionUsuario);
+  formData.append("direccion", direccionData.direccion);
   formData.append("usuario_id", direccionData.usuario_id);
 
   const response = await api.post("/direcciones-envio", formData, {

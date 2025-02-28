@@ -58,7 +58,7 @@ const ListarPedidos = ({ pedidos }) => {
             {pedidos.map((pedido) => (
               <Tr key={pedido.id} _hover={{ bg: "gray.50" }} transition="all 0.2s">
                 <Td textAlign="center" fontSize="sm" color="gray.600">#{pedido.id}</Td>
-                <Td color="gray.700">{new Date(pedido.fecha).toLocaleDateString()}</Td>
+                <Td color="gray.700">{new Date(pedido.fecha_creacion).toLocaleDateString()}</Td>
                 <Td textAlign="right" fontWeight="bold" color="gray.800">
                   ${pedido.total.toLocaleString("es-AR", { minimumFractionDigits: 2 })}
                 </Td>
