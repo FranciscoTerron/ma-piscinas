@@ -40,6 +40,7 @@ def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
     
     nuevo_usuario = Usuario(
         nombre=usuario.nombre,
+        apellido=usuario.apellido,
         email=usuario.email,
         telefono=usuario.telefono,
         rol_id=rol_cliente.id  # Asignar el rol de "cliente", cuando recien se registra

@@ -92,9 +92,11 @@ class ObtenerRol(RolBase):
 # Esquema usuario
 # ============================================================
 class UsuarioBase(BaseModel):
-    nombre: str = Field(..., example="Juan Pérez")
+    nombre: str = Field(..., example="Juan")
     email: EmailStr = Field(..., example="juan.perez@example.com")
     telefono: int = Field(..., example=123456789)
+    apellido: str = Field(..., example="Pérez")
+
 
 # ============================================================
 # Esquema para crear un usuario 
@@ -119,6 +121,7 @@ class LoginRequest(BaseModel):
 # ============================================================
 class UsuarioUpdate(BaseModel):
     nombre: str | None = None
+    apellido: str | None = None 
     email: EmailStr | None = None
     telefono: int | None = None
     direccion: str | None = None

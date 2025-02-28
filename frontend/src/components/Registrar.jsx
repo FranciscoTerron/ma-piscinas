@@ -20,6 +20,7 @@ import { registrar } from '../services/api';
 const Registrar = () => {
   const [formData, setFormData] = useState({
     nombre: '',
+    apellido: '',
     email: '',
     telefono: '',
     password: '',
@@ -67,6 +68,17 @@ const Registrar = () => {
               <Input
                 type="text"
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                borderColor="#00CED1"
+                color="#000000"
+                _hover={{ borderColor: "#4169E1" }}
+                _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel color="#00008B">Apellido</FormLabel>
+              <Input
+                type="text"
+                onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
                 borderColor="#00CED1"
                 color="#000000"
                 _hover={{ borderColor: "#4169E1" }}

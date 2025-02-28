@@ -6,6 +6,7 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
   const toast = useToast();
   const [formData, setFormData] = useState({
     nombre: "",
+    apellido: '',
     email: "",
     telefono: "",
   });
@@ -14,6 +15,7 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
     if (user) {
       setFormData({
         nombre: user.nombre || "",
+        apellido: user.apellido || "",
         email: user.email || "",
         telefono: user.telefono || "",
       });
@@ -55,6 +57,10 @@ const FormularioPersonal = ({ usuarioId ,user, onSuccess }) => {
           <FormControl>
             <FormLabel>Nombre</FormLabel>
             <Input bg="white" border="1px" borderColor="gray.200" _hover={{ borderColor: "gray.300" }} name="nombre" value={formData.nombre} onChange={handleChange} placeholder="Nombre" />
+          </FormControl>
+          <FormControl>
+            <FormLabel>Apellido</FormLabel>
+            <Input bg="white" border="1px" borderColor="gray.200" _hover={{ borderColor: "gray.300" }} name="apellido" value={formData.apellido} onChange={handleChange} placeholder="Apellido" />
           </FormControl>
           <FormControl>
             <FormLabel>Email</FormLabel>

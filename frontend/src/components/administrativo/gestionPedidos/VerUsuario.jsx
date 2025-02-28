@@ -34,9 +34,6 @@ const VerUsuario = ({ usuario, isOpen, onClose }) => {
             <Text fontSize="md" color="gray.600">
               Teléfono: {usuario.telefono || "No disponible"}
             </Text>
-            <Text fontSize="md" color="gray.600">
-              Dirección: {usuario.direccion || "No disponible"}
-            </Text>
           </Box>
         </ModalBody>
       </ModalContent>

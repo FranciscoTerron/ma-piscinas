@@ -1,31 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Box,
-  Button,
-  Heading,
-  Text,
-  FormControl,
-  FormLabel,
-  Input,
-  Checkbox,
-  Divider,
-  Flex,
-  Grid,
-  GridItem,
-  VStack,
-  HStack,
-  useToast,
-  Container,
-  Radio,
-  RadioGroup,
-  Badge,
-  Image,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink
+  Box, Button, Heading, Text, FormControl, FormLabel, Input, Divider, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
 } from "@chakra-ui/react";
-import { FaMapMarkerAlt, FaChevronRight, FaCheck, FaCreditCard } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { FaMapMarkerAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio } from "../../services/api";
+import { useAuth } from '../../context/AuthContext';
+import FormularioDireccion from "../perfilPersonal/FormularioDireccion"; // Asegúrate de ajustar la ruta según tu estructura
 
 const FormularioEnvio = () => {
   const [formData, setFormData] = useState({
@@ -34,38 +15,41 @@ const FormularioEnvio = () => {
     telefono: "",
     email: "",
     codigoPostal: "",
-    provincia: "Chubut",
+    provincia: "",
     ciudad: "",
-    calle: "",
-    numero: "",
-    departamento: "",
-    barrio: "",
-    recibirOfertas: true
+    direccion: "",
   });
   
   const [metodoEnvio, setMetodoEnvio] = useState("domicilio");
   const toast = useToast();
   const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(null);
+  const [direcciones, setDirecciones] = useState(null);
+  // Estado para la dirección seleccionada (por índice) y para mostrar el formulario de dirección
+  const [selectedDireccionIndex, setSelectedDireccionIndex] = useState(0);
+  const [mostrarFormularioDireccion, setMostrarFormularioDireccion] = useState(false);
+  const { userId } = useAuth();
 
-  // Esta sería la información del carrito que normalmente recibirías como prop
-  // o cargarías desde una API o contexto global
   const productoEjemplo = {
     nombre: "Hidrolavadora Karcher K3 Black Edition",
     cantidad: 1,
     precio: 260900.00,
     imagen: "/api/placeholder/80/80"
   };
+  const costoEnvio = 51229.11;
+  const subtotal = productoEjemplo.precio;
+  const total = subtotal + costoEnvio;
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value
-    });
+    }));
   };
 
   const validarYContinuar = () => {
-    const camposRequeridos = ["nombre", "apellido", "telefono", "email", "codigoPostal", "ciudad", "calle", "numero"];
+    const camposRequeridos = ["nombre", "apellido", "telefono", "email", "codigoPostal", "ciudad", "direccion"];
     for (const campo of camposRequeridos) {
       if (!formData[campo]) {
         toast({
@@ -77,7 +61,6 @@ const FormularioEnvio = () => {
         return;
       }
     }
-    // Simular navegación a la página de pago
     navigate("/pago");
   };
 
@@ -85,52 +68,132 @@ const FormularioEnvio = () => {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(monto);
   };
 
-  const costoEnvio = 51229.11;
-  const subtotal = productoEjemplo.precio;
-  const total = subtotal + costoEnvio;
+  // Carga de las direcciones desde la BD
+  const cargarDirecciones = async () => {
+    try {
+      const data = await obtenerDireccionesEnvioUsuario(userId);
+      // Si data es un array y tiene al menos una dirección, usamos la primera por defecto
+      if (Array.isArray(data) && data.length > 0) {
+        setDirecciones(data);
+        setSelectedDireccionIndex(0);
+        const direccionData = data[0];
+        setFormData((prev) => ({
+          ...prev,
+          codigoPostal: direccionData.codigo_postal || "",
+          provincia: direccionData.provincia || "",
+          ciudad: direccionData.ciudad || "",
+          direccion: direccionData.direccion || "",
+        }));
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar las direcciones.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Carga de los datos personales del usuario
+  const cargarUsuario = async () => {
+    try {
+      const data = await obtenerUsuarioPorId(userId);
+      setUsuario(data);
+      setFormData((prev) => ({
+        ...prev,
+        nombre: data.nombre || "",
+        apellido: data.apellido || "",
+        telefono: data.telefono || "",
+        email: data.email || "",
+      }));
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la información del usuario.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      cargarUsuario();
+      cargarDirecciones();
+    }
+  }, [userId]);
+
+  // Manejo del cambio de dirección seleccionada en el selector
+  const handleDireccionChange = (e) => {
+    const index = Number(e.target.value);
+    setSelectedDireccionIndex(index);
+    const direccionData = direcciones[index];
+    setFormData((prev) => ({
+      ...prev,
+      codigoPostal: direccionData.codigo_postal || "",
+      provincia: direccionData.provincia || "",
+      ciudad: direccionData.ciudad || "",
+      direccion: direccionData.direccion || "",
+    }));
+  };
+
+const handleGuardarDireccion = async (nuevaDireccion) => {
+  try {
+    // Llamamos a la función de la API para crear la nueva dirección, 
+    // enviando el usuario_id y los datos ingresados.
+    const direccionCreada = await crearDireccionEnvio({
+      usuario_id: userId,
+      codigo_postal: nuevaDireccion.codigo_postal,
+      provincia: nuevaDireccion.provincia,
+      ciudad: nuevaDireccion.ciudad,
+      direccion: nuevaDireccion.direccionUsuario,
+    });
+    
+    // Actualizamos el formulario principal con la dirección recién creada
+    setFormData((prev) => ({
+      ...prev,
+      codigoPostal: direccionCreada.codigo_postal || "",
+      provincia: direccionCreada.provincia || "",
+      ciudad: direccionCreada.ciudad || "",
+      direccion: direccionCreada.direccion || "",
+    }));
+    
+    // Actualizamos la lista de direcciones, agregando la nueva
+    setDirecciones((prev) => (prev ? [...prev, direccionCreada] : [direccionCreada]));
+    // Actualizamos el índice de la dirección seleccionada al de la nueva dirección
+    setSelectedDireccionIndex((prev) => (prev ? prev.length : 0));
+    // Ocultamos el formulario de dirección
+    setMostrarFormularioDireccion(false);
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "No se pudo guardar la dirección.",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
+
+
+  const handleCancelarDireccion = () => {
+    setMostrarFormularioDireccion(false);
+  };
 
   return (
     <Container maxW="container.xl" py={6}>
-
-      {/* Main content grid */}
       <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8}>
         <GridItem>
-          {/* Datos de contacto */}
-          <Box p={6} bg="white" borderRadius="md" boxShadow="sm" mb={6}>
-            <Heading as="h2" size="md" color="gray.700" mb={6}>
-              DATOS DE CONTACTO
-            </Heading>
-            
-            <FormControl isRequired mb={4}>
-              <FormLabel fontWeight="normal">E-mail</FormLabel>
-              <Input 
-                type="email" 
-                name="email" 
-                value={formData.email} 
-                onChange={handleInputChange} 
-                placeholder="ejemplo@email.com"
-                borderRadius="md"
-                bg="gray.50"
-              />
-            </FormControl>
-            
-            <Checkbox 
-              name="recibirOfertas" 
-              isChecked={formData.recibirOfertas} 
-              onChange={handleInputChange}
-              colorScheme="blue"
-            >
-              Quiero recibir ofertas y novedades por e-mail
-            </Checkbox>
-          </Box>
-          
-          {/* Datos del destinatario */}
           <Box p={6} bg="white" borderRadius="md" boxShadow="sm" mb={6}>
             <Heading as="h2" size="md" color="gray.700" mb={6}>
               DATOS DEL DESTINATARIO
             </Heading>
             
             <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+              {/* Datos personales (no editables) */}
               <GridItem>
                 <FormControl isRequired>
                   <FormLabel fontWeight="normal">Nombre</FormLabel>
@@ -140,6 +203,7 @@ const FormularioEnvio = () => {
                     onChange={handleInputChange}
                     borderRadius="md"
                     bg="gray.50"
+                    isReadOnly
                   />
                 </FormControl>
               </GridItem>
@@ -153,6 +217,7 @@ const FormularioEnvio = () => {
                     onChange={handleInputChange}
                     borderRadius="md"
                     bg="gray.50"
+                    isReadOnly
                   />
                 </FormControl>
               </GridItem>
@@ -167,106 +232,94 @@ const FormularioEnvio = () => {
                     type="tel"
                     borderRadius="md"
                     bg="gray.50"
+                    isReadOnly
                   />
                 </FormControl>
               </GridItem>
               
-              <GridItem colSpan={2}>
-                <FormControl isRequired mt={2}>
-                  <FormLabel fontWeight="normal">Código Postal</FormLabel>
-                  <Input 
-                    name="codigoPostal" 
-                    value={formData.codigoPostal || "9105"} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                </FormControl>
-                
-                {(formData.codigoPostal || "9105") && (
-                  <HStack mt={2} p={2} borderRadius="md" bg="gray.100" spacing={1}>
-                    <FaMapMarkerAlt color="gray" />
-                    <Text fontSize="sm" color="gray.700">
-                      {formData.provincia}
-                    </Text>
-                    <Button size="xs" colorScheme="blue" variant="link" ml="auto">
-                      Cambiar
+              {/* Si existen direcciones, se muestra el selector y los campos de dirección; si no, se muestra el botón para agregar */}
+              {(direcciones && direcciones.length > 0) ? (
+                <>
+                  {direcciones.length > 1 && (
+                    <GridItem colSpan={2}>
+                      <FormControl isRequired>
+                        <FormLabel fontWeight="normal">Selecciona tu dirección</FormLabel>
+                        <Select value={selectedDireccionIndex} onChange={handleDireccionChange}>
+                          {direcciones.map((direccion, index) => (
+                            <option key={direccion.id || index} value={index}>
+                              {direccion.direccion}, {direccion.ciudad}, {direccion.provincia} ({direccion.codigo_postal})
+                            </option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </GridItem>
+                  )}
+                  <GridItem colSpan={2}>
+                    <FormControl isRequired mt={2}>
+                      <FormLabel fontWeight="normal">Código Postal</FormLabel>
+                      <Input 
+                        name="codigoPostal" 
+                        value={formData.codigoPostal} 
+                        onChange={handleInputChange}
+                        borderRadius="md"
+                        bg="gray.50"
+                      />
+                    </FormControl>
+                  </GridItem>
+                  <GridItem colSpan={2}>
+                    <FormControl isRequired>
+                      <FormLabel fontWeight="normal">Provincia</FormLabel>
+                      <Input 
+                        name="provincia" 
+                        value={formData.provincia} 
+                        onChange={handleInputChange}
+                        borderRadius="md"
+                        bg="gray.50"
+                      />
+                    </FormControl>
+                  </GridItem>
+                  <GridItem colSpan={2}>
+                    <FormControl isRequired>
+                      <FormLabel fontWeight="normal">Ciudad</FormLabel>
+                      <Input 
+                        name="ciudad" 
+                        value={formData.ciudad} 
+                        onChange={handleInputChange}
+                        borderRadius="md"
+                        bg="gray.50"
+                      />
+                    </FormControl>
+                  </GridItem>
+                  <GridItem colSpan={2}>
+                    <FormControl isRequired>
+                      <FormLabel fontWeight="normal">Dirección</FormLabel>
+                      <Input 
+                        name="direccion" 
+                        value={formData.direccion} 
+                        onChange={handleInputChange}
+                        borderRadius="md"
+                        bg="gray.50"
+                      />
+                    </FormControl>
+                  </GridItem>
+                </>
+              ) : (
+                <GridItem colSpan={2}>
+                  {mostrarFormularioDireccion ? (
+                    <FormularioDireccion
+                      onGuardar={handleGuardarDireccion}
+                      onCancelar={handleCancelarDireccion}
+                    />
+                  ) : (
+                    <Button onClick={() => setMostrarFormularioDireccion(true)}>
+                      Agregar dirección
                     </Button>
-                  </HStack>
-                )}
-              </GridItem>
-              
-              <GridItem>
-                <FormControl isRequired>
-                  <FormLabel fontWeight="normal">Calle</FormLabel>
-                  <Input 
-                    name="calle" 
-                    value={formData.calle || "dasd"} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                </FormControl>
-              </GridItem>
-              
-              <GridItem>
-                <FormControl isRequired>
-                  <FormLabel fontWeight="normal">Número</FormLabel>
-                  <Input 
-                    name="numero" 
-                    value={formData.numero || "34412"} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                  <Checkbox size="sm" mt={1}>
-                    Sin número
-                  </Checkbox>
-                </FormControl>
-              </GridItem>
-              
-              <GridItem>
-                <FormControl>
-                  <FormLabel fontWeight="normal">Departamento (opcional)</FormLabel>
-                  <Input 
-                    name="departamento" 
-                    value={formData.departamento} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                </FormControl>
-              </GridItem>
-              
-              <GridItem>
-                <FormControl>
-                  <FormLabel fontWeight="normal">Barrio (opcional)</FormLabel>
-                  <Input 
-                    name="barrio" 
-                    value={formData.barrio} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                </FormControl>
-              </GridItem>
-              
-              <GridItem colSpan={2}>
-                <FormControl isRequired>
-                  <FormLabel fontWeight="normal">Ciudad</FormLabel>
-                  <Input 
-                    name="ciudad" 
-                    value={formData.ciudad || "D"} 
-                    onChange={handleInputChange}
-                    borderRadius="md"
-                    bg="gray.50"
-                  />
-                </FormControl>
-              </GridItem>
+                  )}
+                </GridItem>
+              )}
             </Grid>
           </Box>
           
-          {/* Método de entrega */}
           <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
             <Heading as="h2" size="md" color="gray.700" mb={6}>
               ENTREGA
@@ -300,32 +353,18 @@ const FormularioEnvio = () => {
                 >
                   <Radio value="retiro" colorScheme="blue" isDisabled>
                     <Flex align="center" justify="space-between" width="100%">
-                      <Text>
-                        Retiro en tienda
-                      </Text>
+                      <Text>Retiro en tienda</Text>
                       <Text>Gratis</Text>
                     </Flex>
                   </Radio>
                 </Box>
               </VStack>
             </RadioGroup>
-            
-            <Button 
-              mt={4}
-              size="sm"
-              variant="link"
-              color="blue.500"
-              onClick={() => {}}
-            >
-              MÁS OPCIONES
-            </Button>
           </Box>
         </GridItem>
         
-        {/* Resumen de la compra - columna derecha */}
         <GridItem>
           <Box p={6} bg="white" borderRadius="md" boxShadow="sm" position="sticky" top="20px">
-            {/* Producto */}
             <HStack mb={6} spacing={4} align="start">
               <Image 
                 src={productoEjemplo.imagen} 
@@ -346,7 +385,6 @@ const FormularioEnvio = () => {
             
             <Divider mb={4} />
             
-            {/* Resumen de costos */}
             <VStack spacing={3} align="stretch" mb={6}>
               <Flex justify="space-between">
                 <Text>Subtotal</Text>
@@ -359,7 +397,6 @@ const FormularioEnvio = () => {
               </Flex>
             </VStack>
             
-            {/* Total */}
             <Box p={4} bg="gray.50" borderRadius="md" mb={6}>
               <Flex justify="space-between" align="center">
                 <Text fontSize="lg" fontWeight="bold">Total</Text>
@@ -367,22 +404,8 @@ const FormularioEnvio = () => {
                   {formatearMonto(total)}
                 </Text>
               </Flex>
-            </Box>
+            </Box>      
             
-            {/* Código de descuento */}
-            <Button 
-              leftIcon={<FaCheck />} 
-              variant="outline" 
-              size="md" 
-              width="100%" 
-              mb={6}
-              borderColor="gray.300"
-              color="gray.700"
-            >
-              Agregar cupón de descuento
-            </Button>
-            
-            {/* Botón de continuar */}
             <Button 
               colorScheme="blue" 
               size="lg"

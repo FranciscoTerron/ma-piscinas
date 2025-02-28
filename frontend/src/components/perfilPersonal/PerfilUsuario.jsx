@@ -62,6 +62,7 @@ const PerfilUsuario = () => {
         <Divider borderColor="teal.300" />
         <Box textAlign="center" fontSize="md" color="gray.700">
           <Text fontWeight="bold">Nombre: <Text as="span" fontWeight="normal">{usuario.nombre}</Text></Text>
+          <Text fontWeight="bold">Apellido: <Text as="span" fontWeight="normal">{usuario.apellido}</Text></Text>
           <Text fontWeight="bold">Email: <Text as="span" fontWeight="normal">{usuario.email}</Text></Text>
           <Text fontWeight="bold">Teléfono: <Text as="span" fontWeight="normal">{usuario.telefono || "No registrado"}</Text></Text>
         </Box>
