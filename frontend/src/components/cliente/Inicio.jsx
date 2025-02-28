@@ -3,12 +3,18 @@ import { obtenerProductosDescuento, listarCategorias } from "../../services/api"
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Carousel } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useToast } from "@chakra-ui/react";
+
 
 const Inicio = () => {
   const [productos, setProductos] = useState([]); // Productos con descuento
   const [categorias, setCategorias] = useState([]);
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
+  const { addToCart } = useCart();
+  const toast = useToast();
+
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -144,10 +150,17 @@ const Inicio = () => {
                             {item.descuento.valor} cuotas sin interés de ${ (item.precio / item.descuento.valor).toLocaleString() }
                           </p>
                         )}
-                        <button className="btn btn-custom text-white">Agregar al Carrito</button>
-                      </div>
-                    </div>
+                    <button
+                      className="btn btn-custom w-100 mt-2"
+                      onClick={() => addToCart(item)}
+                    >
+                      Agregar al Carrito
+                    </button>
+
+                 
                   </div>
+                </div>
+              </div>
                 ))}
               </div>
             </Carousel.Item>

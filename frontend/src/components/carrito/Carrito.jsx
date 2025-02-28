@@ -136,8 +136,14 @@ const Carrito = () => {
   };
 
   const handleContinuarCompra = () => {
-    onClose(); // Cierra cualquier modal si está abierto
-    navigate("/FormularioEnvio"); // Redirige a la página de formulario de envío
+    // Cerrar todos los modales posibles
+    setIsDeleteAlertOpen(false);
+    setIsClearAlertOpen(false);
+    
+    // Pequeño retraso para permitir el cierre visual antes de navegar
+    setTimeout(() => {
+      navigate("/FormularioEnvio");
+    }, 100);
   };
 
   const handleVaciarCarrito = async () => {

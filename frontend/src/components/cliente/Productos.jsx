@@ -1,14 +1,40 @@
 import React, { useEffect, useState } from "react";
 import {
-  Container, VStack, HStack, Text, Box, Grid, Image, Button, Badge, useToast, Input, Select,
-  Skeleton, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton,
-  useDisclosure, IconButton, RangeSlider, RangeSliderTrack, RangeSliderFilledTrack, RangeSliderThumb,
-  Flex, useBreakpointValue, InputGroup, InputLeftElement
+  Container,
+  VStack,
+  HStack,
+  Text,
+  Box,
+  Grid,
+  Image,
+  Button,
+  Badge,
+  useToast,
+  Input,
+  Select,
+  Skeleton,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
+  IconButton,
+  RangeSlider,
+  RangeSliderTrack,
+  RangeSliderFilledTrack,
+  RangeSliderThumb,
+  Flex,
+  useBreakpointValue,
+  InputGroup,
+  InputLeftElement
 } from "@chakra-ui/react";
-import { FiSearch, FiMenu, FiShoppingCart, FiFilter, FiSliders } from 'react-icons/fi';
-import { listarProductos, listarCategorias, listarSubcategorias } from "../../services/api";
+import { FiSearch, FiMenu, FiShoppingCart, FiFilter, FiSliders } from "react-icons/fi";
+import { listarProductos, listarCategorias, listarSubcategorias, obtenerProductosDescuento } from "../../services/api";
 import { Link, useSearchParams } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -25,6 +51,8 @@ const Productos = () => {
   const { addToCart } = useCart();
   const [searchParams] = useSearchParams();
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const [pagina, setPagina] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
 
   useEffect(() => {
     cargarDatos();
@@ -38,31 +66,36 @@ const Productos = () => {
     }
   }, [searchParams]);
 
+
   const cargarDatos = async () => {
     try {
       setLoading(true);
-      const [productosData, categoriasData] = await Promise.all([
+      const [productosData, categoriasData, descuentoData] = await Promise.all([
         listarProductos(),
-        listarCategorias()
+        listarCategorias(),
+        obtenerProductosDescuento(pagina, 10)
       ]);
-      setProductos(productosData.productos);
-      setCategorias(categoriasData.categorias);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los datos. Por favor, intente nuevamente.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
+      
+      // Combinar productos, dando preferencia a la información de descuento si está disponible
+      const productosCombinados = productosData.productos.map(prod => {
+        const prodDescuento = descuentoData.productos.find(d => d.id === prod.id);
+        return prodDescuento ? { ...prod, descuento: prodDescuento.descuento } : prod;
       });
+  
+      setProductos(productosCombinados);
+      setCategorias(categoriasData.categorias);
+      setTotalPaginas(Math.ceil(descuentoData.total / 10));
+    } catch (error) {
+      // Manejo de error
     } finally {
       setLoading(false);
     }
   };
+  
 
   const cargarSubcategorias = async (categoriaId) => {
     try {
-      const data = await listarSubcategorias(1, 100, categoriaId); // Usamos tu servicio con paginación
+      const data = await listarSubcategorias(1, 100, categoriaId);
       setSubcategorias(data.subcategorias || []);
     } catch (error) {
       console.error("Error al cargar subcategorías:", error);
@@ -76,25 +109,31 @@ const Productos = () => {
     }
   };
 
-  const productosFiltrados = productos.filter(producto => {
-    const matchesSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategoria === "todas" || String(producto.categoria_id) === String(selectedCategoria);
-    const matchesSubcategory = selectedSubcategoria === "todas" || String(producto.subcategoria_id) === String(selectedSubcategoria);
-    const matchesPrice = producto.precio >= rangoPrecio[0] && producto.precio <= rangoPrecio[1];
-    return matchesSearch && matchesCategory && matchesSubcategory && matchesPrice;
-  }).sort((a, b) => {
-    switch (ordenarPor) {
-      case "precio-bajo":
-        return a.precio - b.precio;
-      case "precio-alto":
-        return b.precio - a.precio;
-      case "descuento":
-        return (b.descuento || 0) - (a.descuento || 0);
-      default:
-        return 0;
-    }
-  });
-
+  const productosFiltrados = productos
+    .filter(producto => {
+      const matchesSearch = producto.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategoria === "todas" ||
+        String(producto.categoria_id) === String(selectedCategoria);
+      const matchesSubcategory =
+        selectedSubcategoria === "todas" ||
+        String(producto.subcategoria_id) === String(selectedSubcategoria);
+      const matchesPrice = producto.precio >= rangoPrecio[0] && producto.precio <= rangoPrecio[1];
+      return matchesSearch && matchesCategory && matchesSubcategory && matchesPrice;
+    })
+    .sort((a, b) => {
+      switch (ordenarPor) {
+        case "precio-bajo":
+          return a.precio - b.precio;
+        case "precio-alto":
+          return b.precio - a.precio;
+        case "descuento":
+          return (b.descuento ? b.descuento.valor : 0) - (a.descuento ? a.descuento.valor : 0);
+        default:
+          return 0;
+      }
+    });
+    
   const FiltersContent = () => (
     <VStack spacing={4} align="start" w="full">
       {selectedCategoria !== "todas" && (
@@ -108,15 +147,15 @@ const Productos = () => {
       </HStack>
       <Box w="full">
         <Text mb={2}>Categorías</Text>
-        <Select 
+        <Select
           value={selectedCategoria}
           onChange={(e) => {
             setSelectedCategoria(e.target.value);
             setSelectedSubcategoria("todas");
             if (e.target.value !== "todas") cargarSubcategorias(e.target.value);
-            else setSubcategorias([]); // Limpiar subcategorías si se selecciona "todas"
+            else setSubcategorias([]);
           }}
-          sx={{ '& option': { backgroundColor: 'white !important', color: 'gray.600' } }}
+          sx={{ "& option": { backgroundColor: "white !important", color: "gray.600" } }}
         >
           <option value="todas">Todas las categorías</option>
           {categorias.map((categoria) => (
@@ -132,7 +171,7 @@ const Productos = () => {
           <Select
             value={selectedSubcategoria}
             onChange={(e) => setSelectedSubcategoria(e.target.value)}
-            sx={{ '& option': { backgroundColor: 'white !important', color: 'gray.600' } }}
+            sx={{ "& option": { backgroundColor: "white !important", color: "gray.600" } }}
           >
             <option value="todas">Todas las subcategorías</option>
             {subcategorias.map((subcategoria) => (
@@ -148,7 +187,7 @@ const Productos = () => {
         <Select
           value={ordenarPor}
           onChange={(e) => setOrdenarPor(e.target.value)}
-          sx={{ '& option': { backgroundColor: 'white !important', color: 'gray.600' } }}
+          sx={{ "& option": { backgroundColor: "white !important", color: "gray.600" } }}
         >
           <option value="relevancia">Relevancia</option>
           <option value="precio-bajo">Menor precio</option>
@@ -161,13 +200,7 @@ const Productos = () => {
           <FiSliders />
           <Text>Rango de precio</Text>
         </HStack>
-        <RangeSlider
-          min={0}
-          max={10000000}
-          step={1000}
-          value={rangoPrecio}
-          onChange={setRangoPrecio}
-        >
+        <RangeSlider min={0} max={10000000} step={1000} value={rangoPrecio} onChange={setRangoPrecio}>
           <RangeSliderTrack>
             <RangeSliderFilledTrack />
           </RangeSliderTrack>
@@ -193,8 +226,10 @@ const Productos = () => {
   );
 
   return (
-    <Container maxW="container.xl" py={4} color={"black"}>
-      <Text fontSize="35px" fontWeight="bold" mb={4} textAlign="center">Productos</Text>
+    <Container maxW="container.xl" py={4} color="black">
+      <Text fontSize="35px" fontWeight="bold" mb={4} textAlign="center">
+        Productos
+      </Text>
       <Flex mb={6} gap={4} direction={{ base: "column", md: "row" }}>
         <HStack flex={1} justify="flex-start">
           <InputGroup width={{ base: "100%", md: "300px" }}>
@@ -228,8 +263,8 @@ const Productos = () => {
         )}
         <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
           <DrawerOverlay />
-          <DrawerContent bg="white" borderColor="#00008B" color={"black"}>
-            <DrawerCloseButton color={"black"} />
+          <DrawerContent bg="white" borderColor="#00008B" color="black">
+            <DrawerCloseButton color="black" />
             <DrawerHeader>Filtros</DrawerHeader>
             <DrawerBody>
               <FiltersContent />
@@ -247,7 +282,9 @@ const Productos = () => {
             gap={6}
           >
             {loading
-              ? Array(8).fill(null).map((_, i) => <ProductoSkeleton key={i} />)
+              ? Array(8)
+                  .fill(null)
+                  .map((_, i) => <ProductoSkeleton key={i} />)
               : productosFiltrados.map((producto) => (
                   <Box
                     key={producto.id}
@@ -256,8 +293,8 @@ const Productos = () => {
                     overflow="hidden"
                     p={4}
                     position="relative"
-                    transition="transform 0.2s"
-                    _hover={{ transform: "translateY(-4px)" }}
+                    transition="transform 0.3s ease, box-shadow 0.3s ease"
+                    _hover={{ transform: "translateY(-5px)", boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)" }}
                   >
                     <Image
                       src={producto.imagen}
@@ -270,12 +307,23 @@ const Productos = () => {
                     />
                     {producto.descuento && (
                       <Badge
-                        colorScheme="blue"
+                        fontSize="0.85rem"
+                        fontWeight="bold"
+                        bg="red.500"
+                        color="white"
                         position="absolute"
-                        top={4}
-                        right={4}
+                        top={0}
+                        left={0}
+                        m={2}
+                        px={2}
+                        py={1}
+                        borderRadius="md"
                       >
-                        {producto.descuento}% OFF
+                        {producto.descuento.tipo === "PORCENTAJE" 
+                          ? `${producto.descuento.valor}% OFF` 
+                          : producto.descuento.tipo === "CUOTAS_SIN_INTERES" 
+                            ? `${producto.descuento.valor} Cuotas sin Interés` 
+                            : ""}
                       </Badge>
                     )}
                     <Text fontWeight="bold" fontSize="lg" noOfLines={2} mb={2}>
@@ -285,7 +333,7 @@ const Productos = () => {
                       ${producto.precio.toLocaleString()}
                     </Text>
                     <Text fontSize="sm" color="gray.600" mb={4}>
-                      3 cuotas sin interés de ${(producto.precio / 3).toFixed(2)}
+                      3 cuotas sin interés de {(producto.precio / 3).toFixed(2)}
                     </Text>
                     <VStack spacing={2} w="full">
                       <Button
@@ -297,7 +345,7 @@ const Productos = () => {
                       >
                         Agregar al carrito
                       </Button>
-                      <Link to={`/producto/${producto.id}`} style={{ width: '100%' }}>
+                      <Link to={`/producto/${producto.id}`} style={{ width: "100%" }}>
                         <Button
                           variant="outline"
                           colorScheme="blue"

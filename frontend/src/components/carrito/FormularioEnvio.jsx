@@ -84,6 +84,7 @@ const FormularioEnvio = () => {
           ciudad: direccionData.ciudad || "",
           direccion: direccionData.direccion || "",
         }));
+        
       }
     } catch (error) {
       toast({
@@ -131,52 +132,61 @@ const FormularioEnvio = () => {
     const index = Number(e.target.value);
     setSelectedDireccionIndex(index);
     const direccionData = direcciones[index];
+    console.log("ACA", direccionData);
     setFormData((prev) => ({
       ...prev,
       codigoPostal: direccionData.codigo_postal || "",
       provincia: direccionData.provincia || "",
       ciudad: direccionData.ciudad || "",
-      direccion: direccionData.direccion || "",
+      direccion:direccionData.direccion || "",
     }));
   };
+  
 
-const handleGuardarDireccion = async (nuevaDireccion) => {
-  try {
-    // Llamamos a la función de la API para crear la nueva dirección, 
-    // enviando el usuario_id y los datos ingresados.
-    const direccionCreada = await crearDireccionEnvio({
-      usuario_id: userId,
-      codigo_postal: nuevaDireccion.codigo_postal,
-      provincia: nuevaDireccion.provincia,
-      ciudad: nuevaDireccion.ciudad,
-      direccion: nuevaDireccion.direccionUsuario,
-    });
+  const handleGuardarDireccion = async (nuevaDireccion) => {
+    try {
+      const direccionCreada = await crearDireccionEnvio({
+        usuario_id: userId,
+        codigo_postal: nuevaDireccion.codigo_postal,
+        provincia: nuevaDireccion.provincia,
+        ciudad: nuevaDireccion.ciudad,
+        direccion: nuevaDireccion.direccion, // O nuevaDireccion.direccionUsuario según corresponda
+      });
+      console.log("Direccion creada:", direccionCreada);
+      
+      
+      setFormData((prev) => ({
+        ...prev,
+        codigoPostal: direccionCreada?.codigo_postal || nuevaDireccion.codigo_postal,
+        provincia: direccionCreada?.provincia || nuevaDireccion.provincia,
+        ciudad: direccionCreada?.ciudad || nuevaDireccion.ciudad,
+        direccion: direccionCreada?.direccion || direccionCreada?.direccionUsuario || nuevaDireccion.direccion,
+      }));
+
+      
+      
+      // Actualizamos la lista de direcciones: si ya existían, agregamos la nueva; de lo contrario, creamos el array
+      setDirecciones((prev) => (prev ? [...prev, direccionCreada] : [direccionCreada]));
+      
+      // Actualizamos el índice para que apunte a la nueva dirección (último elemento)
+      setSelectedDireccionIndex((prev) => (prev ? prev.length : 0));
+      
+      // Ocultamos el formulario de dirección
+      setMostrarFormularioDireccion(false);
+      cargarDirecciones();
+
     
-    // Actualizamos el formulario principal con la dirección recién creada
-    setFormData((prev) => ({
-      ...prev,
-      codigoPostal: direccionCreada.codigo_postal || "",
-      provincia: direccionCreada.provincia || "",
-      ciudad: direccionCreada.ciudad || "",
-      direccion: direccionCreada.direccion || "",
-    }));
-    
-    // Actualizamos la lista de direcciones, agregando la nueva
-    setDirecciones((prev) => (prev ? [...prev, direccionCreada] : [direccionCreada]));
-    // Actualizamos el índice de la dirección seleccionada al de la nueva dirección
-    setSelectedDireccionIndex((prev) => (prev ? prev.length : 0));
-    // Ocultamos el formulario de dirección
-    setMostrarFormularioDireccion(false);
-  } catch (error) {
-    toast({
-      title: "Error",
-      description: "No se pudo guardar la dirección.",
-      status: "error",
-      duration: 5000,
-      isClosable: true,
-    });
-  }
-};
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la dirección.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+  
 
 
   const handleCancelarDireccion = () => {
@@ -255,16 +265,29 @@ const handleGuardarDireccion = async (nuevaDireccion) => {
                     </GridItem>
                   )}
                   <GridItem colSpan={2}>
-                    <FormControl isRequired mt={2}>
-                      <FormLabel fontWeight="normal">Código Postal</FormLabel>
-                      <Input 
-                        name="codigoPostal" 
-                        value={formData.codigoPostal} 
-                        onChange={handleInputChange}
-                        borderRadius="md"
-                        bg="gray.50"
-                      />
-                    </FormControl>
+                  <FormControl isRequired mt={2}>
+                  {!formData.codigoPostal && (
+                      <Text mt={2} fontSize="sm">
+                        <a 
+                          href="https://www.correoargentino.com.ar/formularios/cpa" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ color: "#3182ce", textDecoration: "underline" }}
+                        >
+                          No sé mi código postal
+                        </a>
+                      </Text>
+                    )}
+                    <FormLabel fontWeight="normal">Código Postal</FormLabel>
+                    <Input 
+                      name="codigoPostal" 
+                      value={formData.codigoPostal} 
+                      onChange={handleInputChange}
+                      borderRadius="md"
+                      bg="gray.50"
+                    />
+                  </FormControl>
+
                   </GridItem>
                   <GridItem colSpan={2}>
                     <FormControl isRequired>
