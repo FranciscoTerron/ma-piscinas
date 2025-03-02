@@ -1,34 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Button,
-  IconButton,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  useToast,
-  Container,
-  Text,
-  HStack,
-  VStack,
-  Select,
-  Input,
-  Flex
-} from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, IconButton, useDisclosure, AlertDialog, AlertDialogOverlay,
+  AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter, useToast, Container, Text, HStack,
+  VStack, Select, Input,} from "@chakra-ui/react";
 import { FaTrash, FaUserCog } from 'react-icons/fa';
+import { FiMapPin } from 'react-icons/fi';
 import { listarUsuarios, eliminarUsuario, listarRoles, actualizarRol } from "../../../services/api";
 import { useAuth } from "../../../context/AuthContext";
 import GoBackButton from '../../GoBackButton';
+import DireccionesUsuario from "./DireccionesUsuario";
 
 const GestionUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -43,6 +22,15 @@ const GestionUsuarios = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const usuariosPorPagina = 10;
   const totalPaginas = Math.ceil(totalUsuarios / usuariosPorPagina);
+  const { isOpen: isDetallesOpen, onOpen: onDetallesOpen, onClose: onDetallesClose } = useDisclosure();
+  const [usuarioSeleccionado, setUsuarioeleccionado] = useState(null);
+  const [usuarioNombreSeleccionado, setNombreUsuario] = useState(null);
+
+  const handleVerDetalles = (nombreUsuario, usuarioId) => {
+    setNombreUsuario(nombreUsuario);
+    setUsuarioeleccionado(usuarioId);
+    onDetallesOpen();
+  };
 
   useEffect(() => {
     cargarUsuarios();
@@ -236,9 +224,9 @@ const GestionUsuarios = () => {
               <Tr>
                 <Th textAlign="center" color="blue.600">ID</Th>
                 <Th textAlign="center" color="blue.600">Nombre</Th>
+                <Th textAlign="center" color="blue.600">Apellido</Th>
                 <Th textAlign="center" color="blue.600">Email</Th>
                 <Th textAlign="center" color="blue.600">Teléfono</Th>
-                <Th textAlign="center" color="blue.600">Dirección</Th>
                 <Th textAlign="center" color="blue.600">Rol</Th>
                 <Th textAlign="center" color="blue.600">Acciones</Th>
               </Tr>
@@ -251,12 +239,10 @@ const GestionUsuarios = () => {
                   transition="background-color 0.2s"
                 >
                   <Td textAlign="center" color="gray.700">{usuario.id}</Td>
-                  <Td textAlign="center" color="gray.700" fontWeight="medium">
-                    {usuario.nombre}
-                  </Td>
+                  <Td textAlign="center" color="gray.700" fontWeight="medium">{usuario.nombre}</Td>
+                  <Td textAlign="center" color="gray.700" fontWeight="medium">{usuario.apellido}</Td>
                   <Td textAlign="center" color="gray.600">{usuario.email}</Td>
                   <Td textAlign="center" color="gray.600">{usuario.telefono}</Td>
-                  <Td textAlign="center" color="gray.600">{usuario.direccion}</Td>
                   <Td textAlign="center" color="gray.600">
                     {userRole === "administrador" ? (
                       <Select
@@ -280,7 +266,11 @@ const GestionUsuarios = () => {
                     )}
                   </Td>
                   <Td textAlign="center">
+                    <Button leftIcon={<FiMapPin />} size="sm" colorScheme="blue" variant="outline" onClick={() => handleVerDetalles(usuario.nombreUsuario ,usuario.id)}>
+                      Ver Direcciones
+                    </Button>
                     <IconButton
+                      ml={6}
                       aria-label="Eliminar usuario"
                       icon={<FaTrash />}
                       size="sm"
@@ -359,6 +349,9 @@ const GestionUsuarios = () => {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+      {usuarioSeleccionado && (
+        <DireccionesUsuario nombreUsuario={usuarioNombreSeleccionado} usuarioId={usuarioSeleccionado} isOpen={isDetallesOpen} onClose={onDetallesClose} />
+      )}
     </Container>
   );
 };

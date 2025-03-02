@@ -64,10 +64,10 @@ export const obtenerUsuarioPorId = async (usuarioId) => {
   }
 };
 
-export const login = async (email, password) => {
+export const login = async (nombreUsuario, password) => {
   const response = await axios.post(
     'http://127.0.0.1:8000/login',
-    { email, password },
+    { nombreUsuario, password },
     { headers: { 'Content-Type': 'application/json' } }
   );
   localStorage.setItem('token', response.data.access_token); 

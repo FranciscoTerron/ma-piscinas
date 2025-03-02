@@ -14,6 +14,12 @@ class EmailYaRegistrado(BadRequest):
 class EmailNoRegistrado(NotFound):
     DETAIL = ErrorCode.EMAIL_NO_REGISTRADO
 
+class TelefonoYaRegistrado(BadRequest):
+    DETAIL = ErrorCode.TELEFONO_YA_REGISTRADO
+
+class NombreUsuarioYaRegistrado(BadRequest):
+    DETAIL = ErrorCode.NombreUsuarioYaRegistrado
+    
 class CredencialesIncorrectas(PermissionDenied):
     DETAIL = ErrorCode.CREDENCIALES_INCORRECTAS
 

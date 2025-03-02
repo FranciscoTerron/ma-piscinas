@@ -35,7 +35,7 @@ def registrar(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.Token)
 def login(request: schemas.LoginRequest, db: Session = Depends(get_db)):
-    token = services.autenticar_usuario(db, request.email, request.password)
+    token = services.autenticar_usuario(db, request.nombreUsuario, request.password)
     return {"access_token": token, "token_type": "bearer"}
 
 # Ruta para USUARIO

@@ -5,3 +5,5 @@ class ErrorCode:
     EMAIL_NO_REGISTRADO = "El email no se encuentra registrado."
     CREDENCIALES_INCORRECTAS = "Credenciales incorrectas."
     ROL_NO_ENCONTRADO = "Rol no encontrado"
+    TELEFONO_YA_REGISTRADO = "El teléfono ya se encuentra registrado."
+    NombreUsuarioYaRegistrado = "El nombre de usuario ya se encuentra registrado."

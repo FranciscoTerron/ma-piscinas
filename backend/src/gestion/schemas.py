@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List, Optional, Dict
 from datetime import datetime, date
 from enum import Enum
+import re
 
 # ============================================================
 # Estado Carrito
@@ -93,6 +94,7 @@ class ObtenerRol(RolBase):
 # ============================================================
 class UsuarioBase(BaseModel):
     nombre: str = Field(..., example="Juan")
+    nombreUsuario: str = Field(..., example="juan123")
     email: EmailStr = Field(..., example="juan.perez@example.com")
     telefono: int = Field(..., example=123456789)
     apellido: str = Field(..., example="Pérez")
@@ -104,6 +106,15 @@ class UsuarioBase(BaseModel):
 class UsuarioCreate(UsuarioBase):
     password: str = Field(..., min_length=8, example="password123")
 
+    @validator('password')
+    def validar_password(cls, value):
+        if not re.search(r'[A-Z]', value):
+            raise ValueError('La contraseña debe contener al menos una letra mayúscula')
+        if not re.search(r'[0-9]', value):
+            raise ValueError('La contraseña debe contener al menos un número')
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', value):
+            raise ValueError('La contraseña debe contener al menos un carácter especial')
+        return value
     
 class Usuario(UsuarioBase):
     id: int = Field(..., example=1)
@@ -113,7 +124,7 @@ class Usuario(UsuarioBase):
         from_attributes = True
 
 class LoginRequest(BaseModel):
-    email: str = Field(..., example="juan.perez@example.com")
+    nombreUsuario: str = Field(..., example="juan123") 
     password: str = Field(..., example="password123")
     
 # ============================================================
@@ -121,10 +132,22 @@ class LoginRequest(BaseModel):
 # ============================================================
 class UsuarioUpdate(BaseModel):
     nombre: str | None = None
-    apellido: str | None = None 
+    apellido: str | None = None
     email: EmailStr | None = None
     telefono: int | None = None
     direccion: str | None = None
+
+    @validator('telefono')
+    def validar_telefono(cls, value):
+        if value is not None and len(str(value)) < 8:
+            raise ValueError('El teléfono debe tener al menos 8 dígitos')
+        return value
+
+    @validator('email')
+    def validar_email(cls, value):
+        if value is not None and not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', value):
+            raise ValueError('El email no tiene un formato válido')
+        return value
     
 # ============================================================
 # Esquema para actualizar contraseña

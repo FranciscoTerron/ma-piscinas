@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, useToast, InputGroup,InputRightElement, IconButton, } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, VStack, Heading, useToast, InputGroup, InputRightElement, IconButton, } from '@chakra-ui/react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { login } from '../services/api';
@@ -8,7 +8,7 @@ import jwt_decode from 'jwt-decode';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    nombre: '',
+    nombreUsuario: '',  
     password: '',
   });
   const navigate = useNavigate();
@@ -19,27 +19,26 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(credentials.nombre, credentials.password);
+      const response = await login(credentials.nombreUsuario, credentials.password);  
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
         const decodedToken = jwt_decode(response.data.access_token);
-        const userId = decodedToken.user_id || decodedToken.sub;
-        const userName = decodedToken.user_name || decodedToken.name;
-        const userRole = decodedToken.user_rol_id || decodedToken.rol;
+        const userId = decodedToken.sub;  
+        const userName = decodedToken.name;  
+        const userRole = decodedToken.rol;  
         toast({
           title: 'Inicio de sesión exitoso',
           status: 'success',
           duration: 2000,
           isClosable: true,
         });
-        authLogin({ nombre: credentials.nombre }, response.data.access_token, userId, userName, userRole);
+        authLogin({ nombre: credentials.nombreUsuario }, response.data.access_token, userId, userName, userRole);
         
-        if (userRole === 'cliente'){
+        if (userRole === 'cliente') {
           navigate(`/inicio`);
         } else {
           navigate(`/panelAdministrativo`);
         }
-        
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -68,12 +67,12 @@ const Login = () => {
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <VStack spacing={4}>
             <FormControl isRequired>
-              <FormLabel color="#00008B">Nombre</FormLabel>
+              <FormLabel color="#00008B">Nombre de usuario</FormLabel>
               <Input
-                type="nombre"
-                value={credentials.nombre}
+                type="text" 
+                value={credentials.nombreUsuario}
                 onChange={(e) =>
-                  setCredentials({ ...credentials, nombre: e.target.value })
+                  setCredentials({ ...credentials, nombreUsuario: e.target.value }) 
                 }
                 color="#000000"
                 borderColor="#00CED1"

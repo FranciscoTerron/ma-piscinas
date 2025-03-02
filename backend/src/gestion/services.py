@@ -27,10 +27,21 @@ def verificar_y_crear_roles(db: Session):
 
 # CRUD para Usuario
 def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
+    # Verificar si el nombre de usuario ya está registrado
+    db_usuario_nombre = db.query(Usuario).filter(Usuario.nombreUsuario == usuario.nombreUsuario).first()
+    if db_usuario_nombre:
+        raise exceptions.NombreUsuarioYaRegistrado()
+
+    # Verificar si el teléfono ya está registrado
+    db_usuario_telefono = db.query(Usuario).filter(Usuario.telefono == usuario.telefono).first()
+    if db_usuario_telefono:
+        raise exceptions.TelefonoYaRegistrado()
+    
     # Verificar si el email ya está registrado
     db_usuario = db.query(Usuario).filter(Usuario.email == usuario.email).first()
     if db_usuario:
         raise exceptions.EmailYaRegistrado()
+    
     rol_cliente = db.query(Rol).filter(Rol.nombre == "cliente").first()
     if not rol_cliente:
         raise HTTPException(
@@ -41,6 +52,7 @@ def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
     nuevo_usuario = Usuario(
         nombre=usuario.nombre,
         apellido=usuario.apellido,
+        nombreUsuario=usuario.nombreUsuario,
         email=usuario.email,
         telefono=usuario.telefono,
         rol_id=rol_cliente.id  # Asignar el rol de "cliente", cuando recien se registra
@@ -51,12 +63,18 @@ def registrar_usuario(db: Session, usuario: schemas.UsuarioCreate) -> Usuario:
     db.refresh(nuevo_usuario)
     return nuevo_usuario
 
-def autenticar_usuario(db: Session, nombre: str, password: str):
-    user = db.query(Usuario).filter(Usuario.nombre == nombre).first()
-    if not user or not user.verify_password(password):
+def autenticar_usuario(db: Session, nombreUsuario: str, password: str):
+    user = db.query(Usuario).filter(Usuario.nombreUsuario == nombreUsuario).first()
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email o contraseña incorrectos",
+            detail="Nombre de usuario incorrecto",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.verify_password(password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Contraseña incorrecta",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

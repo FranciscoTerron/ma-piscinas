@@ -58,7 +58,7 @@ const PerfilUsuario = () => {
     <Box w="100%" mx="auto" p={6} borderRadius="lg" boxShadow="xl" bg="white" border="2px solid" borderColor="#00CED1">
       <VStack spacing={6} align="center">
         <Avatar name={usuario.nombre} size="xl" bg="#00CED1" />
-        <Heading size="lg" color="teal.600">Perfil de Usuario</Heading>
+        <Heading size="lg" color="teal.600">Perfil de {usuario.nombreUsuario}</Heading>
         <Divider borderColor="teal.300" />
         <Box textAlign="center" fontSize="md" color="gray.700">
           <Text fontWeight="bold">Nombre: <Text as="span" fontWeight="normal">{usuario.nombre}</Text></Text>

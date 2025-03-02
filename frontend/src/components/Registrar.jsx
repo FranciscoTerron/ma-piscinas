@@ -1,19 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Text,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  VStack,
-  Heading,
-  useToast,
-  InputGroup,
-  InputRightElement,
-  IconButton,
-} from '@chakra-ui/react';
+import { Box, Text, Button, FormControl, FormLabel, Input, VStack, Heading, useToast, InputGroup, InputRightElement, IconButton,} from '@chakra-ui/react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { registrar } from '../services/api';
 
@@ -21,6 +8,7 @@ const Registrar = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
+    nombreUsuario: '',
     email: '',
     telefono: '',
     password: '',
@@ -31,8 +19,35 @@ const Registrar = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar que todos los campos estén completos
+    if (!formData.nombre || !formData.apellido || !formData.nombreUsuario || !formData.email || !formData.telefono || !formData.password) {
+      toast({
+        title: 'Error',
+        description: 'Todos los campos son obligatorios',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Validar que la contraseña cumpla con los requisitos
+    if (!/(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])/.test(formData.password)) {
+      toast({
+        title: 'Error',
+        description: 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
     try {
-      await registrar(formData);
+      const dataToSend = {
+        ...formData,
+        telefono: parseInt(formData.telefono, 10),  
+      };
+      await registrar(dataToSend);
       toast({
         title: 'Registro exitoso',
         status: 'success',
@@ -79,6 +94,17 @@ const Registrar = () => {
               <Input
                 type="text"
                 onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+                borderColor="#00CED1"
+                color="#000000"
+                _hover={{ borderColor: "#4169E1" }}
+                _focus={{ borderColor: "#4169E1", boxShadow: "0 0 0 1px #4169E1" }}
+              />
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel color="#00008B">Nombre de usuario</FormLabel>
+              <Input
+                type="text"
+                onChange={(e) => setFormData({ ...formData, nombreUsuario: e.target.value })}
                 borderColor="#00CED1"
                 color="#000000"
                 _hover={{ borderColor: "#4169E1" }}
