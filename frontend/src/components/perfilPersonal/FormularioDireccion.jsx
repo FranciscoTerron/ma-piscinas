@@ -10,12 +10,14 @@ import {
   Select,
 } from "@chakra-ui/react";
 
+
 const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
   // Estados para almacenar los listados de provincias y ciudades
   const [provincias, setProvincias] = useState([]);
   const [ciudades, setCiudades] = useState([]);
   
-  // Estados para los campos del formulario. Se almacenarán los IDs de provincia y ciudad.
+  // Estados para los campos del formulario
+  // NOTA: 'direccion' (prop) puede ser null o tener valores, por eso usamos condicionales
   const [provincia, setProvincia] = useState(direccion?.provincia || "");
   const [ciudad, setCiudad] = useState(direccion?.ciudad || "");
   const [codigoPostal, setCodigoPostal] = useState(direccion?.codigo_postal || "");
@@ -23,7 +25,7 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
   
   const toast = useToast();
 
-  // Obtener listado de provincias al montar el componente
+  // Cargar listado de provincias al montar
   useEffect(() => {
     fetch("https://apis.datos.gob.ar/georef/api/provincias?campos=id,nombre")
       .then((response) => response.json())
@@ -31,7 +33,7 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
       .catch((error) => console.error("Error al obtener provincias:", error));
   }, []);
 
-  // Cuando se selecciona una provincia, obtener sus ciudades (municipios)
+  // Cuando se selecciona una provincia, obtener sus ciudades
   useEffect(() => {
     if (provincia) {
       fetch(
@@ -40,7 +42,8 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
         .then((response) => response.json())
         .then((data) => setCiudades(data.municipios))
         .catch((error) => console.error("Error al obtener ciudades:", error));
-      // Reiniciar ciudad al cambiar la provincia
+      
+      // Reiniciar ciudad al cambiar provincia
       setCiudad("");
     } else {
       setCiudades([]);
@@ -60,12 +63,12 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
       return;
     }
 
-    // Buscar los nombres correspondientes al id seleccionado
+    // Buscar los nombres correspondientes al ID seleccionado
     const selectedProvince = provincias.find((p) => p.id === provincia);
     const selectedCity = ciudades.find((c) => c.id === ciudad);
 
+    // Llamamos a onGuardar con la info completa
     onGuardar({
-      // Enviamos el nombre en lugar del id para guardar en la BD o procesar en el backend
       provincia: selectedProvince ? selectedProvince.nombre : provincia,
       ciudad: selectedCity ? selectedCity.nombre : ciudad,
       codigo_postal: codigoPostal,
@@ -99,9 +102,9 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
             onChange={(e) => setCiudad(e.target.value)}
             isDisabled={!provincia}
           >
-            {ciudades.map((ciudad) => (
-              <option key={ciudad.id} value={ciudad.id}>
-                {ciudad.nombre}
+            {ciudades.map((mun) => (
+              <option key={mun.id} value={mun.id}>
+                {mun.nombre}
               </option>
             ))}
           </Select>
@@ -109,20 +112,36 @@ const FormularioDireccion = ({ direccion, onGuardar, onCancelar }) => {
 
         <FormControl isRequired>
           <FormLabel>Código Postal</FormLabel>
+
+          <Button
+            as="a"
+            href="https://www.correoargentino.com.ar/formularios/cpa"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="link"
+            color="blue.500"
+            fontSize="sm"
+            mb={2}
+          >
+            No sé mi código postal
+          </Button>
+
           <Input
             value={codigoPostal}
             onChange={(e) => setCodigoPostal(e.target.value)}
-            placeholder="Código Postal"
+            placeholder="Ingrese su código postal"
           />
         </FormControl>
+
         <FormControl isRequired>
           <FormLabel>Dirección</FormLabel>
           <Input
             value={direccionUsuario}
             onChange={(e) => setDireccionUsuario(e.target.value)}
-            placeholder="Dirección"
+            placeholder="Ej: Calle Falsa 123"
           />
         </FormControl>
+
         <Flex gap={2} w="100%" justify="flex-end">
           <Button colorScheme="gray" onClick={onCancelar}>
             Cancelar

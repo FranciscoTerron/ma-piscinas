@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
+import React from 'react';
 import {
   Box, Button, Heading, Text, FormControl, FormLabel, Input, Divider, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio } from "../../services/api";
+import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio, listarDetallesCarrito, listarProductos } from "../../services/api";
 import { useAuth } from '../../context/AuthContext';
-import FormularioDireccion from "../perfilPersonal/FormularioDireccion"; // Asegúrate de ajustar la ruta según tu estructura
+import FormularioDireccion from "../perfilPersonal/FormularioDireccion";
+
 
 const FormularioEnvio = () => {
   const [formData, setFormData] = useState({
@@ -23,21 +25,24 @@ const FormularioEnvio = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const [direcciones, setDirecciones] = useState(null);
-  // Estado para la dirección seleccionada (por índice) y para mostrar el formulario de dirección
   const [selectedDireccionIndex, setSelectedDireccionIndex] = useState(0);
   const [mostrarFormularioDireccion, setMostrarFormularioDireccion] = useState(false);
   const { userId } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(true);
+  const [productos, setProductos] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const subProductosPorPagina = 10; // o la cantidad que necesites
+  const productosMap = productos.reduce((acc, producto) => {
+    acc[producto.id] = producto;
+    return acc;
+  }, {});
 
-  const productoEjemplo = {
-    nombre: "Hidrolavadora Karcher K3 Black Edition",
-    cantidad: 1,
-    precio: 260900.00,
-    imagen: "/api/placeholder/80/80"
-  };
-  const costoEnvio = 51229.11;
-  const subtotal = productoEjemplo.precio;
-  const total = subtotal + costoEnvio;
-
+   // Calcula los totales dinámicamente
+   const costoEnvio = 51229.11;
+   const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
+   const total = subtotal + costoEnvio;
+ 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -95,6 +100,39 @@ const FormularioEnvio = () => {
     }
   };
 
+  const cargarProductos = async () => {
+    try {
+      const data = await listarProductos(paginaActual, subProductosPorPagina);
+      setProductos(data.productos);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar los productos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Agrega esta función para cargar el carrito
+  const cargarCarrito = async () => {
+    try {
+      const data = await listarDetallesCarrito();
+      setCartItems(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el carrito",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingCart(false);
+    }
+  };
+
   // Carga de los datos personales del usuario
   const cargarUsuario = async () => {
     try {
@@ -121,15 +159,16 @@ const FormularioEnvio = () => {
     if (userId) {
       cargarUsuario();
       cargarDirecciones();
+      cargarCarrito();
+      cargarProductos();
     }
-  }, [userId]);
+  }, [userId, paginaActual]);
 
   // Manejo del cambio de dirección seleccionada en el selector
   const handleDireccionChange = (e) => {
     const index = Number(e.target.value);
     setSelectedDireccionIndex(index);
     const direccionData = direcciones[index];
-    console.log("ACA", direccionData);
     setFormData((prev) => ({
       ...prev,
       codigoPostal: direccionData.codigo_postal || "",
@@ -183,7 +222,6 @@ const FormularioEnvio = () => {
       });
     }
   };
-  
 
 
   const handleCancelarDireccion = () => {
@@ -191,16 +229,38 @@ const FormularioEnvio = () => {
   };
 
   return (
-    <Container maxW="container.xl" py={6}>
-      <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8}>
-        <GridItem>
-          <Box p={6} bg="white" borderRadius="md" boxShadow="sm" mb={6}>
-            <Heading as="h2" size="md" color="gray.700" mb={6}>
-              DATOS DEL DESTINATARIO
-            </Heading>
+    <Container maxW="container.xl" py={6} px={4}>
+    <Grid 
+      templateColumns={{ base: "1fr", md: "1fr 1fr" }} 
+      gap={8}
+      position="relative"
+    >
+      <GridItem>
+        <Box 
+          p={6} 
+          bg="white" 
+          borderRadius="lg" 
+          boxShadow="md" 
+          mb={6}
+          transition="all 0.3s ease"
+          _hover={{
+            boxShadow: "lg",
+            transform: "translateY(-5px)"
+          }}
+        >
+          <Heading 
+            as="h2" 
+            size="md" 
+            color="gray.700" 
+            mb={6} 
+            borderBottom="2px solid" 
+            borderColor="blue.500" 
+            pb={2}
+          >
+            DATOS DEL DESTINATARIO
+          </Heading>
             
             <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-              {/* Datos personales (no editables) */}
               <GridItem>
                 <FormControl isRequired>
                   <FormLabel fontWeight="normal">Nombre</FormLabel>
@@ -340,8 +400,26 @@ const FormularioEnvio = () => {
             </Grid>
           </Box>
           
-          <Box p={6} bg="white" borderRadius="md" boxShadow="sm">
-            <Heading as="h2" size="md" color="gray.700" mb={6}>
+          <Box 
+            p={6} 
+            bg="white" 
+            borderRadius="lg" 
+            boxShadow="md"
+            transition="all 0.3s ease"
+            _hover={{
+              boxShadow: "lg",
+              transform: "translateY(-5px)"
+            }}
+          >
+            <Heading 
+              as="h2" 
+              size="md" 
+              color="gray.700" 
+              mb={6} 
+              borderBottom="2px solid" 
+              borderColor="blue.500" 
+              pb={2}
+            >
               ENTREGA
             </Heading>
             
@@ -383,59 +461,117 @@ const FormularioEnvio = () => {
           </Box>
         </GridItem>
         
-        <GridItem>
-          <Box p={6} bg="white" borderRadius="md" boxShadow="sm" position="sticky" top="20px">
-            <HStack mb={6} spacing={4} align="start">
-              <Image 
-                src={productoEjemplo.imagen} 
-                alt={productoEjemplo.nombre}
-                width="80px"
-                height="80px"
-                objectFit="cover"
-                borderRadius="md"
-              />
-              <Box>
-                <Text fontWeight="medium">{productoEjemplo.nombre}</Text>
-                <Text fontSize="sm" color="gray.600">
-                  x {productoEjemplo.cantidad}
-                </Text>
-                <Text fontWeight="bold">{formatearMonto(productoEjemplo.precio)}</Text>
-              </Box>
-            </HStack>
-            
-            <Divider mb={4} />
-            
-            <VStack spacing={3} align="stretch" mb={6}>
-              <Flex justify="space-between">
-                <Text>Subtotal</Text>
-                <Text>{formatearMonto(subtotal)}</Text>
-              </Flex>
-              
-              <Flex justify="space-between">
-                <Text>Costo de envío</Text>
-                <Text>{formatearMonto(costoEnvio)}</Text>
-              </Flex>
-            </VStack>
-            
-            <Box p={4} bg="gray.50" borderRadius="md" mb={6}>
-              <Flex justify="space-between" align="center">
-                <Text fontSize="lg" fontWeight="bold">Total</Text>
-                <Text fontSize="lg" fontWeight="bold" color="blue.500">
-                  {formatearMonto(total)}
-                </Text>
-              </Flex>
-            </Box>      
-            
-            <Button 
-              colorScheme="blue" 
-              size="lg"
-              width="100%"
-              onClick={validarYContinuar}
+          <GridItem>
+            <Box 
+              p={6} 
+              bg="white" 
+              borderRadius="lg" 
+              boxShadow="md" 
+              position="sticky" 
+              top="20px"
+              transition="all 0.3s ease"
+              _hover={{
+                boxShadow: "lg",
+                transform: "translateY(-5px)"
+              }}
             >
-              Continuar
-            </Button>
-          </Box>
-        </GridItem>
+              {loadingCart ? (
+                <Text textAlign="center" color="gray.500">Cargando productos...</Text>
+              ) : cartItems.length === 0 ? (
+                <Text textAlign="center" color="gray.500">No hay productos en el carrito</Text>
+              ) : (
+                <>
+                  {/* Lista de productos */}
+                  {cartItems.map((item) => {
+                    const producto = productosMap[item.producto_id]; // Asumimos que hay un producto_id
+                    if (!producto) return null; // Si no se encuentra el producto, no renderizamos nada
+
+                    return (
+                      <Box 
+                        key={item.id} 
+                        mb={4} 
+                        display="flex" 
+                        alignItems="center"
+                        bg="gray.50" 
+                        p={3} 
+                        borderRadius="md"
+                      >
+                        <Image 
+                          src={producto.imagen || "/imagen-placeholder.jpg"} 
+                          alt={producto.nombre} 
+                          width="80px" 
+                          height="80px"
+                          objectFit="cover"
+                          borderRadius="md"
+                          mr={4}
+                        />
+                        <HStack align="start" spacing={1}>
+                          <Text fontWeight="medium" mr="2">Nombre: {producto.nombre}</Text>
+                          <Text fontWeight="medium" mr="2">Cantidad: {item.cantidad}</Text>
+                          <Text fontWeight="medium">Subtotal: {formatearMonto(item.subtotal)}</Text>
+                        </HStack>
+                      </Box>
+                    );
+                  })}
+
+                  {/* Resumen de costos */}
+                  <VStack 
+                    spacing={3} 
+                    align="stretch" 
+                    mb={6} 
+                    bg="gray.50" 
+                    p={4} 
+                    borderRadius="md"
+                  >
+                    <Flex justify="space-between">
+                      <Text color="gray.600">Subtotal</Text>
+                      <Text fontWeight="medium">{formatearMonto(subtotal)}</Text>
+                    </Flex>
+                    <Flex justify="space-between">
+                      <Text color="gray.600">Costo de envío</Text>
+                      <Text fontWeight="medium">{formatearMonto(costoEnvio)}</Text>
+                    </Flex>
+                  </VStack>
+
+                  <Box 
+                    p={4} 
+                    bg="blue.50" 
+                    borderRadius="md" 
+                    mb={6}
+                    border="1px solid"
+                    borderColor="blue.100"
+                  >
+                    <Flex justify="space-between" align="center">
+                      <Text fontSize="lg" fontWeight="bold" color="gray.700">Total</Text>
+                      <Text 
+                        fontSize="lg" 
+                        fontWeight="bold" 
+                        color="blue.600"
+                      >
+                        {formatearMonto(total)}
+                      </Text>
+                    </Flex>
+                  </Box>
+                </>
+              )}
+              
+              <Button 
+                colorScheme="blue" 
+                size="lg"
+                width="100%"
+                onClick={validarYContinuar}
+                isDisabled={cartItems.length === 0 || loadingCart}
+                boxShadow="md"
+                _hover={{
+                  boxShadow: "lg",
+                  transform: "translateY(-2px)"
+                }}
+                transition="all 0.3s ease"
+              >
+                Continuar
+              </Button>
+            </Box>
+          </GridItem>
       </Grid>
     </Container>
   );

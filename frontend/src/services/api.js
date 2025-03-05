@@ -570,7 +570,7 @@ export const actualizarDireccionEnvio = async (direccionId, direccionData) => {
   formData.append("ciudad", direccionData.ciudad);
   formData.append("codigo_postal", direccionData.codigo_postal);
   formData.append("provincia", direccionData.provincia);
-  formData.append("direccion", direccionData.direccionUsuario);
+  formData.append("direccion", direccionData.direccion);
   formData.append("usuario_id", direccionData.usuario_id);
 
   const response = await api.put(`/direcciones-envio/${direccionId}`, formData, {

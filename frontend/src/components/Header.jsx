@@ -116,12 +116,13 @@ const Header = () => {
             <Modal isOpen={isOpen} onClose={handleCloseModal} size="3xl">
               <ModalOverlay />
               <ModalContent bg={"blue.50"}>
-                <ModalCloseButton color={"black"}/>
+                <ModalCloseButton color={"black"} />
                 <ModalBody pb={6}>
-                  <Carrito onClose={handleCloseModal} />
+                  <Carrito onClose={handleCloseModal} /> {/* Pasar onClose al carrito */}
                 </ModalBody>
               </ModalContent>
             </Modal>
+
           </>
         )}
       </HStack>

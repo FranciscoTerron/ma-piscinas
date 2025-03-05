@@ -36,7 +36,7 @@ import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@chakra-ui/react";
 
 
-const Carrito = () => {
+const Carrito = ({ onClose  }) => {
   const [carrito, setCarrito] = useState(null);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +46,7 @@ const Carrito = () => {
   const [isClearAlertOpen, setIsClearAlertOpen] = useState(false);
   const toast = useToast();
   const navigate = useNavigate();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const { isOpen, onOpen, onClose: handleClose } = useDisclosure();
   useEffect(() => {
     cargarCarrito();
     cargarProductos();
@@ -139,7 +138,11 @@ const Carrito = () => {
     // Cerrar todos los modales posibles
     setIsDeleteAlertOpen(false);
     setIsClearAlertOpen(false);
-    
+
+    if (onClose) {
+      onClose(); // Cerrar el modal antes de navegar
+    }
+
     // Pequeño retraso para permitir el cierre visual antes de navegar
     setTimeout(() => {
       navigate("/FormularioEnvio");
@@ -164,6 +167,8 @@ const Carrito = () => {
         duration: 3000,
       });
     }
+    navigate("/productos");
+
   };
 
   const calcularTotal = () => {
