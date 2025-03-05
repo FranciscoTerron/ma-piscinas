@@ -99,7 +99,7 @@ const Carrito = ({ onClose  }) => {
         setIsDeleteAlertOpen(true);
         return;
       }
-      
+
       await actualizarCantidadProducto(productoId, nuevaCantidad);
       cargarCarrito();
     } catch (error) {
@@ -174,7 +174,7 @@ const Carrito = ({ onClose  }) => {
   const calcularTotal = () => {
     if (!carrito?.detalles?.length) return 0;
     return carrito.detalles.reduce((total, detalle) => 
-      total + (detalle.cantidad * detalle.subtotal), 0
+      total + detalle.subtotal, 0
     );
   };
 

@@ -1006,12 +1006,14 @@ def actualizar_cantidad_producto(db: Session, carrito_id: int, producto_id: int,
         CarritoDetalle.carrito_id == carrito_id,
         CarritoDetalle.producto_id == producto_id
     ).first()
+    producto = db.query(Producto).filter(Producto.id == producto_id).first()
     
     if not detalle:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado en el carrito")
     
     detalle.cantidad = nueva_cantidad
-    # Aquí podrías recalcular el subtotal si tienes acceso al precio del producto. (REVISAR)
+    detalle.subtotal = producto.precio * nueva_cantidad
+
     db.commit()
     db.refresh(detalle)
     return detalle
