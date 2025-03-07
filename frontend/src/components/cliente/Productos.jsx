@@ -66,7 +66,6 @@ const Productos = () => {
     }
   }, [searchParams]);
 
-
   const cargarDatos = async () => {
     try {
       setLoading(true);
@@ -91,7 +90,6 @@ const Productos = () => {
       setLoading(false);
     }
   };
-  
 
   const cargarSubcategorias = async (categoriaId) => {
     try {
@@ -296,45 +294,60 @@ const Productos = () => {
                     transition="transform 0.3s ease, box-shadow 0.3s ease"
                     _hover={{ transform: "translateY(-5px)", boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)" }}
                   >
-                    <Image
-                      src={producto.imagen}
-                      alt={producto.nombre}
-                      borderRadius="md"
-                      mb={3}
-                      objectFit="cover"
-                      h="200px"
-                      w="full"
-                    />
-                    {producto.descuento && (
-                      <Badge
-                        fontSize="0.85rem"
-                        fontWeight="bold"
-                        bg="red.500"
-                        color="white"
-                        position="absolute"
-                        top={0}
-                        left={0}
-                        m={2}
-                        px={2}
-                        py={1}
+                    <Box position="relative">
+                      <Image
+                        src={producto.imagen}
+                        alt={producto.nombre}
                         borderRadius="md"
-                      >
-                        {producto.descuento.tipo === "PORCENTAJE" 
-                          ? `${producto.descuento.valor}% OFF` 
-                          : producto.descuento.tipo === "CUOTAS_SIN_INTERES" 
-                            ? `${producto.descuento.valor} Cuotas sin Interés` 
-                            : ""}
-                      </Badge>
-                    )}
+                        mb={3}
+                        objectFit="cover"
+                        h="200px"
+                        w="full"
+                      />
+                      {producto.descuento && (
+                        <Badge
+                          fontSize="0.85rem"
+                          fontWeight="bold"
+                          bg="red.500"
+                          color="white"
+                          position="absolute"
+                          top={0}
+                          left={0}
+                          m={2}
+                          px={2}
+                          py={1}
+                          borderRadius="md"
+                        >
+                          {producto.descuento.tipo === "PORCENTAJE" 
+                            ? `${producto.descuento.valor}% OFF` 
+                            : producto.descuento.tipo === "CUOTAS_SIN_INTERES" 
+                              ? `${producto.descuento.valor} Cuotas sin Interés` 
+                              : ""}
+                        </Badge>
+                      )}
+                    </Box>
                     <Text fontWeight="bold" fontSize="lg" noOfLines={2} mb={2}>
                       {producto.nombre}
                     </Text>
-                    <Text fontSize="xl" fontWeight="bold" color="blue.600" mb={1}>
-                      ${producto.precio.toLocaleString()}
-                    </Text>
-                    <Text fontSize="sm" color="gray.600" mb={4}>
-                      3 cuotas sin interés de {(producto.precio / 3).toFixed(2)}
-                    </Text>
+                    {producto.descuento && producto.descuento.tipo === "PORCENTAJE" ? (
+                      <Text fontSize="xl" fontWeight="bold" color="blue.600" mb={1}>
+                        <Text as="span" textDecoration="line-through" color="gray.500">
+                          ${producto.precio.toLocaleString()}
+                        </Text>{' '}
+                        <Text as="span" color="red.500">
+                          ${ (producto.precio * (1 - producto.descuento.valor / 100)).toLocaleString() }
+                        </Text>
+                      </Text>
+                    ) : (
+                      <Text fontSize="xl" fontWeight="bold" color="blue.600" mb={1}>
+                        ${producto.precio.toLocaleString()}
+                      </Text>
+                    )}
+                    {producto.descuento && producto.descuento.tipo === "CUOTAS_SIN_INTERES" && (
+                      <Text fontSize="sm" color="green.500" fontWeight="bold" mb={4}>
+                        {producto.descuento.valor} cuotas sin interés de ${ (producto.precio / producto.descuento.valor).toLocaleString() }
+                      </Text>
+                    )}
                     <VStack spacing={2} w="full">
                       <Button
                         colorScheme="blue"
