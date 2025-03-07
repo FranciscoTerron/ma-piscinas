@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Container, Box, Image, Text, VStack, HStack, Button, Skeleton, useToast,
-  Grid, GridItem, Divider, Input, Icon, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue
+  Grid, GridItem, Divider, Input, Icon, Modal, ModalOverlay, ModalContent, 
+  ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue, Badge
 } from '@chakra-ui/react';
 import { FiTruck } from 'react-icons/fi';
 import { obtenerProducto, listarMetodosPago } from '../../services/api';
@@ -57,13 +58,11 @@ const Producto = () => {
     cargarMetodosPago();
   }, []);
 
-  // Función que calcula las cuotas según el método seleccionado
   const calcularCuotas = (metodoId) => {
     const metodo = metodosPago.find(m => m.id === metodoId);
     setCuotas(metodo ? metodo.cuotas : []);
   };
 
-  // Al hacer click en un método de pago, se selecciona y se calculan las cuotas
   const handleMetodoClick = (metodoId) => {
     setSelectedMetodo(metodoId);
     calcularCuotas(metodoId);
@@ -87,7 +86,28 @@ const Producto = () => {
     setQuantity(newQuantity);
   };
 
-  // Ajuste responsive para el grid del modal
+  const handleAddToCart = () => {
+    if (producto.stock >= quantity) {
+      addToCart({ ...producto, quantity });
+      setProducto(prev => ({ ...prev, stock: prev.stock - quantity }));
+      toast({
+        title: "Producto agregado",
+        description: `Has agregado ${quantity} ${producto.nombre} al carrito`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "No hay suficiente stock",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const gridColumns = useBreakpointValue({ base: 2, md: 3 });
 
   if (loading) {
@@ -120,7 +140,32 @@ const Producto = () => {
             border="1px"
             borderColor="gray.200"
             height="400px"
+            boxShadow="md"
+            transition="box-shadow 0.3s ease"
+            _hover={{ boxShadow: 'lg' }}
           >
+            {producto.descuento && (
+              <Badge
+                fontSize="0.85rem"
+                fontWeight="bold"
+                bg="red.500"
+                color="white"
+                position="absolute"
+                top={0}
+                left={0}
+                m={2}
+                px={2}
+                py={1}
+                borderRadius="md"
+                zIndex={1}
+              >
+                {producto.descuento.tipo === "PORCENTAJE" 
+                  ? `${producto.descuento.valor}% OFF` 
+                  : producto.descuento.tipo === "CUOTAS_SIN_INTERES" 
+                    ? `${producto.descuento.valor} Cuotas sin Interés` 
+                    : ""}
+              </Badge>
+            )}
             <Image
               src={producto.imagen}
               alt={producto.nombre}
@@ -164,27 +209,32 @@ const Producto = () => {
 
         <GridItem>
           <VStack align="start" spacing={6}>
-            <Text
-              fontSize="2xl"
-              fontWeight="bold"
-              color="gray.800"
-              textTransform="uppercase"
-            >
+            <Text fontSize="2xl" fontWeight="bold" color="gray.800">
               {producto.nombre}
             </Text>
 
             <Box width="100%">
-              <Text fontSize="3xl" fontWeight="bold" color="gray.800">
-                ${producto.precio.toLocaleString()}
-              </Text>
-              <HStack spacing={2} mt={2}>
-                <Text fontSize="md" color="blue.500" fontWeight="medium">
-                  {producto.descuento > 0 ? `${producto.descuento}% OFF` : ''}
+              {producto.descuento?.tipo === "PORCENTAJE" ? (
+                <Box>
+                  <Text fontSize="3xl" fontWeight="bold" color="red.500">
+                    ${(producto.precio * (1 - producto.descuento.valor / 100)).toLocaleString()}
+                  </Text>
+                  <Text as="span" textDecoration="line-through" color="gray.500">
+                    ${producto.precio.toLocaleString()}
+                  </Text>
+                </Box>
+              ) : (
+                <Text fontSize="3xl" fontWeight="bold" color="gray.800">
+                  ${producto.precio.toLocaleString()}
                 </Text>
-              </HStack>
-              <Text fontSize="sm" color="blue.500" mt={1}>
-                3 CUOTAS SIN INTERÉS DE {(producto.precio / 3).toFixed(2)}
-              </Text>
+              )}
+
+              {producto.descuento?.tipo === "CUOTAS_SIN_INTERES" && (
+                <Text fontSize="lg" color="green.500" fontWeight="bold" mt={2}>
+                  {producto.descuento.valor} cuotas sin interés de {' '}
+                  ${(producto.precio / producto.descuento.valor).toLocaleString()}
+                </Text>
+              )}
 
               <HStack mt={4} mb={2}>
                 <Icon as={FiTruck} color="gray.700" />
@@ -236,7 +286,6 @@ const Producto = () => {
                 </Box>
               </HStack>
 
-              {/* Botón con estilos personalizados */}
               <Button
                 onClick={openModal}
                 bg="blue.600"
@@ -300,7 +349,8 @@ const Producto = () => {
                 height="56px"
                 borderRadius="md"
                 my={4}
-				        onClick={() => addToCart(producto)}
+                onClick={handleAddToCart}
+                isDisabled={producto.stock === 0}
               >
                 AGREGAR AL CARRITO
               </Button>

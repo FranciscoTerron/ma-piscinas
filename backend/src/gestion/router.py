@@ -320,7 +320,7 @@ def verificar_nombre_producto(
 # Ruta para obtener los productos por ID
 # ============================================================
 
-@router.get("/productos/{producto_id}", response_model=schemas.Producto)
+@router.get("/productos/{producto_id}", response_model=schemas.ProductoOut)
 def obtener_producto(producto_id: int, db: Session = Depends(get_db)):
     return services.obtener_producto_por_id(db, producto_id)
 
