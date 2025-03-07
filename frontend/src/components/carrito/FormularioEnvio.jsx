@@ -4,10 +4,10 @@ import {
   Box, Button, Heading, Text, FormControl, FormLabel, Input, Divider, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio, listarDetallesCarrito, listarProductos } from "../../services/api";
+import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio, listarDetallesCarrito, listarProductos, listarMetodosEnvio } from "../../services/api"; // Importa la API de métodos de envío
 import { useAuth } from '../../context/AuthContext';
 import FormularioDireccion from "../perfilPersonal/FormularioDireccion";
-
+import MetodosPago from "./MetodoPago";
 
 const FormularioEnvio = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const FormularioEnvio = () => {
   });
   
   const [metodoEnvio, setMetodoEnvio] = useState("domicilio");
+  const [metodosEnvio, setMetodosEnvio] = useState([]); // Estado para almacenar los métodos de envío
   const toast = useToast();
   const navigate = useNavigate();
   const [direcciones, setDirecciones] = useState(null);
@@ -100,6 +101,32 @@ const FormularioEnvio = () => {
     }
   };
 
+  // Carga de los métodos de envío desde la BD
+  const cargarMetodosEnvio = async () => {
+    try {
+      const data = await listarMetodosEnvio(paginaActual, subProductosPorPagina);
+  
+      // Accede a la propiedad "empresas" dentro de "data"
+      const empresas = data.empresas;
+  
+      // Asignar un costo aleatorio a cada método de envío
+      const metodosConCosto = empresas.map(empresa => ({
+        ...empresa,
+        costo: Math.floor(Math.random() * 10000) + 1000, // Costo aleatorio entre 1000 y 11000
+      }));
+  
+      setMetodosEnvio(metodosConCosto); // Actualiza el estado con los métodos de envío
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar los métodos de envío.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const cargarProductos = async () => {
     try {
       const data = await listarProductos(paginaActual, subProductosPorPagina);
@@ -161,6 +188,7 @@ const FormularioEnvio = () => {
       cargarDirecciones();
       cargarCarrito();
       cargarProductos();
+      cargarMetodosEnvio(); 
     }
   }, [userId, paginaActual]);
 
@@ -400,66 +428,40 @@ const FormularioEnvio = () => {
             </Grid>
           </Box>
           
-          <Box 
-            p={6} 
-            bg="white" 
-            borderRadius="lg" 
-            boxShadow="md"
-            transition="all 0.3s ease"
-            _hover={{
-              boxShadow: "lg",
-              transform: "translateY(-5px)"
-            }}
-          >
-            <Heading 
-              as="h2" 
-              size="md" 
-              color="gray.700" 
-              mb={6} 
-              borderBottom="2px solid" 
-              borderColor="blue.500" 
-              pb={2}
-            >
-              ENTREGA
-            </Heading>
-            
-            <RadioGroup value={metodoEnvio} onChange={setMetodoEnvio}>
-              <VStack align="stretch" spacing={4}>
-                <Box 
-                  p={4} 
-                  borderRadius="md" 
-                  borderWidth="1px" 
-                  borderColor={metodoEnvio === "domicilio" ? "blue.500" : "gray.200"}
-                  bg={metodoEnvio === "domicilio" ? "blue.50" : "white"}
-                >
-                  <Radio value="domicilio" colorScheme="blue">
-                    <Flex align="center" justify="space-between" width="100%">
-                      <Text fontWeight={metodoEnvio === "domicilio" ? "medium" : "normal"}>
-                        Andreani Estándar "Envío a domicilio"
-                      </Text>
-                      <Text fontWeight="medium">{formatearMonto(costoEnvio)}</Text>
-                    </Flex>
-                  </Radio>
-                </Box>
-                
+       
+        {/* Sección de entrega */}
+        <Box p={6} bg="white" borderRadius="lg" boxShadow="md">
+          <Heading as="h2" size="md" color="gray.700" mb={6} borderBottom="2px solid" borderColor="blue.500" pb={2}>
+            ENTREGA
+          </Heading>
+          <RadioGroup value={metodoEnvio} onChange={setMetodoEnvio}>
+            <VStack align="stretch" spacing={4}>
+              {metodosEnvio.map((metodo) => (
                 <Box
-                  p={4} 
-                  borderRadius="md" 
-                  borderWidth="1px" 
-                  borderColor="gray.200"
-                  opacity={0.6}
+                  key={metodo.id}
+                  p={4}
+                  borderRadius="md"
+                  borderWidth="1px"
+                  borderColor={metodoEnvio === metodo.id ? "blue.500" : "gray.200"}
+                  bg={metodoEnvio === metodo.id ? "blue.50" : "white"}
                 >
-                  <Radio value="retiro" colorScheme="blue" isDisabled>
+                  <Radio value={metodo.id} colorScheme="blue">
                     <Flex align="center" justify="space-between" width="100%">
-                      <Text>Retiro en tienda</Text>
-                      <Text>Gratis</Text>
+                      <Text fontWeight={metodoEnvio === metodo.id ? "medium" : "normal"}>
+                        {metodo.nombre}
+                      </Text>
+                      <Text fontWeight="medium">{formatearMonto(metodo.costo)}</Text>
                     </Flex>
                   </Radio>
                 </Box>
-              </VStack>
-            </RadioGroup>
-          </Box>
-        </GridItem>
+              ))}
+            </VStack>
+          </RadioGroup>
+        </Box>
+
+        {/* Sección de pago */}
+        <MetodosPago />
+      </GridItem>
         
           <GridItem>
             <Box 
@@ -568,7 +570,7 @@ const FormularioEnvio = () => {
                 }}
                 transition="all 0.3s ease"
               >
-                Continuar
+                Confirmar Compra
               </Button>
             </Box>
           </GridItem>
