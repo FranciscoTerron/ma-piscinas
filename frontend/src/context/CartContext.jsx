@@ -44,7 +44,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product) => {
     try {
       const detalleData = { 
-        cantidad: 1, 
+        cantidad: product.cantidad, 
         subtotal: product.precio,
       };
 
@@ -55,19 +55,13 @@ export const CartProvider = ({ children }) => {
         ...prev,
         {
           ...product,
-          cantidad: 1,
+          cantidad: product.cantidad,
           subtotal: product.precio,
           producto_id: product.id,
           id: Date.now() // ID temporal hasta la próxima actualización
         }
       ]);
 
-      toast({
-        title: "¡Producto agregado!",
-        description: `${product.nombre} añadido al carrito`,
-        status: "success",
-        duration: 2000,
-      });
 
       // Refrescamos los datos reales después de 1s
       setTimeout(fetchCart, 1000);

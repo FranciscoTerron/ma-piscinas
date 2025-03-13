@@ -2,14 +2,16 @@ import React from 'react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Box, Button, HStack, useToast, Menu, MenuButton, MenuList, MenuItem, IconButton, 
-  Heading, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, 
-  ModalCloseButton, ModalBody 
+  Heading, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, 
+  ModalBody, Image 
 } from '@chakra-ui/react';
 import { HiMenu } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import CarritoIcono from '../components/carrito/CarritoIcono';
 import Carrito from '../components/carrito/Carrito';
+
+import logoMA from '../logo/logoMA.png'
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -63,9 +65,20 @@ const Header = () => {
 
   return (
     <Box as="nav" bg="#00CED1" p={4} display="flex" alignItems="center">
-      <Heading as="h1" size="xl" color="#00008B" flexGrow={1} textAlign="center">
-        MA Piscinas
-      </Heading>
+      {/* LOGO que redirige al inicio ("/" o "/inicio") */}
+      <Box flexGrow={1} textAlign="center">
+        <RouterLink to="/inicio"> 
+          {/* Ajusta la ruta según la de tu página de inicio */}
+          <Image 
+            src={logoMA} 
+            alt="MA Piscinas" 
+            boxSize="60px" 
+            objectFit="contain" 
+            mx="auto" 
+            cursor="pointer"
+          />
+        </RouterLink>
+      </Box>
 
       <HStack spacing={4}>
         {renderAuthButton()}
@@ -118,11 +131,10 @@ const Header = () => {
               <ModalContent bg={"blue.50"}>
                 <ModalCloseButton color={"black"} />
                 <ModalBody pb={6}>
-                  <Carrito onClose={handleCloseModal} /> {/* Pasar onClose al carrito */}
+                  <Carrito onClose={handleCloseModal} />
                 </ModalBody>
               </ModalContent>
             </Modal>
-
           </>
         )}
       </HStack>
