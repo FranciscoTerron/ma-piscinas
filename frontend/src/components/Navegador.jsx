@@ -15,6 +15,8 @@ const Navegador = () => {
     { href: "/contacto", text: "CONTACTO" }, // Ruta pública
     { href: "/quienesSomos", text: "QUIÉNES SOMOS" }, // Ruta pública
     { href: "/politicasDeDevolucion", text: "POLÍTICA DE DEVOLUCIÓN" }, // Ruta pública
+    { href: "/sucursales", text: "NUESTRAS SUCURSALES" }, // Ruta pública
+
   ];
 
   // Filtra los enlaces según el rol del usuario y si está autenticado

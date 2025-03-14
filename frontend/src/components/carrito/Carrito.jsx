@@ -94,12 +94,36 @@ const Carrito = ({ onClose  }) => {
 
   const handleActualizarCantidad = async (productoId, nuevaCantidad) => {
     try {
+      // Obtener el producto para verificar su stock máximo
+      const producto = productos.find(p => p.id === productoId);
+      if (!producto) {
+        toast({
+          title: "Error",
+          description: "Producto no encontrado",
+          status: "error",
+          duration: 3000,
+        });
+        return;
+      }
+  
+      // Verificar si la nueva cantidad supera el stock disponible
+      if (nuevaCantidad > producto.stock) {
+        toast({
+          title: "Stock insuficiente",
+          description: `Solo hay ${producto.stock} unidades disponibles.`,
+          status: "warning",
+          duration: 3000,
+        });
+        return;
+      }
+  
+      // Si la cantidad es 0, eliminar el producto
       if (nuevaCantidad === 0) {
         setProductoToDelete(productoId);
         setIsDeleteAlertOpen(true);
         return;
       }
-
+  
       await actualizarCantidadProducto(productoId, nuevaCantidad);
       cargarCarrito();
     } catch (error) {
@@ -111,6 +135,7 @@ const Carrito = ({ onClose  }) => {
       });
     }
   };
+  
 
   const handleConfirmDelete = async () => {
     try {
@@ -232,7 +257,9 @@ const Carrito = ({ onClose  }) => {
                           size="sm"
                           color={"black"}
                           onClick={() => handleActualizarCantidad(detalle.producto_id, detalle.cantidad + 1)}
+                          isDisabled={detalle.cantidad >= (productos.find(p => p.id === detalle.producto_id)?.stock || 0)}
                         />
+
                       </Flex>
                     </Td>
                     <Td textAlign="center">{formatearMonto(detalle.subtotal / detalle.cantidad)}</Td>

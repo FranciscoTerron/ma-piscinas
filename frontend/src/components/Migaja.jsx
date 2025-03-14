@@ -11,7 +11,7 @@ const Migaja = () => {
   const [productoNombre, setProductoNombre] = useState("");
 
   const homePath = userRole === "cliente" ? "/inicio" : "/panelAdministrativo";
-  const resetRoutes = ["/perfilUsuario", "/registrar", "/inicio", "/contacto", "/quienesSomos","/comoComprar","/productos","/politicasDeDevolucion", "/FormularioEnvio"];
+  const resetRoutes = ["/perfilUsuario", "/registrar", "/inicio", "/contacto", "/quienesSomos","/comoComprar","/productos","/politicasDeDevolucion", "/FormularioEnvio", "/sucursales"];
 
   useEffect(() => {
     let newHistory;

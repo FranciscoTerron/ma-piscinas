@@ -31,6 +31,7 @@ import Producto from '../src/components/cliente/Producto';
 import GestionDescuentos from '../src/components/administrativo/gestionProductos/gestionDescuentos/GestionDescuentos'
 import ListaActividades from '../src/components/administrativo/actividadesRecientes/ListaActividades';
 import FormularioEnvio from './components/carrito/FormularioEnvio';
+import Sucursales from '../src/components/cliente/Sucursales'
 
 const AppRoutes = () => {
   return (
@@ -46,6 +47,8 @@ const AppRoutes = () => {
       <Route path="/productos" element= {<Productos/>} />
       <Route path="/producto/:id" element={<Producto />} />
       <Route path="/inicio" element= {<Inicio/>} />
+      <Route path="/sucursales" element= {<Sucursales/>} />
+
 
       {/* Rutas protegidas */}
       <Route 

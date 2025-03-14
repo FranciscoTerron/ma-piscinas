@@ -65,10 +65,8 @@ const Header = () => {
 
   return (
     <Box as="nav" bg="#00CED1" p={4} display="flex" alignItems="center">
-      {/* LOGO que redirige al inicio ("/" o "/inicio") */}
       <Box flexGrow={1} textAlign="center">
         <RouterLink to="/inicio"> 
-          {/* Ajusta la ruta según la de tu página de inicio */}
           <Image 
             src={logoMA} 
             alt="MA Piscinas" 
