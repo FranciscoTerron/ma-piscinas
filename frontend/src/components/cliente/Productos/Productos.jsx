@@ -167,7 +167,7 @@ const Productos = () => {
     }), [productos, searchTerm, selectedCategoria, selectedSubcategoria, rangoPrecio, ordenarPor]);
 
   return (
-    <Container maxW="container.xl" py={6} color="black">
+    <Container maxW="container.xl" py={0} color="black">
       {/* Header mejorado con degradado */}
       <Box 
         bg="linear-gradient(90deg,rgb(1, 25, 49) 0%,rgb(13, 139, 230) 100%)"

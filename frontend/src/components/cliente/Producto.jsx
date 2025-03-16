@@ -239,7 +239,6 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
             <Tabs colorScheme="blue" variant="enclosed" borderColor="gray.200">
               <TabList>
                 <Tab fontWeight="medium">Descripción</Tab>
-                <Tab fontWeight="medium">Especificaciones</Tab>
                 <Tab fontWeight="medium">Opiniones</Tab>
               </TabList>
               <TabPanels>
@@ -247,18 +246,6 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
                   <Text fontSize="sm" color="gray.700" lineHeight="tall">
                     {producto?.descripcion || 'Sin descripción disponible.'}
                   </Text>
-                </TabPanel>
-                <TabPanel>
-                  <SimpleGrid columns={2} spacing={4}>
-                    {['Marca', 'Modelo', 'Garantía', 'Dimensiones'].map((spec) => (
-                      <Box key={spec}>
-                        <Text fontSize="sm" fontWeight="bold" color="gray.700">{spec}</Text>
-                        <Text fontSize="sm" color="gray.600">
-                          {spec === 'Garantía' ? '12 meses' : 'Información no disponible'}
-                        </Text>
-                      </Box>
-                    ))}
-                  </SimpleGrid>
                 </TabPanel>
                 <TabPanel>
                   <Text fontSize="sm" color="gray.600" textAlign="center" py={4}>

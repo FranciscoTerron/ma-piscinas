@@ -3,7 +3,7 @@ import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Box, Button, HStack, useToast, Menu, MenuButton, MenuList, MenuItem, IconButton, 
   Heading, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, 
-  ModalBody, Image 
+  ModalBody, Flex, Text, Image
 } from '@chakra-ui/react';
 import { HiMenu } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
@@ -67,14 +67,39 @@ const Header = () => {
     <Box as="nav" bg="#00CED1" p={4} display="flex" alignItems="center">
       <Box flexGrow={1} textAlign="center">
         <RouterLink to="/inicio"> 
-          <Image 
-            src={logoMA} 
-            alt="MA Piscinas" 
-            boxSize="60px" 
-            objectFit="contain" 
-            mx="auto" 
+          <Flex 
+            align="center" 
+            justify="center" 
             cursor="pointer"
-          />
+            transition="transform 0.2s ease-in-out"
+            _hover={{ transform: "scale(1.1)" }}
+          >
+            <Image 
+              src={logoMA} 
+              alt="MA Piscinas" 
+              boxSize="60px" 
+              objectFit="contain" 
+              mr={2}
+            />
+            <Flex direction="column" align="start">
+              <Text 
+                fontWeight="bold" 
+                fontSize="30px" 
+                lineHeight="1" 
+                color="#00008B"
+              >
+                MA
+              </Text>
+              <Text 
+                fontWeight="bold" 
+                fontSize="30px" 
+                lineHeight="0" 
+                color="#00008B"
+              >
+                PISCINAS
+              </Text>
+            </Flex>
+          </Flex>
         </RouterLink>
       </Box>
 
