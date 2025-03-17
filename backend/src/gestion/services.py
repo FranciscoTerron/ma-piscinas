@@ -970,30 +970,55 @@ def agregar_producto_al_carrito(db: Session, carrito_id: int, producto_id: int, 
     """
     Agrega un producto al carrito.
     Si el producto ya existe en el carrito, se suma la cantidad y se actualiza el subtotal.
+    Se calcula el precio con descuento (si aplica y si es de tipo "PORCENTAJE") antes de establecer el subtotal.
     """
-    # Buscar si ya existe un detalle para este producto
+    # Primero, obtener la información del producto para conocer su precio y posible descuento
+    producto = db.query(Producto).filter(Producto.id == producto_id).first()
+    if not producto:
+        raise Exception("Producto no encontrado")
+    
+    # Por defecto, el precio final es el precio original
+    precio_final = producto.precio
+    print("ACAAA")
+    # Verificar si el producto tiene un descuento asignado
+    if producto.descuento_id and producto.descuento_id > 0:
+        print("ACAAAA")
+        # Consultar el objeto de descuento para validar el tipo
+        descuento_obj = db.query(Descuento).filter(Descuento.id == producto.descuento_id).first()
+        if descuento_obj and descuento_obj.tipo.upper() == "PORCENTAJE":
+            # Aplicar el descuento porcentual
+            precio_final = producto.precio * (1 - descuento_obj.valor / 100)
+    
+    # Calcular el subtotal según la cantidad agregada
+    subtotal_calculado = precio_final * detalle_data.cantidad
+
+    # Buscar si ya existe un detalle para este producto en el carrito
     detalle_existente = db.query(CarritoDetalle).filter(
         CarritoDetalle.carrito_id == carrito_id,
         CarritoDetalle.producto_id == producto_id
     ).first()
-    
+
     if detalle_existente:
+        # Si ya existe, se actualiza la cantidad y se suma el nuevo subtotal calculado
         detalle_existente.cantidad += detalle_data.cantidad
-        detalle_existente.subtotal += detalle_data.subtotal
+        detalle_existente.subtotal += subtotal_calculado
         db.commit()
         db.refresh(detalle_existente)
         return detalle_existente
     else:
+        # Si no existe, se crea un nuevo detalle utilizando el subtotal calculado
         nuevo_detalle = CarritoDetalle(
             carrito_id=carrito_id,
             producto_id=producto_id,
             cantidad=detalle_data.cantidad,
-            subtotal=detalle_data.subtotal
+            subtotal=subtotal_calculado
         )
         db.add(nuevo_detalle)
         db.commit()
         db.refresh(nuevo_detalle)
         return nuevo_detalle
+
+
 
 #Actualizar la cantida del producto del carrito
 

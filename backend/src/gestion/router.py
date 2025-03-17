@@ -244,11 +244,12 @@ def crear_producto(
     costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
     subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
     usuario_id: int = Form(..., description="ID del usuario que crea"),
+    descuento_id: Optional[int] = Form(None, description="ID del descuento, opcional"),  # Nuevo campo
     db: Session = Depends(get_db)
 ):
     try:
         nuevo_producto = services.crear_producto(
-            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id  # Añadido subcategoria_id
+            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id, descuento_id  # Añadido subcategoria_id
         )
 
         services.registrar_actividad(db, schemas.ActividadCreate(

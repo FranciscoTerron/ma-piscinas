@@ -56,8 +56,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         categoriaId: producto.categoria_id,
         subcategoriaId: producto.subcategoria_id || "", // Aseguramos que esté incluido
         costoCompra: producto.costo_compra || "",
-        descuentoId: producto.descuento_id ? String(producto.descuento_id) : "", // Asegurar que sea un string
-      });
+        descuentoId: producto.descuento_id ? String(producto.descuento_id) : "",      });
       if (producto.imagen && typeof producto.imagen === "string" && producto.imagen.startsWith("http")) {
         setImagenPreview(producto.imagen);
       } else {
@@ -267,10 +266,10 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     if (formData.subcategoriaId) {  
       formDataToSend.append("subcategoria_id", parseInt(formData.subcategoriaId));
     }
-    console.log("DESCUENTO", formData.descuentoId);
-    if (formData.descuentoId) {
+    if (formData.descuentoId !== "") {
       formDataToSend.append("descuento_id", parseInt(formData.descuentoId));
     }
+    
     if (formData.imagen && formData.imagen instanceof File) {
       formDataToSend.append("imagen", formData.imagen);
     } else if (!producto) {
@@ -297,7 +296,6 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       } else {
-        console.log("Creando nuevo producto con datos:", Object.fromEntries(formDataToSend));
         nuevoProducto = await crearProducto(formDataToSend);
         toast({
           title: "Éxito",

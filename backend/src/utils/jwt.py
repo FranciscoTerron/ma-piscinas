@@ -17,7 +17,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print("Payload decodificado:", payload)  # Depuración
         return payload
     except jwt.ExpiredSignatureError:
         print("El token ha expirado.")
