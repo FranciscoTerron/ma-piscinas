@@ -8,6 +8,8 @@ import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvi
 import { useAuth } from '../../context/AuthContext';
 import FormularioDireccion from "../perfilPersonal/FormularioDireccion";
 import MetodosPago from "./MetodoPago";
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
+initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY);
 
 const FormularioEnvio = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +22,7 @@ const FormularioEnvio = () => {
     ciudad: "",
     direccion: "",
   });
-  
+  const [preferenceId, setPreferenceId] = useState(null);
   const [metodoEnvio, setMetodoEnvio] = useState("domicilio");
   const [metodosEnvio, setMetodosEnvio] = useState([]); // Estado para almacenar los métodos de envío
   const toast = useToast();
@@ -254,6 +256,30 @@ const FormularioEnvio = () => {
 
   const handleCancelarDireccion = () => {
     setMostrarFormularioDireccion(false);
+  };
+
+  const crearPreferencia = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/crear_preferencia/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al crear la preferencia de pago');
+      }
+
+      const data = await response.json();
+      setPreferenceId(data.init_point);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleConfirmarCompra = async () => {
+    await crearPreferencia();
   };
 
   return (
@@ -556,12 +582,11 @@ const FormularioEnvio = () => {
                   </Box>
                 </>
               )}
-              
               <Button 
                 colorScheme="blue" 
                 size="lg"
                 width="100%"
-                onClick={validarYContinuar}
+                onClick={handleConfirmarCompra}
                 isDisabled={cartItems.length === 0 || loadingCart}
                 boxShadow="md"
                 _hover={{
@@ -569,9 +594,11 @@ const FormularioEnvio = () => {
                   transform: "translateY(-2px)"
                 }}
                 transition="all 0.3s ease"
+                id="wallet_container"
               >
                 Confirmar Compra
               </Button>
+              {preferenceId && <Wallet initialization={{ preferenceId , redirectMode: 'blank'}} />}
             </Box>
           </GridItem>
       </Grid>

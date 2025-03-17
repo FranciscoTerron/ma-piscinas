@@ -10,6 +10,7 @@ from src.database import engine, SessionLocal
 from src.models import BaseModel
 from src.gestion.router import router as gestion_router # Importamos los routers desde nuestros módulos
 from src.gestion.services import verificar_y_crear_roles 
+from src.pagos.router import router as pagos_router
 
 load_dotenv()
 
@@ -38,6 +39,7 @@ app = FastAPI(root_path=ROOT_PATH, lifespan=db_creation_lifespan)
 
 # Asociamos los routers a la app
 app.include_router(gestion_router)
+app.include_router(pagos_router)
 
 origins = [
     "http://localhost:5173",

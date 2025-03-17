@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import func, extract, case
 from sqlalchemy.exc import SQLAlchemyError
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio, TipoDescuento
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -979,16 +979,14 @@ def agregar_producto_al_carrito(db: Session, carrito_id: int, producto_id: int, 
     
     # Por defecto, el precio final es el precio original
     precio_final = producto.precio
-    print("ACAAA")
     # Verificar si el producto tiene un descuento asignado
     if producto.descuento_id and producto.descuento_id > 0:
-        print("ACAAAA")
         # Consultar el objeto de descuento para validar el tipo
         descuento_obj = db.query(Descuento).filter(Descuento.id == producto.descuento_id).first()
-        if descuento_obj and descuento_obj.tipo.upper() == "PORCENTAJE":
+        if descuento_obj and descuento_obj.tipo == TipoDescuento.PORCENTAJE:
             # Aplicar el descuento porcentual
             precio_final = producto.precio * (1 - descuento_obj.valor / 100)
-    
+
     # Calcular el subtotal según la cantidad agregada
     subtotal_calculado = precio_final * detalle_data.cantidad
 
