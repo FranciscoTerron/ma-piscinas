@@ -66,6 +66,7 @@ class Usuario(BaseModel):
     # Relación inversa
     actividades = relationship("Actividad", back_populates="usuario")
     direcciones_envio = relationship("DireccionEnvio", back_populates="usuario")
+    comentarios = relationship("Comentario", back_populates="usuario")
     
     def set_password(self, password: str):
         self.hashed_password = pwd_context.hash(password)
@@ -132,6 +133,7 @@ class Producto(BaseModel):
     subcategoria_id = Column(Integer, ForeignKey("subcategorias.id"), nullable=True)  # Añadimos esto
     descuento_id = Column(Integer, ForeignKey("descuentos.id"), nullable=True)
 
+    comentarios = relationship("Comentario", back_populates="producto")  # Asegúrate de usar back_populates
     carritoDetalle = relationship("CarritoDetalle", back_populates="producto")
     categoria_id = Column(Integer, ForeignKey("categorias.id"), nullable=False)
     categoria = relationship("CategoriaProducto", back_populates="productos")
@@ -282,3 +284,19 @@ class Descuento(BaseModel):
     )
     metodo_pago_id = Column(Integer, ForeignKey("metodospagos.id"), nullable=True)
     metodo_pago = relationship("MetodoPago", back_populates="descuentos")
+
+# En modelos.py
+class Comentario(BaseModel):
+    __tablename__ = "comentarios"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    texto: Mapped[str] = mapped_column(String(500))
+    calificacion: Mapped[int] = mapped_column(Integer)
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime, default=now)
+    
+    # Relaciones
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
+    usuario = relationship("Usuario", back_populates="comentarios")
+    
+    producto_id = Column(Integer, ForeignKey("productos.id"), nullable=False)
+    producto = relationship("Producto", back_populates="comentarios")  # Usamos back_populates

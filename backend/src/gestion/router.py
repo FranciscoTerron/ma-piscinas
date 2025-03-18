@@ -1047,3 +1047,30 @@ def actualizar_direccion(
 def eliminar_direccion(direccion_id: int, db: Session = Depends(get_db)):
     services.eliminar_direccion_envio(db, direccion_id)
     return {"message": "Dirección de envío eliminada correctamente"}
+
+# ============================================================
+# Ruta para crear comentario
+# ============================================================
+@router.post("/productos/{producto_id}/comentarios", response_model=schemas.ComentarioOut)
+def crear_comentario(
+    producto_id: int,
+    comentario: schemas.ComentarioCreate,
+    db: Session = Depends(get_db),
+    current_user: schemas.Usuario = Depends(get_current_user)
+):
+    return services.crear_comentario(db, comentario, producto_id, current_user.id)
+
+
+# ============================================================
+# Ruta para obtener comentarios del producto
+# ============================================================
+@router.get("/productos/{producto_id}/comentarios", response_model=List[schemas.ComentarioOut])
+def obtener_comentarios_producto(
+    producto_id: int,
+    db: Session = Depends(get_db)
+):
+    return services.obtener_comentarios_producto(db, producto_id)
+
+@router.delete("/comentarios/{comentario_id}")
+def eliminar_comentario(comentario_id: int, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
+    return services.eliminar_comentario(db, comentario_id, current_user.id)

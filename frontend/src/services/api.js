@@ -591,3 +591,18 @@ export const obtenerDireccionEnvioPorId = async (direccionId) => {
   const response = await api.get(`/direcciones-envio/${direccionId}`);
   return response.data;
 };
+
+export const crearComentario = async (comentario) => {
+  const response = await api.post(`/productos/${comentario.producto_id}/comentarios`, comentario);
+  return response.data;
+};
+
+export const obtenerComentariosProducto = async (productoId) => {
+  const response = await api.get(`/productos/${productoId}/comentarios`);
+  return response.data;
+};
+
+
+export const eliminarComentario = async (comentario) => {
+  await api.delete(`/comentarios/${comentario}`);
+};

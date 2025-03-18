@@ -583,3 +583,32 @@ class DireccionEnvio(DireccionEnvioBase):
     class Config:
         from_attributes = True  
         
+        
+
+# ============================================================
+# Esquema base para Comentario
+# ============================================================
+class ComentarioBase(BaseModel):
+    texto: str
+    calificacion: int = Field(..., ge=1, le=5)
+    producto_id: int
+
+
+# ============================================================
+# Esquema Creacion
+# ============================================================
+class ComentarioCreate(ComentarioBase):
+    pass
+
+
+# ============================================================
+# Esquema respuesta
+# ============================================================
+class ComentarioOut(ComentarioBase):
+    id: int
+    fecha_creacion: datetime
+    usuario_id: int
+
+    class Config:
+        orm_mode = True
+        

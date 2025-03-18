@@ -5,11 +5,15 @@ import {
   Grid, GridItem, Divider, Input, Icon, Modal, ModalOverlay, ModalContent, 
   ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue, Badge,
   Tabs, TabList, Tab, TabPanels, TabPanel, Flex, Tag, SimpleGrid, useDisclosure, SkeletonText,
-  NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper,useColorModeValue
+  NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper,useColorModeValue,
+  Textarea, Select,IconButton, Tooltip,AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader,
+  AlertDialogBody, AlertDialogFooter
 } from '@chakra-ui/react';
-import { FiTruck, FiShield, FiCreditCard, FiPackage, FiHeart, FiShare2, FiShoppingCart } from 'react-icons/fi';
-import { obtenerProducto, listarMetodosPago } from '../../services/api';
+import { FiTruck, FiShield, FiCreditCard, FiPackage, FiTrash2, FiStar, FiShoppingCart } from 'react-icons/fi';
+import { obtenerProducto, listarMetodosPago,crearComentario,obtenerComentariosProducto,eliminarComentario } from '../../services/api';
 import { useCart } from "../../context/CartContext";
+import { useAuth } from '../../context/AuthContext';
+import Comentarios from './Comentarios';
 
 const Producto = () => {
   const { id } = useParams();
@@ -28,7 +32,14 @@ const Producto = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { addToCart } = useCart();
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  
+  const [comentarios, setComentarios] = useState([]);
+  const [nuevoComentario, setNuevoComentario] = useState('');
+  const [calificacion, setCalificacion] = useState(5);
+  const { currentUser } = useAuth();
+  const currentUserId = currentUser?.id;
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+  const [hasCommented, setHasCommented] = useState(false);
 
   useEffect(() => {
     const cargarProducto = async () => {
@@ -82,6 +93,58 @@ const Producto = () => {
       setPosition({ x, y });
     }
   };
+
+  // Obtener comentarios al cargar el producto
+  useEffect(() => {
+    const cargarComentarios = async () => {
+      try {
+        const response = await obtenerComentariosProducto(id);
+        setComentarios(response);
+  
+        // Verificar si el usuario actual ya ha comentado
+        const userComment = response.find(c => c.usuario_id.id === currentUserId);
+        setHasCommented(!!userComment);
+      } catch (error) {
+        console.error("Error al cargar comentarios", error);
+      }
+    };
+    cargarComentarios();
+  }, [id, currentUserId]);
+
+// En Producto.jsx
+const enviarComentario = async () => {
+  if (!nuevoComentario.trim()) return;
+
+  try {
+    await crearComentario({
+      producto_id: parseInt(id),
+      texto: nuevoComentario,
+      calificacion: calificacion
+    });
+
+    // Actualizar lista de comentarios
+    const response = await obtenerComentariosProducto(id);
+    setComentarios(response);
+    setNuevoComentario('');
+    setCalificacion(5);
+
+    toast({
+      title: "Comentario enviado",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  } catch (error) {
+    console.error("Error completo:", error);
+    toast({
+      title: "Error",
+      description: error.response?.data?.detail || "Error al enviar el comentario",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
 
   const handleQuantityChange = (value) => {
     const newQuantity = Math.max(1, Math.min(value, producto?.stock || 1));
@@ -143,6 +206,61 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
     );
   }
 
+  const openDeleteAlert = (comentarioId) => {
+    setCommentToDelete(comentarioId);
+    setIsDeleteAlertOpen(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    try {
+      await eliminarComentario(commentToDelete);
+      const response = await obtenerComentariosProducto(id);
+      setComentarios(response);
+      toast({
+        title: "Comentario eliminado",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error al eliminar comentario", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el comentario",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsDeleteAlertOpen(false);
+      setCommentToDelete(null);
+    }
+  };
+// Nueva función para eliminar comentarios
+const handleDeleteComment = async (comentarioId) => {
+  if (window.confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
+    try {
+      await eliminarComentario(comentarioId);
+      const response = await obtenerComentariosProducto(id);
+      setComentarios(response);
+      toast({
+        title: "Comentario eliminado",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error al eliminar comentario", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el comentario",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }
+};
   return (
     <Container maxW="container.xl" py={8} className="fade-in">
       <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={{ base: 8, lg: 12 }}>
@@ -234,26 +352,33 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
             )}
           </Box>
 
-          {/* Información detallada en tabs */}
           <Box mt={8}>
-            <Tabs colorScheme="blue" variant="enclosed" borderColor="gray.200">
-              <TabList>
-                <Tab fontWeight="medium">Descripción</Tab>
-                <Tab fontWeight="medium">Opiniones</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <Text fontSize="sm" color="gray.700" lineHeight="tall">
-                    {producto?.descripcion || 'Sin descripción disponible.'}
-                  </Text>
-                </TabPanel>
-                <TabPanel>
-                  <Text fontSize="sm" color="gray.600" textAlign="center" py={4}>
-                    Aún no hay opiniones para este producto.
-                  </Text>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+          <Tabs colorScheme="blue" variant="enclosed" borderColor="gray.200">
+            <TabList>
+              <Tab fontWeight="medium">Descripción</Tab>
+              <Tab fontWeight="medium">Opiniones</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <Text fontSize="sm" color="gray.700" lineHeight="tall">
+                  {producto?.descripcion || 'Sin descripción disponible.'}
+                </Text>
+              </TabPanel>
+              <TabPanel>
+                <Comentarios
+                  comentarios={comentarios}
+                  nuevoComentario={nuevoComentario}
+                  setNuevoComentario={setNuevoComentario}
+                  calificacion={calificacion}
+                  setCalificacion={setCalificacion}
+                  currentUserId={currentUserId}
+                  enviarComentario={enviarComentario}
+                  openDeleteAlert={openDeleteAlert}
+                  hasCommented={hasCommented} 
+                />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
           </Box>
         </GridItem>
 
@@ -592,6 +717,42 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
           </ModalBody>
         </ModalContent>
       </Modal>
+      <AlertDialog
+        isOpen={isDeleteAlertOpen}
+        leastDestructiveRef={undefined}
+        onClose={() => setIsDeleteAlertOpen(false)}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent bg="white">
+            <AlertDialogHeader fontSize="lg" fontWeight="bold" color="gray.800" pb={4}>
+              Eliminar Comentario
+            </AlertDialogHeader>
+            <AlertDialogBody color="gray.600">
+              ¿Estás seguro que deseas eliminar este comentario?
+            </AlertDialogBody>
+            <AlertDialogFooter>
+              <Button
+                onClick={confirmDeleteComment}
+                color="white"
+                bg="red.500"
+                _hover={{ bg: "red.800" }}
+                mr={2}
+              >
+                Eliminar
+              </Button>
+              <Button
+                onClick={() => setIsDeleteAlertOpen(false)}
+                variant="outline"
+                bg="gray.500"
+                _hover={{ bg: "gray.800" }}
+                color="white"
+              >
+                Cancelar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Container>
   );
 };

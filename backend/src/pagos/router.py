@@ -39,9 +39,9 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
     preference_data = {
         "items": items,
         "back_urls": {
-            "success": "https://tuweb.com/success",
-            "failure": "https://tuweb.com/failure",
-            "pending": "https://tuweb.com/pending"
+            "success": "https://youtube.com",
+            "failure": "https://youtube.com",
+            "pending": "https://youtube.com"
         },
         "auto_return": "approved"
     }

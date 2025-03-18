@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session,joinedload
 from sqlalchemy import func, extract, case
 from sqlalchemy.exc import SQLAlchemyError
-from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio, TipoDescuento
+from src.gestion.models import Usuario, Rol, CategoriaProducto, Descuento,Producto, Envio, Pago, Pedido,Comentario, PedidoDetalle, Carrito, CarritoDetalle, MetodoPago, Actividad, SubCategoria, Empresa, MetodoPagoEnum, DireccionEnvio, TipoDescuento
 from src.gestion import schemas, exceptions
 from src.utils.jwt import create_access_token
 from passlib.context import CryptContext
@@ -1449,3 +1449,61 @@ def eliminar_direccion_envio(db: Session, direccion_id: int):
     db_direccion_envio = obtener_direccion_por_id(db, direccion_id)
     db.delete(db_direccion_envio)
     db.commit()
+    
+    
+
+def crear_comentario(db: Session, comentario_data: schemas.ComentarioCreate, producto_id: int, usuario_id: int):
+    # Verificar que el producto existe
+    producto = db.query(Producto).filter(Producto.id == producto_id).first()
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    
+    # Verificar si el usuario ya ha comentado sobre este producto
+    comentario_existente = db.query(Comentario).filter(
+        Comentario.producto_id == producto_id,
+        Comentario.usuario_id == usuario_id
+    ).first()
+    
+    if comentario_existente:
+        raise HTTPException(status_code=400, detail="Ya has comentado sobre este producto")
+    
+    # Crear el nuevo comentario
+    nuevo_comentario = Comentario(
+        **comentario_data.dict(exclude={"producto_id"}),
+        usuario_id=usuario_id,
+        producto_id=producto_id
+    )
+    
+    db.add(nuevo_comentario)
+    db.commit()
+    db.refresh(nuevo_comentario)
+    return nuevo_comentario
+
+# ============================================================
+# Obtener comentarios de un producto
+# ============================================================
+def obtener_comentarios_producto(db: Session, producto_id: int):
+    return db.query(Comentario)\
+             .options(joinedload(Comentario.usuario))\
+             .filter(Comentario.producto_id == producto_id)\
+             .order_by(Comentario.fecha_creacion.desc())\
+             .all()
+             
+            
+def eliminar_comentario(db: Session, comentario_id: int, usuario_id: int):
+    # Buscar el comentario
+    comentario = db.query(Comentario).filter(Comentario.id == comentario_id).first()
+
+    # Verificar si el comentario existe
+    if not comentario:
+        raise HTTPException(status_code=404, detail="Comentario no encontrado")
+
+    # Verificar que el comentario pertenece al usuario
+    if comentario.usuario_id != usuario_id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar este comentario")
+
+    # Eliminar el comentario
+    db.delete(comentario)
+    db.commit()
+
+    return {"message": "Comentario eliminado exitosamente"}             
