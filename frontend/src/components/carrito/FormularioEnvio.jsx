@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import React from 'react';
 import {
-  Box, Button, Heading, Text, FormControl, FormLabel, Input, Divider, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
+  Box, Button, Heading, Text, FormControl, FormLabel, Input, Flex, Grid, GridItem, VStack, HStack, useToast, Container, Radio, RadioGroup, Image, Select,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvio, listarDetallesCarrito, listarProductos, listarMetodosEnvio } from "../../services/api"; // Importa la API de métodos de envío
 import { useAuth } from '../../context/AuthContext';
 import FormularioDireccion from "../perfilPersonal/FormularioDireccion";
-import MetodosPago from "./MetodoPago";
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
 initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY);
 
@@ -23,10 +21,11 @@ const FormularioEnvio = () => {
     direccion: "",
   });
   const [preferenceId, setPreferenceId] = useState(null);
-  const [metodoEnvio, setMetodoEnvio] = useState("domicilio");
-  const [metodosEnvio, setMetodosEnvio] = useState([]); // Estado para almacenar los métodos de envío
+  const [botonPresionado, setBotonPresionado] = useState(false);
+  const [metodoEnvio, setMetodoEnvio] = useState("");
+  const [metodosEnvio, setMetodosEnvio] = useState([]); 
+  const [costoEnvio, setCostoEnvio] = useState(0);
   const toast = useToast();
-  const navigate = useNavigate();
   const [direcciones, setDirecciones] = useState(null);
   const [selectedDireccionIndex, setSelectedDireccionIndex] = useState(0);
   const [mostrarFormularioDireccion, setMostrarFormularioDireccion] = useState(false);
@@ -42,7 +41,6 @@ const FormularioEnvio = () => {
   }, {});
 
    // Calcula los totales dinámicamente
-   const costoEnvio = 1;
    const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
    const total = subtotal + costoEnvio;
  
@@ -52,22 +50,6 @@ const FormularioEnvio = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value
     }));
-  };
-
-  const validarYContinuar = () => {
-    const camposRequeridos = ["nombre", "apellido", "telefono", "email", "codigoPostal", "ciudad", "direccion"];
-    for (const campo of camposRequeridos) {
-      if (!formData[campo]) {
-        toast({
-          title: "Campo requerido",
-          description: `Por favor completa el campo ${campo}`,
-          status: "error",
-          duration: 3000,
-        });
-        return;
-      }
-    }
-    navigate("/pago");
   };
 
   const formatearMonto = (monto) => {
@@ -190,7 +172,7 @@ const FormularioEnvio = () => {
       cargarDirecciones();
       cargarCarrito();
       cargarProductos();
-      cargarMetodosEnvio(); 
+      cargarMetodosEnvio();
     }
   }, [userId, paginaActual]);
 
@@ -253,6 +235,13 @@ const FormularioEnvio = () => {
     }
   };
 
+  const handleMetodoEnvioChange = (metodoId) => {
+    setMetodoEnvio(metodoId);
+    const metodoSeleccionado = metodosEnvio.find((metodo) => metodo.id === parseInt(metodoId));
+    if (metodoSeleccionado) {
+      setCostoEnvio(metodoSeleccionado.costo);
+    }
+  };
 
   const handleCancelarDireccion = () => {
     setMostrarFormularioDireccion(false);
@@ -272,7 +261,7 @@ const FormularioEnvio = () => {
       }
   
       const data = await response.json();
-      setPreferenceId(data.preference_id); // Usamos el preference_id recibido
+      setPreferenceId(data.preference_id);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -280,6 +269,7 @@ const FormularioEnvio = () => {
   
   const handleConfirmarCompra = async () => {
     await crearPreferencia();
+    setBotonPresionado(true);
   };
 
   return (
@@ -460,35 +450,35 @@ const FormularioEnvio = () => {
           <Heading as="h2" size="md" color="gray.700" mb={6} borderBottom="2px solid" borderColor="blue.500" pb={2}>
             ENTREGA
           </Heading>
-          <RadioGroup value={metodoEnvio} onChange={setMetodoEnvio}>
-            <VStack align="stretch" spacing={4}>
-              {metodosEnvio.map((metodo) => (
-                <Box
-                  key={metodo.id}
-                  p={4}
-                  borderRadius="md"
-                  borderWidth="1px"
-                  borderColor={metodoEnvio === metodo.id ? "blue.500" : "gray.200"}
-                  bg={metodoEnvio === metodo.id ? "blue.50" : "white"}
-                >
-                  <Radio value={metodo.id} colorScheme="blue">
-                    <Flex align="center" justify="space-between" width="100%">
-                      <Text fontWeight={metodoEnvio === metodo.id ? "medium" : "normal"}>
-                        {metodo.nombre}
-                      </Text>
-                      <Text fontWeight="medium">{formatearMonto(metodo.costo)}</Text>
-                    </Flex>
-                  </Radio>
-                </Box>
-              ))}
-            </VStack>
-          </RadioGroup>
+          {metodosEnvio.length > 0 ? (
+            <RadioGroup value={metodoEnvio} onChange={handleMetodoEnvioChange}>
+              <VStack align="stretch" spacing={4}>
+                {metodosEnvio.map((metodo) => (
+                  <Box
+                    key={metodo.id}
+                    p={4}
+                    borderRadius="md"
+                    borderWidth="1px"
+                    borderColor={metodoEnvio === metodo.id ? "blue.500" : "gray.200"}
+                    bg={metodoEnvio === metodo.id ? "blue.50" : "white"}
+                  >
+                    <Radio value={metodo.id} colorScheme="blue">
+                      <Flex align="center" justify="space-between" width="100%">
+                        <Text fontWeight={metodoEnvio === metodo.id ? "medium" : "normal"}>
+                          {metodo.nombre}
+                        </Text>
+                        <Text fontWeight="medium">{formatearMonto(metodo.costo)}</Text>
+                      </Flex>
+                    </Radio>
+                  </Box>
+                ))}
+              </VStack>
+            </RadioGroup>
+          ) : (
+            <Text>Cargando métodos de envío...</Text>
+          )}
         </Box>
-
-        {/* Sección de pago */}
-        <MetodosPago />
       </GridItem>
-        
           <GridItem>
             <Box 
               p={6} 
@@ -582,23 +572,25 @@ const FormularioEnvio = () => {
                   </Box>
                 </>
               )}
-              <Button 
-                colorScheme="blue" 
-                size="lg"
-                width="100%"
-                onClick={handleConfirmarCompra}
-                isDisabled={cartItems.length === 0 || loadingCart}
-                boxShadow="md"
-                _hover={{
-                  boxShadow: "lg",
-                  transform: "translateY(-2px)"
-                }}
-                transition="all 0.3s ease"
-                id="wallet_container"
-              >
-                Confirmar Compra
-              </Button>
-              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'blank'}} />}
+              {!botonPresionado && (
+                <Button 
+                  colorScheme="blue" 
+                  size="lg"
+                  width="100%"
+                  onClick={handleConfirmarCompra}
+                  isDisabled={cartItems.length === 0 || loadingCart}
+                  boxShadow="md"
+                  _hover={{
+                    boxShadow: "lg",
+                    transform: "translateY(-2px)"
+                  }}
+                  transition="all 0.3s ease"
+                  id="wallet_container"
+                >
+                  Confirmar Compra
+                </Button>
+              )}
+              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'modal'}} />}
               </Box>
           </GridItem>
       </Grid>

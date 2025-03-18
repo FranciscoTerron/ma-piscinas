@@ -3,7 +3,7 @@ import mercadopago
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from src.database import get_db
-from src.gestion.models import Carrito, CarritoDetalle, Producto
+from src.gestion.models import Usuario, Carrito, CarritoDetalle
 
 router = APIRouter()
 
@@ -24,26 +24,30 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
     if not detalles:
         raise HTTPException(status_code=400, detail="El carrito está vacío")
 
-    # Construir la lista de productos para Mercado Pago
-    items = []
-    for detalle in detalles:
-        producto = db.query(Producto).filter(Producto.id == detalle.producto_id).first()
-        if producto:
-            items.append({
-                "title": producto.nombre,
-                "quantity": detalle.cantidad,
-                "unit_price": float(detalle.subtotal),  # Usa el precio del producto
-                "currency_id": "ARS"
-            })
+    # Calcular el total de la compra sumando los subtotales de los productos
+    total_compra = sum(detalle.subtotal for detalle in detalles)
+
+    # Obtener el nombre y apellido del usuario (asumiendo que tienes una tabla Usuario)
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Construir un solo ítem para Mercado Pago
+    items = [{
+        "title": f"Compra de {usuario.nombre} {usuario.apellido}",  # Nombre y apellido del cliente
+        "quantity": 1,  # Cantidad 1 (representa una compra)
+        "unit_price": float(total_compra),  # Precio total de la compra
+        "currency_id": "ARS"
+    }]
 
     preference_data = {
         "items": items,
         "back_urls": {
-            "success": "https://youtube.com",
-            "failure": "https://youtube.com",
-            "pending": "https://youtube.com"
+            "success": "https://youtube.com/",  # URL de éxito
+            "failure": "https://youtube.com/",  # URL de fallo
+            "pending": "https://youtube.com/"   # URL de pago pendiente
         },
-        "auto_return": "approved"
+        "auto_return": "approved"  # Redirigir automáticamente al usuario después del pago
     }
 
     try:
