@@ -42,7 +42,7 @@ const FormularioEnvio = () => {
   }, {});
 
    // Calcula los totales dinámicamente
-   const costoEnvio = 51229.11;
+   const costoEnvio = 1;
    const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
    const total = subtotal + costoEnvio;
  
@@ -266,18 +266,18 @@ const FormularioEnvio = () => {
           'Content-Type': 'application/json',
         },
       });
-
+  
       if (!response.ok) {
         throw new Error('Error al crear la preferencia de pago');
       }
-
+  
       const data = await response.json();
-      setPreferenceId(data.init_point);
+      setPreferenceId(data.preference_id); // Usamos el preference_id recibido
     } catch (error) {
       console.error('Error:', error);
     }
   };
-
+  
   const handleConfirmarCompra = async () => {
     await crearPreferencia();
   };
@@ -598,8 +598,8 @@ const FormularioEnvio = () => {
               >
                 Confirmar Compra
               </Button>
-              {preferenceId && <Wallet initialization={{ preferenceId , redirectMode: 'blank'}} />}
-            </Box>
+              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'blank'}} />}
+              </Box>
           </GridItem>
       </Grid>
     </Container>

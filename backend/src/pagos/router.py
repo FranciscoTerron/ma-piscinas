@@ -48,6 +48,7 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
 
     try:
         preference_response = sdk.preference().create(preference_data)
-        return {"init_point": preference_response["response"]["init_point"]}
+        return {"preference_id": preference_response["response"]["id"]}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
