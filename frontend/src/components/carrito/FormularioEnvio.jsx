@@ -7,9 +7,9 @@ import { obtenerUsuarioPorId, obtenerDireccionesEnvioUsuario, crearDireccionEnvi
 import { useAuth } from '../../context/AuthContext';
 import FormularioDireccion from "../perfilPersonal/FormularioDireccion";
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
-initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY);
 
 const FormularioEnvio = () => {
+  initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY, {locale: 'es-AR'});
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -257,13 +257,21 @@ const FormularioEnvio = () => {
       });
   
       if (!response.ok) {
-        throw new Error('Error al crear la preferencia de pago');
+        const errorData = await response.json(); 
+        throw new Error(errorData.detail || 'Error al crear la preferencia de pago');
       }
   
       const data = await response.json();
       setPreferenceId(data.preference_id);
     } catch (error) {
       console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: error.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
   
@@ -590,7 +598,8 @@ const FormularioEnvio = () => {
                   Confirmar Compra
                 </Button>
               )}
-              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'modal'}} />}
+              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'blank'}} />}
+              
               </Box>
           </GridItem>
       </Grid>

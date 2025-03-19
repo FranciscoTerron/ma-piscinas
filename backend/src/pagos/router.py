@@ -8,7 +8,7 @@ from src.gestion.models import Usuario, Carrito, CarritoDetalle
 router = APIRouter()
 
 # Configuración del SDK de Mercado Pago
-ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
+ACCESS_TOKEN =os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 sdk = mercadopago.SDK(ACCESS_TOKEN)
 
 @router.post("/crear_preferencia/{usuario_id}")
@@ -43,9 +43,9 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
     preference_data = {
         "items": items,
         "back_urls": {
-            "success": "https://youtube.com/",  # URL de éxito
-            "failure": "https://youtube.com/",  # URL de fallo
-            "pending": "https://youtube.com/"   # URL de pago pendiente
+            "success": "http://localhost:5173/productos",  # URL de éxito
+            "failure": "http://localhost:5173/productos",  # URL de fallo
+            "pending": "http://localhost:5173/FormularioEnvio"   # URL de pago pendiente
         },
         "auto_return": "approved"  # Redirigir automáticamente al usuario después del pago
     }
