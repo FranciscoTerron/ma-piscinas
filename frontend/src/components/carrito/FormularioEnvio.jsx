@@ -40,6 +40,17 @@ const FormularioEnvio = () => {
     return acc;
   }, {});
 
+  const isRecipientDataComplete =
+  formData.nombre &&
+  formData.apellido &&
+  formData.telefono &&
+  formData.email &&
+  formData.codigoPostal &&
+  formData.provincia &&
+  formData.ciudad &&
+  formData.direccion;
+
+
    // Calcula los totales dinámicamente
    const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
    const total = subtotal + costoEnvio;
@@ -582,21 +593,22 @@ const FormularioEnvio = () => {
               )}
               {!botonPresionado && (
                 <Button 
-                  colorScheme="blue" 
-                  size="lg"
-                  width="100%"
-                  onClick={handleConfirmarCompra}
-                  isDisabled={cartItems.length === 0 || loadingCart}
-                  boxShadow="md"
-                  _hover={{
-                    boxShadow: "lg",
-                    transform: "translateY(-2px)"
-                  }}
-                  transition="all 0.3s ease"
-                  id="wallet_container"
-                >
-                  Confirmar Compra
-                </Button>
+                colorScheme="blue" 
+                size="lg"
+                width="100%"
+                onClick={handleConfirmarCompra}
+                isDisabled={cartItems.length === 0 || loadingCart || !isRecipientDataComplete}
+                boxShadow="md"
+                _hover={{
+                  boxShadow: "lg",
+                  transform: "translateY(-2px)"
+                }}
+                transition="all 0.3s ease"
+                id="wallet_container"
+              >
+                Confirmar Compra
+              </Button>
+              
               )}
               {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'blank'}} />}
               

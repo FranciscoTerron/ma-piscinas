@@ -108,15 +108,15 @@ const Inicio = () => {
         </Carousel>
       </div>
 
-      {/* Sección de Categorías */}
+     {/* Sección de Categorías */}
       <div className="container mt-5 pt-4">
-        <h2 className="section-title">Explora Nuestras Categorías</h2>
+        <h2 className="section-title ">Explora Nuestras Categorías</h2>
         <div className="row g-4">
           {categorias.map((category) => (
             <div className="col-md-4" key={category.id}>
               <div className="card category-card text-white border-0 rounded-3 overflow-hidden">
                 <img
-                  src={`https://placehold.co/400x280/333/fff?text=${category.nombre}`}
+                  src={category.imagen || `https://placehold.co/400x280/333/fff?text=${category.nombre}`}
                   className="card-img"
                   alt={category.nombre}
                 />
@@ -134,6 +134,7 @@ const Inicio = () => {
           ))}
         </div>
       </div>
+
 
       {/* Sección de Ofertas Especiales */}
       <div className="container mt-5 pt-4">

@@ -43,7 +43,7 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
     preference_data = {
         "items": items,
         "back_urls": {
-            "success": "http://localhost:5173/productos",  # URL de éxito
+            "success": "http://localhost:5173/GraciasPorSuCompra",  # URL de éxito
             "failure": "http://localhost:5173/productos",  # URL de fallo
             "pending": "http://localhost:5173/FormularioEnvio"   # URL de pago pendiente
         },

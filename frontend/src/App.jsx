@@ -9,6 +9,7 @@ import AppRoutes from './AppRoutes';
 import Migaja from './components/Migaja';
 import BotonWhatsApp from './components/cliente/BotonWhatsapp';
 import { CartProvider } from "./context/CartContext";
+import BotonFlecha from './components/cliente/Productos/BotonFlecha';
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
               </Box>
               <Footer />
               <BotonWhatsApp />
+              <BotonFlecha />
             </Flex>
           </Router>
         </CartProvider>

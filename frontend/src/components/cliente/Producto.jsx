@@ -2,15 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Container, Box, Image, Text, VStack, HStack, Button, Skeleton, useToast,
-  Grid, GridItem, Divider, Input, Icon, Modal, ModalOverlay, ModalContent, 
-  ModalHeader, ModalCloseButton, ModalBody, useBreakpointValue, Badge,
+  Grid, GridItem, Divider,Icon,
+   useBreakpointValue, Badge,
   Tabs, TabList, Tab, TabPanels, TabPanel, Flex, Tag, SimpleGrid, useDisclosure, SkeletonText,
   NumberInput, NumberInputField, NumberInputStepper, NumberIncrementStepper, NumberDecrementStepper,useColorModeValue,
-  Textarea, Select,IconButton, Tooltip,AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader,
+  IconButton, Tooltip,AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader,
   AlertDialogBody, AlertDialogFooter
 } from '@chakra-ui/react';
-import { FiTruck, FiShield, FiCreditCard, FiPackage, FiTrash2, FiStar, FiShoppingCart } from 'react-icons/fi';
-import { obtenerProducto, listarMetodosPago,crearComentario,obtenerComentariosProducto,eliminarComentario } from '../../services/api';
+import { FiTruck, FiShield, FiCreditCard, FiPackage,  FiShoppingCart } from 'react-icons/fi';
+import { obtenerProducto,crearComentario,obtenerComentariosProducto,eliminarComentario } from '../../services/api';
 import { useCart } from "../../context/CartContext";
 import { useAuth } from '../../context/AuthContext';
 import Comentarios from './Comentarios';
@@ -22,9 +22,6 @@ const Producto = () => {
   const [quantity, setQuantity] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [showZoom, setShowZoom] = useState(false);
-  const [selectedMetodo, setSelectedMetodo] = useState('');
-  const [cuotas, setCuotas] = useState([]);
-  const [metodosPago, setMetodosPago] = useState([]);
   const [isAdding, setIsAdding] = useState(false); // Estado para evitar múltiples ejecuciones
   const imageRef = useRef(null);
   const toast = useToast();
@@ -63,27 +60,10 @@ const Producto = () => {
     cargarProducto();
   }, [id, toast]);
 
-  useEffect(() => {
-    const cargarMetodosPago = async () => {
-      try {
-        const response = await listarMetodosPago();
-        setMetodosPago(response.metodosPago);
-      } catch (error) {
-        console.error("Error al cargar métodos de pago", error);
-      }
-    };
-    cargarMetodosPago();
-  }, []);
 
-  const calcularCuotas = (metodoId) => {
-    const metodo = metodosPago.find(m => m.id === metodoId);
-    setCuotas(metodo ? metodo.cuotas : []);
-  };
 
-  const handleMetodoClick = (metodoId) => {
-    setSelectedMetodo(metodoId);
-    calcularCuotas(metodoId);
-  };
+
+ 
 
   const handleMouseMove = (e) => {
     if (imageRef.current) {
@@ -174,9 +154,6 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
     
   }, [addToCart, toast, isAdding]);
 
-  const gridColumns = useBreakpointValue({ base: 2, md: 3 });
-  const isMobile = useBreakpointValue({ base: true, md: false });
-
   if (loading) {
     return (
       <Container maxW="container.xl" py={8}>
@@ -236,31 +213,7 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
       setCommentToDelete(null);
     }
   };
-// Nueva función para eliminar comentarios
-const handleDeleteComment = async (comentarioId) => {
-  if (window.confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
-    try {
-      await eliminarComentario(comentarioId);
-      const response = await obtenerComentariosProducto(id);
-      setComentarios(response);
-      toast({
-        title: "Comentario eliminado",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error("Error al eliminar comentario", error);
-      toast({
-        title: "Error",
-        description: "No se pudo eliminar el comentario",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  }
-};
+
   return (
     <Container maxW="container.xl" py={8} className="fade-in">
       <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={{ base: 8, lg: 12 }}>
@@ -555,39 +508,9 @@ const handleDeleteComment = async (comentarioId) => {
                 )}
               </Flex>
             </Flex>
-            
-            {/* Botones de acción */}
-            <Flex 
-              direction={["column", "row"]} 
-              width="100%" 
-              gap={4}
-            >
+            <Flex width="100%">
               <Button
-                flex={["auto", 1]}
-                onClick={onOpen}
-                bg="white"
-                color="blue.600"
-                fontWeight="bold"
-                borderRadius="lg"
-                height="54px"
-                borderWidth={2}
-                borderColor="blue.500"
-                leftIcon={<FiCreditCard size={18} />}
-                _hover={{ 
-                  bg: "blue.50", 
-                  transform: "translateY(-2px)",
-                  transition: "all 0.2s ease"
-                }}
-                _active={{ 
-                  transform: "translateY(0)", 
-                  bg: "blue.100" 
-                }}
-              >
-                Ver Opciones de Pago
-              </Button>
-              
-              <Button
-                flex={["auto", 1.5]}
+                flex="1"
                 colorScheme="blue"
                 leftIcon={<FiShoppingCart size={18} />}
                 height="54px"
@@ -611,6 +534,7 @@ const handleDeleteComment = async (comentarioId) => {
                 AGREGAR AL CARRITO
               </Button>
             </Flex>
+
           </Box>
 
             {/* Beneficios adicionales */}
@@ -646,77 +570,6 @@ const handleDeleteComment = async (comentarioId) => {
         </GridItem>
       </Grid>
 
-      {/* Modal de opciones de pago mejorado */}
-      <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalOverlay bg="blackAlpha.300" backdropFilter="blur(5px)" />
-        <ModalContent borderRadius="xl" p={2}>
-          <ModalHeader color="gray.700">Elige un método de pago</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Grid templateColumns={`repeat(${gridColumns}, 1fr)`} gap={4}>
-              {metodosPago.map(metodo => (
-                <Box
-                  key={metodo.id}
-                  borderWidth="1px"
-                  borderRadius="lg"
-                  overflow="hidden"
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  borderColor={selectedMetodo === metodo.id ? "blue.500" : "gray.200"}
-                  bg={selectedMetodo === metodo.id ? "blue.50" : "white"}
-                  _hover={{ boxShadow: 'md', borderColor: "blue.300" }}
-                  onClick={() => handleMetodoClick(metodo.id)}
-                  p={3}
-                >
-                  <Image
-                    src={metodo.imagen} 
-                    alt={metodo.nombre}
-                    boxSize="80px"
-                    objectFit="contain"
-                    mx="auto"
-                    mt={2}
-                  />
-                  <Text textAlign="center" fontWeight="medium" mt={3} mb={2}>
-                    {metodo.nombre}
-                  </Text>
-                </Box>
-              ))}
-            </Grid>
-            {cuotas.length > 0 ? (
-              <Box mt={6} p={4} bg="gray.50" borderRadius="md">
-                <Text fontWeight="medium" mb={3} color="gray.700">
-                  Opciones de pago disponibles:
-                </Text>
-                <VStack spacing={2} align="start">
-                  {cuotas.map((cuota, index) => (
-                    <HStack key={index} spacing={3}>
-                      <Box 
-                        bg="blue.100" 
-                        color="blue.700" 
-                        borderRadius="full" 
-                        fontSize="xs" 
-                        fontWeight="bold"
-                        minW="20px" 
-                        h="20px" 
-                        display="flex" 
-                        alignItems="center" 
-                        justifyContent="center"
-                      >
-                        {index + 1}
-                      </Box>
-                      <Text fontSize="sm">{cuota.descripcion}</Text>
-                    </HStack>
-                  ))}
-                </VStack>
-              </Box>
-            ) : selectedMetodo ? (
-              <Box mt={6} p={4} bg="blue.50" borderRadius="md" textAlign="center">
-                <Text>Selecciona las cuotas disponibles para este método de pago</Text>
-              </Box>
-            ) : null}
-          </ModalBody>
-        </ModalContent>
-      </Modal>
       <AlertDialog
         isOpen={isDeleteAlertOpen}
         leastDestructiveRef={undefined}
