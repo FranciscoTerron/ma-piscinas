@@ -322,14 +322,14 @@ class CarritoDetalle(CarritoDetalleBase):
 class PedidoBase(BaseModel):
     total: float = Field(..., example=5000.75)
     estado: EstadoPedidoEnum = Field(default=EstadoPedidoEnum.PENDIENTE)
-
+    usuario_id: int
+    
 class PedidoEstadoUpdate(PedidoBase):
     estado: EstadoPedidoEnum
 
 
 class Pedido(PedidoBase):
     id: int
-    usuario_id: int
     fecha_creacion: datetime
 
     class Config:
@@ -341,7 +341,7 @@ class Pedido(PedidoBase):
 # Esquema para crear un pedido
 # ============================================================
 class PedidoCreate(PedidoBase):
-    usuario_id: int = Field(..., example=1)
+    pass
     
 # ============================================================
 # Esquema para actualizar pedido

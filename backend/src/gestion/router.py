@@ -533,9 +533,10 @@ def actualizar_metodo_pago(
 # Ruta para crear pedido
 # ============================================================
 @router.post("/pedidos", response_model=schemas.Pedido, status_code=status.HTTP_201_CREATED)
-def crear_pedido(usuario_id: int, pedido: schemas.PedidoCreate, db: Session = Depends(get_db)):
+def crear_pedido(pedido: schemas.PedidoCreate, db: Session = Depends(get_db)):
+    print("Datos recibidos:", pedido.dict())
     nuevo_pedido = services.crear_pedido(db, pedido)
-
+    usuario_id = pedido.usuario_id
     services.registrar_actividad(db, schemas.ActividadCreate(
         tipo_evento="CREACION_PEDIDO",
         descripcion=f"Se registro pedido asociado al usuari identificado con el numero: {nuevo_pedido.usuario_id}",

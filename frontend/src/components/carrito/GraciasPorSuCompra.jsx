@@ -1,38 +1,116 @@
-import React, { useEffect } from "react";
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  Button,
-  VStack,
-  HStack,
-  Flex,
-  useColorModeValue,
-  Divider,
-  Icon
-} from "@chakra-ui/react";
+import React, { useEffect, useState, useRef  } from "react";
+import { Box, Container, Heading, Text, Button, VStack, HStack, Flex, useColorModeValue, Divider, Icon, useToast } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../../context/AuthContext';
+import { listarDetallesCarrito, crearPedido, listarPedidoDetalles, listarProductos } from "../../services/api"; 
 
 const GraciasPorSuCompra = () => {
   const navigate = useNavigate();
   const bgColor = useColorModeValue("white", "gray.800");
   const accentColor = useColorModeValue("blue.500", "blue.300");
-
-  // Información de la compra (esto podría venir de un estado global o de parámetros de URL)
-  const orderInfo = {
-    orderNumber: Math.floor(100000 + Math.random() * 900000), // Número de orden aleatorio de 6 dígitos
-    date: new Date().toLocaleDateString('es-AR'),
-  };
+  const { userId } = useAuth();
+  const [cartItems, setCartItems] = useState([]);
+  const [loadingCart, setLoadingCart] = useState(true);
+  const toast = useToast();
+  const [pedidoInfo, setPedidoInfo] = useState({});
+  const pedidoCreado = useRef(false);
+  const [detalles, setDetalles] = useState([]);
+  const [productos, setProductos] = useState([]);
+  console.log("productos", productos);
+  console.log("detalles", detalles);
+  const costoEnvio = 0;
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
+  const total = subtotal + costoEnvio;
 
   useEffect(() => {
-    // Aquí podrías realizar cualquier acción necesaria al cargar la página
-    // Por ejemplo, limpiar el carrito, actualizar el estado global, etc.
+    if (userId) {
+      cargarCarrito();
+      cargarProductos();
+    }
     window.scrollTo(0, 0);
-  }, []);
+  }, [userId]);
 
+  useEffect(() => {
+    if (cartItems.length > 0 && userId && !loadingCart && !pedidoCreado.current) {
+      pedidoCreado.current = true;
+      const pedidoData = {
+        total: total,
+        usuario_id: userId,
+        estado: "PENDIENTE",
+      };
+  
+      crearPedidoEnBackend(pedidoData);
+    }
+  }, [cartItems, userId, total, loadingCart]);
+  
+  const crearPedidoEnBackend = async (pedidoData) => {
+    try {
+      const nuevoPedido = await crearPedido(pedidoData);
+      try {
+        const data = await listarPedidoDetalles(nuevoPedido.id);
+        setDetalles(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los detalles del pedido.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+      setPedidoInfo(nuevoPedido);
+      toast({
+        title: "Pedido creado",
+        description: "El pedido se ha creado correctamente",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error al crear el pedido:", error); 
+      toast({
+        title: "Error",
+        description: "No se pudo crear el pedido",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const cargarProductos = async () => {
+      try {
+        const data = await listarProductos();
+        setProductos(data.productos);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la lista de productos.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
   const handleVolverAlInicio = () => {
-    navigate("/inicio"); // Navega a la página de inicio
+    navigate("/inicio");
+  };
+
+  const cargarCarrito = async () => {
+    try {
+      const data = await listarDetallesCarrito();
+      setCartItems(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el carrito",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoadingCart(false);
+    }
   };
 
   return (
@@ -79,7 +157,6 @@ const GraciasPorSuCompra = () => {
             align="center"
             mb={2}
           >
-            {/* Icono de verificación creado con SVG en lugar de importar CheckCircleIcon */}
             <Icon viewBox="0 0 24 24" w={16} h={16} color={accentColor}>
               <path
                 fill="currentColor"
@@ -114,11 +191,11 @@ const GraciasPorSuCompra = () => {
             <VStack spacing={4} align="stretch">
               <HStack justify="space-between">
                 <Text fontWeight="medium">Número de orden:</Text>
-                <Text fontWeight="bold">{orderInfo.orderNumber}</Text>
+                <Text fontWeight="bold">{pedidoInfo.id}</Text>
               </HStack>
               <HStack justify="space-between">
                 <Text fontWeight="medium">Fecha:</Text>
-                <Text>{orderInfo.date}</Text>
+                <Text>{pedidoInfo.fecha_creacion}</Text>
               </HStack>
             </VStack>
           </Box>

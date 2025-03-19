@@ -715,13 +715,35 @@ def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
     Crea y guarda un nuevo pedido en la base de datos.
     """
     # Se asume que los campos `fecha_creacion` y `estado` se configuran automáticamente
+    carrito = db.query(Carrito).filter(Carrito.usuario_id == pedido.usuario_id).first()
+    if not carrito or not carrito.carritoDetalle:
+        raise ValueError("El carrito está vacío o no existe.")
+    
+    
     nuevo_pedido = Pedido(
         total=pedido.total,
         usuario_id=pedido.usuario_id
     )
     db.add(nuevo_pedido)
+    db.flush()  # Esto permite obtener el ID del pedido antes de hacer commit
+
+    # 4. Crear los detalles del pedido
+    for item in carrito.carritoDetalle:
+        nuevo_detalle = PedidoDetalle(
+            cantidad=item.cantidad,
+            subtotal=item.subtotal,
+            precio_unitario=item.subtotal / item.cantidad,
+            pedido_id=nuevo_pedido.id,
+            producto_id=item.producto_id
+        )
+        db.add(nuevo_detalle)
+
+    # 5. Vaciar el carrito después de generar el pedido
+    db.query(CarritoDetalle).filter(CarritoDetalle.carrito_id == carrito.id).delete()
+
     db.commit()
     db.refresh(nuevo_pedido)
+
     return nuevo_pedido
 
 #Listar pedidos

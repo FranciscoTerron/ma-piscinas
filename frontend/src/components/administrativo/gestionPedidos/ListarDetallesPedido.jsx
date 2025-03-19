@@ -56,7 +56,6 @@ const ListarDetallesPedido = ({ pedidoId, isOpen, onClose }) => {
     setLoading(true);
     try {
       const data = await listarPedidoDetalles(pedidoId);
-      console.log("ACAAA",data);
       setDetalles(data);
     } catch (error) {
       toast({

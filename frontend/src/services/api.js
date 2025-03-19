@@ -397,6 +397,12 @@ export const cancelarPedido = async (pedidoId) => {
   await api.put(`/pedidos/${pedidoId}/cancelar`);
 };
 
+export const crearPedido = async (pedidoData) => {
+  const response = await api.post("/pedidos", pedidoData);
+  return response.data;
+};
+
+
 // Servicios para Carrito
 //---------------------------------------------------------------------
 // Obtener el carrito del usuario autenticado (o crearlo si no existe)

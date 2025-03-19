@@ -49,11 +49,10 @@ const FormularioEnvio = () => {
   formData.provincia &&
   formData.ciudad &&
   formData.direccion;
-
-
-   // Calcula los totales dinámicamente
-   const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
-   const total = subtotal + costoEnvio;
+  
+  // Calcula los totales dinámicamente
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
+  const total = subtotal + costoEnvio;
  
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
