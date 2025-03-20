@@ -609,7 +609,7 @@ const FormularioEnvio = () => {
               </Button>
               
               )}
-              {preferenceId && <Wallet initialization={{ preferenceId, redirectMode: 'blank'}} />}
+              {preferenceId && <Wallet initialization={{ preferenceId}} />}
               
               </Box>
           </GridItem>

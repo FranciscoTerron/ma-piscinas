@@ -46,7 +46,6 @@ const Reportes = () => {
       const cancelacionesData = await obtenerMetricasCancelaciones(3);
       const estacionalidadData = await obtenerEstacionalidadProductos(2025);
       const costosData = await obtenerCostosGanancias();
-        
       setCostosGanancias(costosData);
       setEstacionalidad(estacionalidadData);
       setCancelaciones(cancelacionesData);

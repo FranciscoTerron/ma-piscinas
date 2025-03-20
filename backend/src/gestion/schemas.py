@@ -324,10 +324,6 @@ class PedidoBase(BaseModel):
     estado: EstadoPedidoEnum = Field(default=EstadoPedidoEnum.PENDIENTE)
     usuario_id: int
     
-class PedidoEstadoUpdate(PedidoBase):
-    estado: EstadoPedidoEnum
-
-
 class Pedido(PedidoBase):
     id: int
     fecha_creacion: datetime
@@ -335,7 +331,9 @@ class Pedido(PedidoBase):
     class Config:
         from_attributes = True
         
-    
+class PedidoEstadoUpdate(BaseModel):
+    id: int
+    estado: EstadoPedidoEnum
         
 # ============================================================
 # Esquema para crear un pedido

@@ -1,8 +1,10 @@
-import React, { useEffect, useState, useRef  } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, Container, Heading, Text, Button, VStack, HStack, Flex, useColorModeValue, Divider, Icon, useToast } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../../context/AuthContext';
-import { listarDetallesCarrito, crearPedido, listarPedidoDetalles, listarProductos } from "../../services/api"; 
+import { listarDetallesCarrito, crearPedido, listarPedidoDetalles, listarProductos } from "../../services/api";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const GraciasPorSuCompra = () => {
   const navigate = useNavigate();
@@ -16,8 +18,6 @@ const GraciasPorSuCompra = () => {
   const pedidoCreado = useRef(false);
   const [detalles, setDetalles] = useState([]);
   const [productos, setProductos] = useState([]);
-  console.log("productos", productos);
-  console.log("detalles", detalles);
   const costoEnvio = 0;
   const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
   const total = subtotal + costoEnvio;
@@ -38,11 +38,10 @@ const GraciasPorSuCompra = () => {
         usuario_id: userId,
         estado: "PENDIENTE",
       };
-  
       crearPedidoEnBackend(pedidoData);
     }
   }, [cartItems, userId, total, loadingCart]);
-  
+
   const crearPedidoEnBackend = async (pedidoData) => {
     try {
       const nuevoPedido = await crearPedido(pedidoData);
@@ -67,7 +66,7 @@ const GraciasPorSuCompra = () => {
         isClosable: true,
       });
     } catch (error) {
-      console.error("Error al crear el pedido:", error); 
+      console.error("Error al crear el pedido:", error);
       toast({
         title: "Error",
         description: "No se pudo crear el pedido",
@@ -79,19 +78,20 @@ const GraciasPorSuCompra = () => {
   };
 
   const cargarProductos = async () => {
-      try {
-        const data = await listarProductos();
-        setProductos(data.productos);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "No se pudo cargar la lista de productos.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
+    try {
+      const data = await listarProductos();
+      setProductos(data.productos);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la lista de productos.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleVolverAlInicio = () => {
     navigate("/inicio");
   };
@@ -113,14 +113,117 @@ const GraciasPorSuCompra = () => {
     }
   };
 
+  const handleDescargarFactura = () => {
+    const input = document.getElementById("factura");
+    html2canvas(input).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("factura.pdf");
+    });
+  };
+
+  const FacturaPedido = () => {
+    const encontrarProducto = (productoId) => {
+      const producto = productos.find(p => p.id === productoId);
+      return producto ? producto.nombre : 'Producto no encontrado';
+    };
+
+    return (
+      <Box 
+        id="factura"
+        width="100%" 
+        bg={bgColor} 
+        borderRadius="md" 
+        boxShadow="md" 
+        p={4} 
+        mt={6}
+      >
+        <VStack spacing={4} align="stretch">
+          <Heading size="md" textAlign="center" color={accentColor}>
+            Detalle de su Compra
+          </Heading>
+          
+          {/* Cabecera de la tabla */}
+          <Flex 
+            bg={`${accentColor}15`} 
+            p={2} 
+            borderRadius="md" 
+            fontWeight="bold"
+          >
+            <Text flex="2">Producto</Text>
+            <Text flex="1" textAlign="center">Cantidad</Text>
+            <Text flex="1" textAlign="center">Precio Unitario</Text>
+            <Text flex="1" textAlign="right">Subtotal</Text>
+          </Flex>
+          
+          {/* Cuerpo de la tabla */}
+          <VStack spacing={2} align="stretch" maxH="300px" overflowY="auto">
+            {detalles.length > 0 ? (
+              detalles.map((detalle, index) => (
+                <Flex 
+                  key={index} 
+                  p={2} 
+                  borderBottom="1px solid" 
+                  borderColor="gray.200"
+                  _hover={{ bg: `${accentColor}05` }}
+                >
+                  <Text flex="2">{encontrarProducto(detalle.producto_id)}</Text>
+                  <Text flex="1" textAlign="center">{detalle.cantidad}</Text>
+                  <Text flex="1" textAlign="center">${detalle.precio_unitario}</Text>
+                  <Text flex="1" textAlign="right" fontWeight="500">${detalle.subtotal}</Text>
+                </Flex>
+              ))
+            ) : (
+              <Text textAlign="center" color="gray.500" py={2}>
+                Cargando detalles del pedido...
+              </Text>
+            )}
+          </VStack>
+          
+          {/* Resumen del pedido */}
+          <Divider my={2} />
+          <VStack spacing={1} align="stretch">
+            <Flex justify="space-between">
+              <Text>Subtotal:</Text>
+              <Text>${subtotal.toFixed(2)}</Text>
+            </Flex>
+            <Flex justify="space-between">
+              <Text>Costo de envío:</Text>
+              <Text>${costoEnvio.toFixed(2)}</Text>
+            </Flex>
+            <Divider my={2} />
+            <Flex justify="space-between" fontWeight="bold" fontSize="lg">
+              <Text>Total:</Text>
+              <Text color={accentColor}>${total.toFixed(2)}</Text>
+            </Flex>
+          </VStack>
+          
+          {/* Información adicional */}
+          <Box bg={`${accentColor}10`} p={3} borderRadius="md" mt={2}>
+            <VStack spacing={1} align="stretch">
+              <Text fontSize="sm" fontWeight="medium">Información de Entrega</Text>
+              <Text fontSize="sm" color="gray.600">Estado: {pedidoInfo.estado || "Pendiente"}</Text>
+              <Text fontSize="sm" color="gray.600">
+                Tiempo estimado de entrega: 3-5 días hábiles
+              </Text>
+            </VStack>
+          </Box>
+        </VStack>
+      </Box>
+    );
+  };
+
   return (
-    <Container maxW="container.lg" py={12}>
+    <Container maxW="container.lg">
       <Box
         bg={bgColor}
         borderRadius="lg"
         boxShadow="xl"
         p={{ base: 6, md: 10 }}
-        my={10}
         textAlign="center"
         position="relative"
         overflow="hidden"
@@ -195,7 +298,7 @@ const GraciasPorSuCompra = () => {
               </HStack>
               <HStack justify="space-between">
                 <Text fontWeight="medium">Fecha:</Text>
-                <Text>{pedidoInfo.fecha_creacion}</Text>
+                <Text>{new Date(pedidoInfo.fecha_creacion).toLocaleDateString()}</Text>
               </HStack>
             </VStack>
           </Box>
@@ -205,21 +308,39 @@ const GraciasPorSuCompra = () => {
             Pronto recibirá actualizaciones sobre el estado de su envío.
           </Text>
 
+          {/* Factura de Pedido */}
+          <FacturaPedido />
+
           <Divider my={4} />
 
-          <Button
-            colorScheme="blue"
-            size="lg"
-            px={10}
-            onClick={handleVolverAlInicio}
-            _hover={{
-              transform: "translateY(-2px)",
-              boxShadow: "lg",
-            }}
-            transition="all 0.3s ease"
-          >
-            Volver al inicio
-          </Button>
+          <HStack spacing={4} justify="center">
+            <Button
+              colorScheme="blue"
+              size="lg"
+              px={10}
+              onClick={handleVolverAlInicio}
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+              transition="all 0.3s ease"
+            >
+              Volver al inicio
+            </Button>
+            <Button
+              colorScheme="green"
+              size="lg"
+              px={10}
+              onClick={handleDescargarFactura}
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "lg",
+              }}
+              transition="all 0.3s ease"
+            >
+              Descargar Factura
+            </Button>
+          </HStack>
         </VStack>
       </Box>
     </Container>

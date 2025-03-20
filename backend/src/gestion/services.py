@@ -712,33 +712,47 @@ def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
 
 def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
     """
-    Crea y guarda un nuevo pedido en la base de datos.
+    Crea y guarda un nuevo pedido en la base de datos, asegurando que el stock se descuente correctamente.
     """
-    # Se asume que los campos `fecha_creacion` y `estado` se configuran automáticamente
+    # Obtener el carrito del usuario
     carrito = db.query(Carrito).filter(Carrito.usuario_id == pedido.usuario_id).first()
     if not carrito or not carrito.carritoDetalle:
         raise ValueError("El carrito está vacío o no existe.")
-    
-    
+
+    # Crear el nuevo pedido
     nuevo_pedido = Pedido(
         total=pedido.total,
         usuario_id=pedido.usuario_id
     )
     db.add(nuevo_pedido)
-    db.flush()  # Esto permite obtener el ID del pedido antes de hacer commit
+    db.flush()  # Para obtener el ID del pedido antes de hacer commit
 
-    # 4. Crear los detalles del pedido
+    # Procesar los productos en el carrito
     for item in carrito.carritoDetalle:
+        producto = db.query(Producto).filter(Producto.id == item.producto_id).first()
+        
+        if not producto:
+            raise ValueError(f"El producto con ID {item.producto_id} no existe.")
+        
+        # Verificar que haya suficiente stock
+        if producto.stock < item.cantidad:
+            raise ValueError(f"Stock insuficiente para el producto {producto.nombre} (ID {producto.id}).")
+
+        # Restar la cantidad comprada del stock
+        producto.stock -= item.cantidad
+        db.add(producto)  # Guardar la actualización del stock
+
+        # Agregar el detalle del pedido
         nuevo_detalle = PedidoDetalle(
             cantidad=item.cantidad,
             subtotal=item.subtotal,
-            precio_unitario=item.subtotal / item.cantidad,
+            precio_unitario=(item.subtotal / item.cantidad) if item.cantidad > 0 else 0,
             pedido_id=nuevo_pedido.id,
             producto_id=item.producto_id
         )
         db.add(nuevo_detalle)
 
-    # 5. Vaciar el carrito después de generar el pedido
+    # Vaciar el carrito después de generar el pedido
     db.query(CarritoDetalle).filter(CarritoDetalle.carrito_id == carrito.id).delete()
 
     db.commit()
@@ -820,10 +834,6 @@ def cancelar_pedido(db: Session, pedido_id: int) -> Pedido:
     pedido = db.query(Pedido).filter(Pedido.id == pedido_id).first()
     if not pedido:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
-    
-    # Se pueden agregar reglas adicionales, por ejemplo:
-    # if pedido.estado != schemas.EstadoPedidoEnum.PENDIENTE:
-    #     raise HTTPException(status_code=400, detail="Solo se pueden cancelar pedidos pendientes")
     
     pedido.estado = schemas.EstadoPedidoEnum.CANCELADO
     db.commit()

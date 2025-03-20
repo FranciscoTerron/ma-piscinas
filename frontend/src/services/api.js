@@ -402,6 +402,10 @@ export const crearPedido = async (pedidoData) => {
   return response.data;
 };
 
+export const actualizarEstadoPedido = async (pedidoId, nuevoEstado) => {
+  const response = await api.put(`/pedidos/${pedidoId}/estado`, { id: pedidoId, estado: nuevoEstado });
+  return response.data;
+}
 
 // Servicios para Carrito
 //---------------------------------------------------------------------
