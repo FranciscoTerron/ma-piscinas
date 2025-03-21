@@ -11,6 +11,9 @@ from fastapi import HTTPException, status, UploadFile
 import cloudinary.uploader
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -709,10 +712,34 @@ def obtener_metodo_pago_por_id(db: Session, metodo_pago_id: int) -> MetodoPago:
 #PEDIDO
 #--------------------------------------------------------------------------------------
 # Crear Pedido
+def enviar_correo(destinatario: str, asunto: str, cuerpo: str):
+    """Función para enviar un correo electrónico."""
+    # Configura tus credenciales de correo (ajústalas a tu proveedor)
+    remitente = "franciscoterrondg19@gmail.com"  # Reemplaza con tu correo
+    password = "cgsz yehy botw vxtz"           # Reemplaza con tu contraseña o clave de aplicación
 
+    # Crea el mensaje
+    msg = MIMEMultipart()
+    msg['From'] = remitente
+    msg['To'] = destinatario
+    msg['Subject'] = asunto
+    msg.attach(MIMEText(cuerpo, 'html'))  # Cambiado de 'plain' a 'html'
+
+    # Configura el servidor SMTP (ejemplo con Gmail, ajusta según tu proveedor)
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)  # Cambia si usas otro servicio
+        server.starttls()  # Inicia conexión segura
+        server.login(remitente, password)  # Autenticación
+        server.sendmail(remitente, destinatario, msg.as_string())  # Envía el correo
+        server.quit()  # Cierra la conexión
+        print("Correo enviado exitosamente")
+    except Exception as e:
+        print(f"Error al enviar correo: {e}")
+        # Aquí podrías lanzar una excepción o manejarlo según tu lógica
 def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
     """
-    Crea y guarda un nuevo pedido en la base de datos, asegurando que el stock se descuente correctamente.
+    Crea y guarda un nuevo pedido en la base de datos, asegura que el stock se descuente
+    correctamente y envía un correo con el detalle del pedido.
     """
     # Obtener el carrito del usuario
     carrito = db.query(Carrito).filter(Carrito.usuario_id == pedido.usuario_id).first()
@@ -740,7 +767,7 @@ def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
 
         # Restar la cantidad comprada del stock
         producto.stock -= item.cantidad
-        db.add(producto)  # Guardar la actualización del stock
+        db.add(producto)
 
         # Agregar el detalle del pedido
         nuevo_detalle = PedidoDetalle(
@@ -755,8 +782,37 @@ def crear_pedido(db: Session, pedido: schemas.PedidoCreate) -> Pedido:
     # Vaciar el carrito después de generar el pedido
     db.query(CarritoDetalle).filter(CarritoDetalle.carrito_id == carrito.id).delete()
 
+    # Confirmar los cambios en la base de datos
     db.commit()
     db.refresh(nuevo_pedido)
+    print("ACAA");
+
+    # --- Nueva lógica para enviar el correo ---
+    # Obtener el correo del usuario
+    usuario = db.query(Usuario).filter(Usuario.id == pedido.usuario_id).first()
+    if not usuario or not hasattr(usuario, 'email') or not usuario.email:
+        raise ValueError("El usuario no tiene un correo electrónico registrado.")
+
+    # Obtener los detalles del pedido
+    detalles = db.query(PedidoDetalle).filter(PedidoDetalle.pedido_id == nuevo_pedido.id).all()
+    detalle_texto = "\n".join(
+        [f"{d.cantidad} x {d.producto.nombre} - ${d.subtotal}" for d in detalles]
+    )
+
+    # Generar el cuerpo del correo
+    cuerpo = f"""
+    ¡Gracias por su compra!
+
+    Detalle de su pedido:
+    {detalle_texto}
+
+    Total: ${nuevo_pedido.total}
+
+    Su pedido será procesado pronto. Gracias por elegirnos.
+    """
+    print("ACAA");
+    # Enviar el correo
+    enviar_correo(usuario.email, "Confirmación de Pedido", cuerpo)
 
     return nuevo_pedido
 
