@@ -18,9 +18,33 @@ const GraciasPorSuCompra = () => {
   const pedidoCreado = useRef(false);
   const [detalles, setDetalles] = useState([]);
   const [productos, setProductos] = useState([]);
-  const costoEnvio = 0;
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
+  
+  // Creamos un mapa de productos para acceder más fácilmente
+  const productosMap = productos.reduce((acc, producto) => {
+    acc[producto.id] = producto;
+    return acc;
+  }, {});
+  
+  // Calcular el costo de envío a partir de los productos en el carrito
+  const costoEnvio = cartItems.reduce((acc, item) => {
+    const producto = productosMap[item.producto_id];
+    const costoPorProducto = producto?.costo_envio ? producto.costo_envio * item.cantidad : 0;
+    return acc + costoPorProducto;
+  }, 0);
+  
+  const subtotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
   const total = subtotal + costoEnvio;
+
+  const [formData, setFormData] = useState({
+    nombre: "",
+    apellido: "",
+    telefono: "",
+    email: "",
+    codigoPostal: "",
+    provincia: "",
+    ciudad: "",
+    direccion: "",
+  });
 
   useEffect(() => {
     if (userId) {
@@ -92,10 +116,6 @@ const GraciasPorSuCompra = () => {
     }
   };
 
-  const handleVolverAlInicio = () => {
-    navigate("/inicio");
-  };
-
   const cargarCarrito = async () => {
     try {
       const data = await listarDetallesCarrito();
@@ -111,6 +131,10 @@ const GraciasPorSuCompra = () => {
     } finally {
       setLoadingCart(false);
     }
+  };
+
+  const handleVolverAlInicio = () => {
+    navigate("/inicio");
   };
 
   const handleDescargarFactura = () => {

@@ -130,6 +130,9 @@ class Producto(BaseModel):
     stock: Mapped[int] = mapped_column(Integer, index=True)
     imagen: Mapped[str] = mapped_column(String, index=True)
     costo_compra: Mapped[float] = mapped_column(Float, nullable=True, default=None)  # Nuevo campo
+    peso: Mapped[float] = mapped_column(Float, nullable=True, default=None)  # Nuevo campo para peso
+    volumen: Mapped[float] = mapped_column(Float, nullable=True, default=None)  # Nuevo campo para volumen
+    costo_envio: Mapped[float] = mapped_column(Float, nullable=True, default=None)
     subcategoria_id = Column(Integer, ForeignKey("subcategorias.id"), nullable=True)  # Añadimos esto
     descuento_id = Column(Integer, ForeignKey("descuentos.id"), nullable=True)
 

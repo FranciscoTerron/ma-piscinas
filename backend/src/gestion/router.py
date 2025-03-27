@@ -6,6 +6,8 @@ from src.auth.dependencies import get_current_user
 from typing import List, Optional
 from datetime import datetime
 from src.gestion.models import MetodoPagoEnum
+import os
+import requests
 
 router = APIRouter()
 
@@ -230,9 +232,6 @@ def eliminar_subcategoria(subcategoria_id: int, db: Session = Depends(get_db)):
 # RUTAS PARA PRODUCTO
 #-------------------------------------------------------------------------------------------
 
-# ============================================================
-# Ruta para crear producto
-# ============================================================
 @router.post("/productos", response_model=schemas.Producto, status_code=status.HTTP_201_CREATED)
 def crear_producto(
     nombre: str = Form(..., description="Nombre del producto"),
@@ -242,14 +241,18 @@ def crear_producto(
     categoria_id: int = Form(..., description="ID de la categoría"),
     imagen: UploadFile = File(..., description="Imagen del producto"),
     costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
-    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
+    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),
     usuario_id: int = Form(..., description="ID del usuario que crea"),
-    descuento_id: Optional[int] = Form(None, description="ID del descuento, opcional"),  # Nuevo campo
+    descuento_id: Optional[int] = Form(None, description="ID del descuento, opcional"),
+    peso: Optional[float] = Form(None, description="Peso del producto en kg"),
+    volumen: Optional[float] = Form(None, description="Volumen del producto en m³"),
+    costo_envio: Optional[float] = Form(None, description="Costo de envío del producto"),  # Nuevo campo
     db: Session = Depends(get_db)
 ):
     try:
         nuevo_producto = services.crear_producto(
-            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id, descuento_id  # Añadido subcategoria_id
+            db, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, 
+            subcategoria_id, descuento_id, peso, volumen, costo_envio  # Incluimos costo_envio
         )
 
         services.registrar_actividad(db, schemas.ActividadCreate(
@@ -264,9 +267,7 @@ def crear_producto(
         print.error(f"Error al procesar la creación: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-# ============================================================
-# Ruta para actualizar producto
-# ============================================================
+
 @router.put("/productos/{producto_id}", response_model=schemas.Producto)
 def actualizar_producto(
     producto_id: int,
@@ -277,19 +278,25 @@ def actualizar_producto(
     categoria_id: int = Form(..., description="ID de la categoría"),
     imagen: Optional[UploadFile] = File(None, description="Nueva imagen del producto"),
     costo_compra: Optional[float] = Form(None, description="Costo de compra del producto"),
-    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),  # Nuevo campo
+    subcategoria_id: Optional[int] = Form(None, description="ID de la subcategoría, opcional"),
     descuento_id: Optional[int] = Form(None, description="ID del descuento a aplicar, opcional"),
     usuario_id: int = Form(..., description="ID del usuario que actualiza"),
+    peso: Optional[float] = Form(None, description="Peso del producto en kg"),
+    volumen: Optional[float] = Form(None, description="Volumen del producto en m³"),
+    costo_envio: Optional[float] = Form(None, description="Costo de envío del producto"),  # Nuevo campo
     db: Session = Depends(get_db),
 ):
     print(f"Recibiendo datos para actualizar producto {producto_id}: nombre={nombre}, precio={precio}, costo_compra={costo_compra}, usuario_id={usuario_id}, subcategoria_id={subcategoria_id}, imagen.type={type(imagen) if imagen else None}")
     try:
         return services.actualizar_producto(
-            db, producto_id, nombre, descripcion, precio, stock, categoria_id, costo_compra, imagen, subcategoria_id, descuento_id  # Añadido subcategoria_id
+            db, producto_id, nombre, descripcion, precio, stock, categoria_id, 
+            costo_compra, imagen, subcategoria_id, descuento_id, peso, volumen, costo_envio  # Se pasa costo_envio
         )
     except Exception as e:
         print.error(f"Error al procesar la actualización: {str(e)}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
 
 # ============================================================
 # Ruta para listar productos
@@ -1075,3 +1082,62 @@ def obtener_comentarios_producto(
 @router.delete("/comentarios/{comentario_id}")
 def eliminar_comentario(comentario_id: int, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     return services.eliminar_comentario(db, comentario_id, current_user.id)
+
+@router.post("/shipping/andreani", response_model=schemas.RespuestaEnvio, status_code=status.HTTP_200_OK)
+def calcular_envio_andreani(solicitud: schemas.SolicitudEnvio):
+    try:
+        # Paso 1: Autenticarse en la API de Andreani
+        url_autenticacion = "https://apis.andreani.com/login"
+        payload_autenticacion = {
+            "username": os.environ.get("ANDREANI_USER"),
+            "password": os.environ.get("ANDREANI_PASSWORD")
+        }
+        headers_autenticacion = {"Content-Type": "application/json"}
+        respuesta_autenticacion = requests.post(url_autenticacion, json=payload_autenticacion, headers=headers_autenticacion)
+        
+        if respuesta_autenticacion.status_code != 200:
+            raise HTTPException(status_code=respuesta_autenticacion.status_code,
+                                detail="Error en la autenticación con Andreani")
+        
+        token = respuesta_autenticacion.json().get("token")
+        if not token:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail="No se recibió token de Andreani")
+        
+        # Paso 2: Consultar las tarifas de envío
+        url_tarifas = "https://apis.andreani.com/v1/tarifas"
+        payload_tarifas = {
+            "origen": {"codigoPostal": "9105"},  # Código postal del vendedor
+            "destino": {"codigoPostal": solicitud.zipCode},
+            "bultos": [{
+                "kilos": solicitud.packageDetails.weight,
+                "volumen": solicitud.packageDetails.volume,
+                "valorDeclarado": solicitud.packageDetails.declaredValue
+            }]
+        }
+        headers_tarifas = {
+            "Authorization": f"Bearer {token}",
+            "x-organization-id": os.environ.get("ANDREANI_ORGANIZATION_ID"),
+            "Content-Type": "application/json"
+        }
+        respuesta_tarifas = requests.post(url_tarifas, json=payload_tarifas, headers=headers_tarifas)
+        
+        if respuesta_tarifas.status_code != 200:
+            raise HTTPException(status_code=respuesta_tarifas.status_code,
+                                detail="Error al obtener las tarifas de envío")
+        
+        data = respuesta_tarifas.json()
+        cotizaciones = []
+        for tarifa in data.get("tarifas", []):
+            cotizaciones.append({
+                "service": tarifa.get("nombre"),
+                "cost": tarifa.get("total"),
+                "deliveryDays": tarifa.get("plazoEntrega"),
+                "serviceType": tarifa.get("tipoServicio"),
+                "contract": tarifa.get("contrato")
+            })
+        
+        return {"quotes": cotizaciones}
+    
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

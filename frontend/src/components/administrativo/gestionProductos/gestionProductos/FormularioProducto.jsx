@@ -20,7 +20,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { crearProducto, actualizarProducto, listarCategorias, listarSubcategorias, listarDescuentos, verificarNombreProducto } from "../../../../services/api"; // Añadimos listarSubcategorias
+import { crearProducto, actualizarProducto, listarCategorias, listarSubcategorias, listarDescuentos, verificarNombreProducto } from "../../../../services/api";
 import { useAuth } from "../../../../context/AuthContext";
 
 const initialProductoState = {
@@ -32,9 +32,11 @@ const initialProductoState = {
   categoriaId: "",
   subcategoriaId: "", // ya existente
   costoCompra: "",
-  descuentoId: "", // NUEVO campo para seleccionar descuento
+  descuentoId: "",
+  peso: "", // Nuevo campo de peso
+  volumen: "", // Nuevo campo de volumen
+  costoEnvio: "", // Nuevo campo de costo de envío
 };
-
 
 const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   const [formData, setFormData] = useState(initialProductoState);
@@ -54,9 +56,13 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
         stock: producto.stock,
         imagen: null,
         categoriaId: producto.categoria_id,
-        subcategoriaId: producto.subcategoria_id || "", // Aseguramos que esté incluido
+        subcategoriaId: producto.subcategoria_id || "",
         costoCompra: producto.costo_compra || "",
-        descuentoId: producto.descuento_id ? String(producto.descuento_id) : "",      });
+        descuentoId: producto.descuento_id ? String(producto.descuento_id) : "",
+        peso: producto.peso || "", // Cargar el peso si está presente
+        volumen: producto.volumen || "", // Cargar el volumen si está presente
+        costoEnvio: producto.costo_envio || "", // Cargar costo de envío si está presente
+      });
       if (producto.imagen && typeof producto.imagen === "string" && producto.imagen.startsWith("http")) {
         setImagenPreview(producto.imagen);
       } else {
@@ -65,7 +71,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     } else {
       setFormData(initialProductoState);
       setImagenPreview(null);
-      setSubcategorias([]); // Limpiar subcategorías al crear nuevo producto
+      setSubcategorias([]);
     }
     cargarCategorias();
   }, [producto]);
@@ -75,7 +81,8 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
       cargarSubcategorias(formData.categoriaId);
     }
   }, [formData.categoriaId]);
-    useEffect(() => {
+
+  useEffect(() => {
     cargarDescuentos();
   }, []);
 
@@ -127,7 +134,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if ((name === "precio" || name === "stock" || name === "costoCompra") && value < 0) {
+    if ((name === "precio" || name === "stock" || name === "costoCompra" || name === "costoEnvio") && value < 0) {
       toast({
         title: "Valor inválido",
         description: "No se permiten valores negativos.",
@@ -165,7 +172,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
   };
 
   const handleSubmit = async () => {
-    console.log("Datos del formulario:", formData); // Agrega esto
+    console.log("Datos del formulario:", formData);
     if (!formData.nombre.trim()) {
       toast({
         title: "Error",
@@ -269,7 +276,17 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
     if (formData.descuentoId !== "") {
       formDataToSend.append("descuento_id", parseInt(formData.descuentoId));
     }
-    
+    // Agregar peso, volumen y costo de envío
+    if (formData.peso !== "") {
+      formDataToSend.append("peso", parseFloat(formData.peso));
+    }
+    if (formData.volumen !== "") {
+      formDataToSend.append("volumen", parseFloat(formData.volumen));
+    }
+    if (formData.costoEnvio !== "") {
+      formDataToSend.append("costo_envio", parseFloat(formData.costoEnvio));
+    }
+
     if (formData.imagen && formData.imagen instanceof File) {
       formDataToSend.append("imagen", formData.imagen);
     } else if (!producto) {
@@ -305,12 +322,12 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
           isClosable: true,
         });
       }
-      console.log("Respuesta del backend:", nuevoProducto);  // Agrega esto para depurar
+      console.log("Respuesta del backend:", nuevoProducto);
       onSubmitSuccess(nuevoProducto);
       onClose();
       setFormData(initialProductoState);
       setImagenPreview(null);
-      setSubcategorias([]);  // Limpiar subcategorías
+      setSubcategorias([]);
       
     } catch (error) {
       console.error("Error al enviar el producto:", {
@@ -329,7 +346,7 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
       onClose();
       setFormData(initialProductoState);
       setImagenPreview(null);
-      setSubcategorias([]);  // Limpiar subcategorías
+      setSubcategorias([]);
     }
   };
 
@@ -460,6 +477,48 @@ const FormularioProducto = ({ isOpen, onClose, onSubmitSuccess, producto }) => {
                   </VStack>
                 )}
               </Box>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Peso (kg)</FormLabel>
+              <Input
+                name="peso"
+                type="number"
+                value={formData.peso}
+                onChange={handleInputChange}
+                placeholder="Peso del producto en kg"
+                bg="white"
+                border="1px"
+                borderColor="gray.200"
+                _hover={{ borderColor: "gray.300" }}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Volumen (m³)</FormLabel>
+              <Input
+                name="volumen"
+                type="number"
+                value={formData.volumen}
+                onChange={handleInputChange}
+                placeholder="Volumen del producto en metros cúbicos"
+                bg="white"
+                border="1px"
+                borderColor="gray.200"
+                _hover={{ borderColor: "gray.300" }}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Costo de Envío</FormLabel>
+              <Input
+                name="costoEnvio"
+                type="number"
+                value={formData.costoEnvio}
+                onChange={handleInputChange}
+                placeholder="Costo de envío del producto"
+                bg="white"
+                border="1px"
+                borderColor="gray.200"
+                _hover={{ borderColor: "gray.300" }}
+              />
             </FormControl>
             <FormControl>
               <FormLabel>Categoría</FormLabel>

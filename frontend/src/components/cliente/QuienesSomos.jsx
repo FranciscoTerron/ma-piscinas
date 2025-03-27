@@ -13,7 +13,7 @@ const QuienesSomos = () => {
       width="100%" 
       minHeight="100vh" 
       mx="auto" 
-      p={8}
+      p={{ base: 4, md: 8 }} // Padding adaptable según el tamaño de pantalla
       bg="#F8FBFD" // Fondo claro para toda la pantalla
     >
       <VStack spacing={6} align="stretch">
@@ -37,6 +37,8 @@ const QuienesSomos = () => {
                 alt="Imagen de Cuatro Estaciones"
                 borderRadius="md"
                 mb={6}
+                maxW="100%" // Se asegura que la imagen no desborde el contenedor
+                height="auto"
               />
               <Box 
                 bg="#00CED1"
@@ -46,14 +48,14 @@ const QuienesSomos = () => {
                 boxShadow="md"
               >
                 <Text 
-                  fontSize="xl" 
+                  fontSize={{ base: 'xl', md: '2xl' }} // Ajuste del tamaño de la fuente en función del tamaño de pantalla
                   fontWeight="bold" 
                   color="white"
                 >
                   ¡Hola!
                 </Text>
                 <Text 
-                  fontSize="lg" 
+                  fontSize={{ base: 'md', md: 'lg' }} // Tamaño adaptativo
                   color="white"
                 >
                   Somos Cuatro Estaciones, vendemos desde estufas, radiadores y calderas hasta insumos de pileta, accesorios de jardín y más.
@@ -70,7 +72,7 @@ const QuienesSomos = () => {
               border="1px solid"
               borderColor="#87CEEB"
             >
-              <Text fontSize="md" color="#00008B">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="#00008B">
                 Brindamos la mejor atención a nuestros clientes, siendo líderes en ventas en el sur de la provincia con lanzamientos de nuevos productos, de las mejores marcas.
               </Text>
             </Box>
@@ -84,7 +86,7 @@ const QuienesSomos = () => {
               border="1px solid"
               borderColor="#87CEEB"
             >
-              <Text fontSize="md" color="#00008B" fontWeight="bold">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="#00008B" fontWeight="bold">
                 10 años de experiencia en el mercado.
               </Text>
             </Box>
@@ -98,7 +100,7 @@ const QuienesSomos = () => {
               border="1px solid"
               borderColor="#87CEEB"
             >
-              <Text fontSize="md" color="#00008B">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="#00008B">
                 Cualquier problema que tenga, tenemos políticas de cambio y devolución. Puede consultar con nosotros a nuestro número o mail que figura en nuestra página.
               </Text>
             </Box>
@@ -112,7 +114,7 @@ const QuienesSomos = () => {
               border="1px solid"
               borderColor="#87CEEB"
             >
-              <Text fontSize="md" color="#00008B">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="#00008B">
                 Le ofrecemos atención personalizada en nuestro local, llamando a nuestro número fijo o vía Whatsapp. Presupuestos, imágenes, especificaciones o resolvemos cualquier duda que tenga. ¡Su consulta no nos molesta!
               </Text>
             </Box>
@@ -126,7 +128,7 @@ const QuienesSomos = () => {
               border="1px solid"
               borderColor="#87CEEB"
             >
-              <Text fontSize="md" color="#00008B">
+              <Text fontSize={{ base: 'sm', md: 'md' }} color="#00008B">
                 Nuestro local físico se encuentra en Sarmiento 957, esquina Sarmiento y Fuerte Argentino. ¡Pase a conocernos!
               </Text>
             </Box>

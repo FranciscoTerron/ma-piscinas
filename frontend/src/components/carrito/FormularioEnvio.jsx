@@ -35,10 +35,12 @@ const FormularioEnvio = () => {
   const [productos, setProductos] = useState([]);
   const [paginaActual, setPaginaActual] = useState(1);
   const subProductosPorPagina = 10; // o la cantidad que necesites
+  // Creamos un mapa de productos para acceder más fácilmente
   const productosMap = productos.reduce((acc, producto) => {
     acc[producto.id] = producto;
     return acc;
   }, {});
+
 
   const isRecipientDataComplete =
   formData.nombre &&
@@ -50,8 +52,8 @@ const FormularioEnvio = () => {
   formData.ciudad &&
   formData.direccion;
   
-  // Calcula los totales dinámicamente
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.subtotal), 0);
+  // Calcula subtotal y total; el total será el subtotal más el costo de envío calculado
+  const subtotal = cartItems.reduce((acc, item) => acc + item.subtotal, 0);
   const total = subtotal + costoEnvio;
  
   const handleInputChange = (e) => {
@@ -95,21 +97,11 @@ const FormularioEnvio = () => {
     }
   };
 
-  // Carga de los métodos de envío desde la BD
   const cargarMetodosEnvio = async () => {
     try {
       const data = await listarMetodosEnvio(paginaActual, subProductosPorPagina);
-  
-      // Accede a la propiedad "empresas" dentro de "data"
-      const empresas = data.empresas;
-  
-      // Asignar un costo aleatorio a cada método de envío
-      const metodosConCosto = empresas.map(empresa => ({
-        ...empresa,
-        costo: Math.floor(Math.random() * 10000) + 1000, // Costo aleatorio entre 1000 y 11000
-      }));
-  
-      setMetodosEnvio(metodosConCosto); // Actualiza el estado con los métodos de envío
+      // Conservamos los datos de la API; ya no asignamos un costo aleatorio
+      setMetodosEnvio(data.empresas || []);
     } catch (error) {
       toast({
         title: "Error",
@@ -186,6 +178,17 @@ const FormularioEnvio = () => {
     }
   }, [userId, paginaActual]);
 
+  // Calculamos el costo total de envío en base a cada producto del carrito
+  useEffect(() => {
+    const totalShippingCost = cartItems.reduce((acc, item) => {
+      const producto = productosMap[item.producto_id];
+      // Si el producto tiene costo de envío, se multiplica por la cantidad; de lo contrario, se suma 0
+      const costoPorProducto = producto?.costo_envio ? producto.costo_envio * item.cantidad : 0;
+      return acc + costoPorProducto;
+    }, 0);
+    setCostoEnvio(totalShippingCost);
+  }, [cartItems, productos, productosMap]);
+
   // Manejo del cambio de dirección seleccionada en el selector
   const handleDireccionChange = (e) => {
     const index = Number(e.target.value);
@@ -245,45 +248,42 @@ const FormularioEnvio = () => {
     }
   };
 
-  const handleMetodoEnvioChange = (metodoId) => {
-    setMetodoEnvio(metodoId);
-    const metodoSeleccionado = metodosEnvio.find((metodo) => metodo.id === parseInt(metodoId));
-    if (metodoSeleccionado) {
-      setCostoEnvio(metodoSeleccionado.costo);
-    }
-  };
+ 
 
   const handleCancelarDireccion = () => {
     setMostrarFormularioDireccion(false);
   };
 
-  const crearPreferencia = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/crear_preferencia/${userId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json(); 
-        throw new Error(errorData.detail || 'Error al crear la preferencia de pago');
-      }
-  
-      const data = await response.json();
-      setPreferenceId(data.preference_id);
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+const crearPreferencia = async () => {
+  try {
+    const totalPagar = total; // total ya es subtotal + costoEnvio
+    const response = await fetch(`http://localhost:8000/crear_preferencia/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ total: totalPagar }), // enviamos el total
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json(); 
+      throw new Error(errorData.detail || 'Error al crear la preferencia de pago');
     }
-  };
+
+    const data = await response.json();
+    setPreferenceId(data.preference_id);
+  } catch (error) {
+    console.error('Error:', error);
+    toast({
+      title: "Error",
+      description: error.message,
+        status: "error",  
+      duration: 5000,
+      isClosable: true,
+    });
+  }
+};
+  
   
   const handleConfirmarCompra = async () => {
     await crearPreferencia();
@@ -463,39 +463,7 @@ const FormularioEnvio = () => {
           </Box>
           
        
-        {/* Sección de entrega */}
-        <Box p={6} bg="white" borderRadius="lg" boxShadow="md">
-          <Heading as="h2" size="md" color="gray.700" mb={6} borderBottom="2px solid" borderColor="blue.500" pb={2}>
-            ENTREGA
-          </Heading>
-          {metodosEnvio.length > 0 ? (
-            <RadioGroup value={metodoEnvio} onChange={handleMetodoEnvioChange}>
-              <VStack align="stretch" spacing={4}>
-                {metodosEnvio.map((metodo) => (
-                  <Box
-                    key={metodo.id}
-                    p={4}
-                    borderRadius="md"
-                    borderWidth="1px"
-                    borderColor={metodoEnvio === metodo.id ? "blue.500" : "gray.200"}
-                    bg={metodoEnvio === metodo.id ? "blue.50" : "white"}
-                  >
-                    <Radio value={metodo.id} colorScheme="blue">
-                      <Flex align="center" justify="space-between" width="100%">
-                        <Text fontWeight={metodoEnvio === metodo.id ? "medium" : "normal"}>
-                          {metodo.nombre}
-                        </Text>
-                        <Text fontWeight="medium">{formatearMonto(metodo.costo)}</Text>
-                      </Flex>
-                    </Radio>
-                  </Box>
-                ))}
-              </VStack>
-            </RadioGroup>
-          ) : (
-            <Text>Cargando métodos de envío...</Text>
-          )}
-        </Box>
+      
       </GridItem>
           <GridItem>
             <Box 
@@ -550,24 +518,17 @@ const FormularioEnvio = () => {
                     );
                   })}
 
-                  {/* Resumen de costos */}
-                  <VStack 
-                    spacing={3} 
-                    align="stretch" 
-                    mb={6} 
-                    bg="gray.50" 
-                    p={4} 
-                    borderRadius="md"
-                  >
-                    <Flex justify="space-between">
-                      <Text color="gray.600">Subtotal</Text>
-                      <Text fontWeight="medium">{formatearMonto(subtotal)}</Text>
-                    </Flex>
-                    <Flex justify="space-between">
-                      <Text color="gray.600">Costo de envío</Text>
-                      <Text fontWeight="medium">{formatearMonto(costoEnvio)}</Text>
-                    </Flex>
-                  </VStack>
+                 {/* Resumen de costos */}
+                <VStack spacing={3} align="stretch" mb={6} bg="gray.50" p={4} borderRadius="md">
+                  <Flex justify="space-between">
+                    <Text color="gray.600">Subtotal</Text>
+                    <Text fontWeight="medium">{formatearMonto(subtotal)}</Text>
+                  </Flex>
+                  <Flex justify="space-between">
+                    <Text color="gray.600">Costo de envío</Text>
+                    <Text fontWeight="medium">{formatearMonto(costoEnvio)}</Text>
+                  </Flex>
+                </VStack>
 
                   <Box 
                     p={4} 

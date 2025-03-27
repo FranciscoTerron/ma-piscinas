@@ -214,6 +214,9 @@ class ProductoBase(BaseModel):
     imagen: Optional[str] = Field(None, example="imagen_producto.jpg")
     costo_compra: Optional[float] = Field(None, example=800.00)  # Nuevo campo
     subcategoria_id: Optional[int] = Field(None, example=1)  # Nuevo campo opcional
+    peso: Optional[float] = Field(None, example=1.5)  # Nuevo campo para peso
+    volumen: Optional[float] = Field(None, example=0.01)  # Nuevo campo para volumen
+    costo_envio: Optional[float] = Field(None, example=50.0)
     
 
 class ProductoCreate(ProductoBase):
@@ -609,4 +612,24 @@ class ComentarioOut(ComentarioBase):
 
     class Config:
         orm_mode = True
+        
+# Modelos para la solicitud y la respuesta
+class DetallesPaquete(BaseModel):
+    weight: float
+    volume: float
+    declaredValue: float
+
+class SolicitudEnvio(BaseModel):
+    zipCode: str
+    packageDetails: DetallesPaquete
+
+class CotizacionEnvio(BaseModel):
+    service: str
+    cost: float
+    deliveryDays: int
+    serviceType: str
+    contract: str
+
+class RespuestaEnvio(BaseModel):
+    quotes: list[CotizacionEnvio]
         

@@ -24,35 +24,46 @@ def crear_preferencia(usuario_id: int, db: Session = Depends(get_db)):
     if not detalles:
         raise HTTPException(status_code=400, detail="El carrito está vacío")
 
-    # Calcular el total de la compra sumando los subtotales de los productos
+    # Calcular el subtotal de la compra sumando los subtotales de los productos
     total_compra = sum(detalle.subtotal for detalle in detalles)
 
-    # Obtener el nombre y apellido del usuario (asumiendo que tienes una tabla Usuario)
+    # Calcular el costo total de envío.
+    # Se asume que CarritoDetalle tiene una relación con el modelo Producto
+    total_envio = sum(
+        detalle.producto.costo_envio * detalle.cantidad
+        for detalle in detalles
+        if detalle.producto and detalle.producto.costo_envio is not None
+    )
+    
+
+    # Sumar el subtotal y el costo de envío para obtener el total final
+    total_final = total_compra + total_envio
+
+    # Obtener el usuario para armar el título del ítem
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # Construir un solo ítem para Mercado Pago
+    # Construir un único ítem para Mercado Pago con el total final
     items = [{
-        "title": f"Compra de {usuario.nombre} {usuario.apellido}",  # Nombre y apellido del cliente
-        "quantity": 1,  # Cantidad 1 (representa una compra)
-        "unit_price": float(total_compra),  # Precio total de la compra
+        "title": f"Compra de {usuario.nombre} {usuario.apellido}",
+        "quantity": 1,
+        "unit_price": float(total_final),
         "currency_id": "ARS"
     }]
 
     preference_data = {
         "items": items,
         "back_urls": {
-            "success": "http://localhost:5173/GraciasPorSuCompra",  # URL de éxito
-            "failure": "http://localhost:5173/productos",  # URL de fallo
-            "pending": "http://localhost:5173/FormularioEnvio"   # URL de pago pendiente
+            "success": "http://localhost:5173/GraciasPorSuCompra",
+            "failure": "http://localhost:5173/productos",
+            "pending": "http://localhost:5173/FormularioEnvio"
         },
-        "auto_return": "approved"  # Redirigir automáticamente al usuario después del pago
+        "auto_return": "approved"
     }
 
     try:
         preference_response = sdk.preference().create(preference_data)
         return {"preference_id": preference_response["response"]["id"]}
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

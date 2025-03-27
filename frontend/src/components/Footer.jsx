@@ -78,27 +78,6 @@ const SocialMediaSection = () => (
   </VStack>
 );
 
-const NewsletterSection = () => (
-  <VStack align="flex-start" spacing={3}>
-    <Text fontWeight="bold">TE GUSTÓ LO QUE VES?</Text>
-    <Text>¡SUSCRIBITE!</Text>
-    <HStack>
-      <Input 
-        placeholder="Email" 
-        bg="white" 
-        color="black" 
-        borderRadius="md" 
-      />
-      <Button 
-        bg="#00008B" 
-        color="white" 
-        _hover={{ bg: "#4169E1" }}
-      >
-        <FaPaperPlane />
-      </Button>
-    </HStack>
-  </VStack>
-);
 
 const Footer = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -146,7 +125,6 @@ const Footer = () => {
         <ShippingMethodsSection methods={shippingMethods} />
         <ContactSection />
         <SocialMediaSection />
-        <NewsletterSection />
       </Flex>
 
       <Divider my={6} borderColor="#00008B" />

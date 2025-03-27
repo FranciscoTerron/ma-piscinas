@@ -21,7 +21,8 @@ import {
   AlertDialogFooter,
   IconButton,
   Flex,
-  Badge
+  Badge,
+  useBreakpointValue
 } from "@chakra-ui/react";
 import { FaTrash, FaPlus, FaMinus } from "react-icons/fa";
 import { 
@@ -35,7 +36,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useDisclosure } from "@chakra-ui/react";
 
-
 const Carrito = ({ onClose  }) => {
   const [carrito, setCarrito] = useState(null);
   const [productos, setProductos] = useState([]);
@@ -47,6 +47,9 @@ const Carrito = ({ onClose  }) => {
   const toast = useToast();
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose: handleClose } = useDisclosure();
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   useEffect(() => {
     cargarCarrito();
     cargarProductos();
@@ -94,7 +97,6 @@ const Carrito = ({ onClose  }) => {
 
   const handleActualizarCantidad = async (productoId, nuevaCantidad) => {
     try {
-      // Obtener el producto para verificar su stock máximo
       const producto = productos.find(p => p.id === productoId);
       if (!producto) {
         toast({
@@ -105,8 +107,7 @@ const Carrito = ({ onClose  }) => {
         });
         return;
       }
-  
-      // Verificar si la nueva cantidad supera el stock disponible
+
       if (nuevaCantidad > producto.stock) {
         toast({
           title: "Stock insuficiente",
@@ -116,14 +117,13 @@ const Carrito = ({ onClose  }) => {
         });
         return;
       }
-  
-      // Si la cantidad es 0, eliminar el producto
+
       if (nuevaCantidad === 0) {
         setProductoToDelete(productoId);
         setIsDeleteAlertOpen(true);
         return;
       }
-  
+
       await actualizarCantidadProducto(productoId, nuevaCantidad);
       cargarCarrito();
     } catch (error) {
@@ -135,7 +135,6 @@ const Carrito = ({ onClose  }) => {
       });
     }
   };
-  
 
   const handleConfirmDelete = async () => {
     try {
@@ -159,21 +158,6 @@ const Carrito = ({ onClose  }) => {
     }
   };
 
-  const handleContinuarCompra = () => {
-    // Cerrar todos los modales posibles
-    setIsDeleteAlertOpen(false);
-    setIsClearAlertOpen(false);
-
-    if (onClose) {
-      onClose(); // Cerrar el modal antes de navegar
-    }
-
-    // Pequeño retraso para permitir el cierre visual antes de navegar
-    setTimeout(() => {
-      navigate("/FormularioEnvio");
-    }, 100);
-  };
-
   const handleVaciarCarrito = async () => {
     try {
       await vaciarCarrito();
@@ -193,14 +177,11 @@ const Carrito = ({ onClose  }) => {
       });
     }
     navigate("/productos");
-
   };
 
   const calcularTotal = () => {
     if (!carrito?.detalles?.length) return 0;
-    return carrito.detalles.reduce((total, detalle) => 
-      total + detalle.subtotal, 0
-    );
+    return carrito.detalles.reduce((total, detalle) => total + detalle.subtotal, 0);
   };
 
   if (loading) return (
@@ -217,6 +198,20 @@ const Carrito = ({ onClose  }) => {
       </Button>
     </Container>
   );
+  const handleContinuarCompra = () => {
+    // Cerrar todos los modales posibles
+    setIsDeleteAlertOpen(false);
+    setIsClearAlertOpen(false);
+
+    if (onClose) {
+      onClose(); // Cerrar el modal antes de navegar
+    }
+
+    // Pequeño retraso para permitir el cierre visual antes de navegar
+    setTimeout(() => {
+      navigate("/FormularioEnvio");
+    }, 100);
+  };
 
   return (
     <Container maxW="container.lg" py={8} color={"black"}>
@@ -259,7 +254,6 @@ const Carrito = ({ onClose  }) => {
                           onClick={() => handleActualizarCantidad(detalle.producto_id, detalle.cantidad + 1)}
                           isDisabled={detalle.cantidad >= (productos.find(p => p.id === detalle.producto_id)?.stock || 0)}
                         />
-
                       </Flex>
                     </Td>
                     <Td textAlign="center">{formatearMonto(detalle.subtotal / detalle.cantidad)}</Td>
@@ -293,8 +287,8 @@ const Carrito = ({ onClose  }) => {
               </Flex>
             </Box>
 
-            <Flex justify="space-between" mt={6}>
-            <Button
+            <Flex justify="space-between" mt={6} direction={isMobile ? "column" : "row"}>
+              <Button
                 size="sm"
                 color="red.900"
                 colorScheme="red"
@@ -303,6 +297,7 @@ const Carrito = ({ onClose  }) => {
                 _hover={{ color: 'red.500' }}
                 onClick={() => setIsClearAlertOpen(true)}
                 leftIcon={<FaTrash />}
+                mb={isMobile ? 4 : 0}
               >
                 Vaciar Carrito
               </Button>
@@ -324,7 +319,7 @@ const Carrito = ({ onClose  }) => {
           </Box>
         )}
       </Box>
-      <AlertDialog
+       <AlertDialog
   isOpen={isClearAlertOpen}
   leastDestructiveRef={undefined}
   onClose={() => setIsClearAlertOpen(false)}
@@ -405,7 +400,7 @@ const Carrito = ({ onClose  }) => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialogOverlay>
-      </AlertDialog>
+        </AlertDialog>
     </Container>
   );
 };

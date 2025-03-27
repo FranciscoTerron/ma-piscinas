@@ -300,7 +300,10 @@ def crear_producto(
     costo_compra: Optional[float],
     imagen: UploadFile,
     subcategoria_id: Optional[int] = None,
-    descuento_id: Optional[int] = None
+    descuento_id: Optional[int] = None,
+    peso: Optional[float] = None,  # Nuevo campo
+    volumen: Optional[float] = None,  # Nuevo campo
+    costo_envio: Optional[float] = None 
 ) -> Producto:
     # Verificar que la categoría exista
     categoria = db.query(CategoriaProducto).filter(CategoriaProducto.id == categoria_id).first()
@@ -346,12 +349,14 @@ def crear_producto(
             categoria_id=categoria_id,
             subcategoria_id=subcategoria_id,
             costo_compra=costo_compra,
-            descuento_id=descuento_id  # Asigna el descuento si se envió
+            descuento_id=descuento_id,
+            peso=peso,  # Asignar peso
+            volumen=volumen,
+            costo_envio=costo_envio
         )
         db.add(db_producto)
         db.commit()
         db.refresh(db_producto)
-        print(f"Producto creado con ID: {db_producto.id} y descuento_id: {db_producto.descuento_id}")
         return db_producto
     except Exception as e:
         db.rollback()
@@ -368,7 +373,10 @@ def actualizar_producto(
     costo_compra: Optional[float],
     imagen: Optional[UploadFile] = None,
     subcategoria_id: Optional[int] = None,  # Nuevo parámetro opcional
-    descuento_id: Optional[int] = None
+    descuento_id: Optional[int] = None,
+    peso: Optional[float] = None,  # Nuevo parámetro
+    volumen: Optional[float] = None,  # Nuevo parámetro
+    costo_envio: Optional[float] = None 
 ) -> Producto:
     producto = obtener_producto_por_id(db, producto_id)
     
@@ -381,6 +389,9 @@ def actualizar_producto(
         producto.subcategoria_id = subcategoria_id  # Actualizar subcategoria_id
         producto.costo_compra = costo_compra
         producto.descuento_id = descuento_id
+        producto.peso = peso  # Actualizar peso
+        producto.volumen = volumen  # Actualizar 
+        producto.costo_envio = costo_envio
 
         if imagen:
             upload_result = cloudinary.uploader.upload(imagen.file, folder="productos")

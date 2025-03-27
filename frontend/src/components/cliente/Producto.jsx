@@ -14,6 +14,7 @@ import { obtenerProducto,crearComentario,obtenerComentariosProducto,eliminarCome
 import { useCart } from "../../context/CartContext";
 import { useAuth } from '../../context/AuthContext';
 import Comentarios from './Comentarios';
+import CalculadorEnvio from './Productos/CalculadorEnvio';
 
 const Producto = () => {
   const { id } = useParams();
@@ -37,6 +38,7 @@ const Producto = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [hasCommented, setHasCommented] = useState(false);
+  
 
   useEffect(() => {
     const cargarProducto = async () => {
@@ -158,7 +160,7 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
     return (
       <Container maxW="container.xl" py={8}>
         <Skeleton height="30px" width="300px" mb={6} />
-        <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={8}>
+        <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={{ base: 4, md: 8 }}>
           <GridItem>
             <Skeleton height="450px" width="100%" borderRadius="md" />
             <Box mt={6}>
@@ -228,7 +230,7 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
             onMouseLeave={() => setShowZoom(false)}
             onMouseMove={handleMouseMove}
             cursor="zoom-in"
-            height="450px"
+            height={{base: "400px", md: "500px"}}
             bg="white"
             boxShadow="sm"
             transition="all 0.3s ease"
@@ -308,8 +310,8 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
           <Box mt={8}>
           <Tabs colorScheme="blue" variant="enclosed" borderColor="gray.200">
             <TabList>
-              <Tab fontWeight="medium">Descripción</Tab>
-              <Tab fontWeight="medium">Opiniones</Tab>
+              <Tab fontWeight="medium" fontSize={{base:"sm",md:"md"}}>Descripción</Tab>
+              <Tab fontWeight="medium" fontSize={{base:"sm",md:"md"}}>Opiniones</Tab>
             </TabList>
             <TabPanels>
               <TabPanel>
@@ -367,7 +369,7 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
                     <Text fontSize="sm" fontWeight="medium" color="gray.500">
                       Precio anterior:
                     </Text>
-                    <Text as="span" textDecoration="line-through" color="gray.500">
+                    <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="gray.800">
                       ${producto.precio.toLocaleString()}
                     </Text>
                   </HStack>
@@ -414,36 +416,12 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
               )}
             </Box>
 
-            {/* Envío */}
-            <Box 
-              width="100%" 
-              p={4} 
-              borderRadius="lg" 
-              bg={producto.envioGratis ? "green.50" : "blue.50"}
-              border="1px"
-              borderColor={producto.envioGratis ? "green.200" : "blue.200"}
-            >
-              <HStack>
-                <Icon 
-                  as={FiTruck} 
-                  color={producto.envioGratis ? "green.500" : "blue.500"} 
-                  boxSize={5}
-                />
-                <Box>
-                  <Text 
-                    fontWeight="medium" 
-                    color={producto.envioGratis ? "green.700" : "blue.700"}
-                  >
-                    {producto.envioGratis ? 'Envío gratis a todo el país' : 'Envío a domicilio'}
-                  </Text>
-                  <Text fontSize="sm" color={producto.envioGratis ? "green.600" : "blue.600"}>
-                    {producto.envioGratis 
-                      ? 'Recibe en 48-72 horas hábiles' 
-                      : 'Costo calculado durante el checkout'}
-                  </Text>
-                </Box>
-              </HStack>
-            </Box>
+           
+             
+            <div>
+              <CalculadorEnvio costoEnvio={producto.costo_envio} />
+            </div>
+           
             <Divider my={2} />
 
             {/* Botones de acción y selección de cantidad */}
@@ -459,10 +437,11 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
           >
             {/* Sección de cantidad con stock */}
             <Flex 
-              direction={["column", "row"]} 
-              alignItems={["flex-start", "center"]} 
+              direction={{ base: "column", md: "row" }}              
+              alignItems={"center"} 
               justifyContent="space-between" 
               mb={6}
+              gap={3}
             >
               <Text 
                 fontSize="md" 
@@ -477,7 +456,7 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
                 <NumberInput
                   min={1}
                   max={producto.stock || 10}
-                  w="110px"
+                  w={{base:"100%", md:"110px"}}
                   value={quantity}
                   onChange={(valueString) => setQuantity(parseInt(valueString) || 1)}
                   borderRadius="md"
@@ -513,8 +492,9 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
                 flex="1"
                 colorScheme="blue"
                 leftIcon={<FiShoppingCart size={18} />}
-                height="54px"
-                fontSize="md"
+                width="100%"
+                height={{ base: "48px", md: "54px" }}
+                fontSize={{ base: "sm", md: "md" }}
                 fontWeight="bold"
                 borderRadius="lg"
                 boxShadow="0 4px 6px rgba(49, 130, 206, 0.25)"
@@ -539,16 +519,16 @@ const handleAddToCart = useCallback((producto, qty = 1) => {
 
             {/* Beneficios adicionales */}
             <Box width="100%" mt={4}>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
                 <HStack 
-                  p={3} 
+                  p={{ base: 2, md: 3 }}                  
                   borderRadius="md" 
                   bg="gray.50" 
                   borderLeft="3px solid" 
                   borderColor="blue.500"
                 >
-                  <Icon as={FiShield} color="blue.600" />
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+                  <Icon as={FiShield} color="blue.600" boxSize={{base:4, md:5}}/>
+                  <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="medium" color="gray.700" >
                     Garantía de 12 meses
                   </Text>
                 </HStack>

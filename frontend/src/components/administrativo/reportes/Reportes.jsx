@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useRef } from "react";
 import { 
   Box, Grid, Spinner, Text, Container, HStack, Select, Input, 
   Button, GridItem, Card, CardBody, Stack, useToast,
@@ -73,9 +73,14 @@ const Reportes = () => {
     }
   };
 
+  const didMount = useRef(false);
+
   useEffect(() => {
-    cargarDatos();
-  }, []);
+    if (!didMount.current) {
+      didMount.current = true;
+      cargarDatos();
+    }
+  }, []);;
 
   return (
     <Container maxW="container.xl" py={8} color="black">
